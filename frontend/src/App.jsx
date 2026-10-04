@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Home from './pages/Home';
 import RequirementInput from './pages/RequirementInput';
 import Dashboard from './pages/Dashboard';
@@ -15,30 +15,8 @@ function currentPage() {
 }
 
 function AppFooter({ user }) {
-  const footerRef = useRef(null);
-
-  useEffect(() => {
-    const footer = footerRef.current;
-    const shell = footer?.closest('.app-shell');
-    if (!footer || !shell) return undefined;
-
-    const updateReservedSpace = () => {
-      shell.style.setProperty('--app-footer-height', `${Math.ceil(footer.getBoundingClientRect().height)}px`);
-    };
-    updateReservedSpace();
-
-    if (typeof ResizeObserver === 'undefined') {
-      window.addEventListener('resize', updateReservedSpace);
-      return () => window.removeEventListener('resize', updateReservedSpace);
-    }
-
-    const observer = new ResizeObserver(updateReservedSpace);
-    observer.observe(footer);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <footer className="app-footer" ref={footerRef}>
+    <footer className="app-footer">
       <div className="footer-inner">
         <div className="footer-brand-block">
           <a className="footer-brand" href="#home">ReqQuality <span>AI</span></a>
@@ -121,7 +99,6 @@ export default function App() {
     return (
       <div className="app-shell">
         <main><p className="requirements-empty">Checking your session...</p></main>
-        <AppFooter user={null} />
       </div>
     );
   }
@@ -142,7 +119,7 @@ export default function App() {
         setLoginNotice('');
         window.location.hash = 'dashboard';
       }} onRegister={() => { window.location.hash = 'register'; }} />;
-    return <div className="app-shell auth-app-shell">{authPage}</div>;
+    return <div className="app-shell">{authPage}</div>;
   }
 
   let content;
