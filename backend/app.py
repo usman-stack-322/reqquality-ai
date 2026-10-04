@@ -306,6 +306,23 @@ def csrf_required(view):
     return wrapped
 
 
+def api_errors(public_message):
+    def decorate(view):
+        @wraps(view)
+        def wrapped(*args, **kwargs):
+            try:
+                return view(*args, **kwargs)
+            except Exception as error:
+                LOGGER.exception(
+                    "API endpoint failed endpoint=%s exception_type=%s",
+                    request.endpoint,
+                    type(error).__name__,
+                )
+                return jsonify(error=public_message), 500
+        return wrapped
+    return decorate
+
+
 def _get_requirement_detail(connection, requirement_id):
     row = connection.execute(
         "SELECT * FROM requirements WHERE id = ?", (requirement_id,)
@@ -563,6 +580,7 @@ def logout():
 
 
 @app.post("/api/requirements")
+@api_errors("Unable to save the requirement. Please try again.")
 @login_required
 @roles_required("Analyst")
 @csrf_required
@@ -712,6 +730,7 @@ def create_requirement():
 
 
 @app.get("/api/dashboard")
+@api_errors("Unable to load dashboard data. Please try again.")
 @login_required
 def dashboard_summary():
     connection = get_connection()
@@ -760,27 +779,38 @@ def dashboard_summary():
     finally:
         connection.close()
 
-    total_requirements = totals["total_requirements"]
+    total_requirements = int(totals["total_requirements"] or 0)
+    status_counts = {
+        field: int(totals[field] or 0)
+        for field in (
+            "pending_count", "in_review_count", "approved_count", "needs_revision_count",
+        )
+    }
+    risk_counts = {
+        field: int(totals[field] or 0)
+        for field in (
+            "low_risk_count", "medium_risk_count", "high_risk_count", "critical_risk_count",
+        )
+    }
+    type_counts = {
+        field: int(totals[field] or 0)
+        for field in ("functional_count", "non_functional_count", "business_count")
+    }
+    average_risk_score = float(totals["average_risk_score"] or 0)
+    total_test_scenarios = int(total_scenarios or 0)
+    traceable_count = int(traceable_count or 0)
+    traceability_coverage = (
+        float(round(traceable_count * 100 / total_requirements, 1))
+        if total_requirements else 0.0
+    )
     return jsonify(
         total_requirements=total_requirements,
-        pending_count=totals["pending_count"] or 0,
-        in_review_count=totals["in_review_count"] or 0,
-        approved_count=totals["approved_count"] or 0,
-        needs_revision_count=totals["needs_revision_count"] or 0,
-        low_risk_count=totals["low_risk_count"] or 0,
-        medium_risk_count=totals["medium_risk_count"] or 0,
-        high_risk_count=totals["high_risk_count"] or 0,
-        critical_risk_count=totals["critical_risk_count"] or 0,
-        functional_count=totals["functional_count"] or 0,
-        non_functional_count=totals["non_functional_count"] or 0,
-        business_count=totals["business_count"] or 0,
-        average_risk_score=totals["average_risk_score"],
+        **status_counts,
+        **risk_counts,
+        **type_counts,
+        average_risk_score=average_risk_score,
         total_test_scenarios=total_scenarios,
-        traceability_coverage_percent=(
-            round(traceable_count * 100 / total_requirements, 1)
-            if total_requirements
-            else 0
-        ),
+        traceability_coverage_percent=traceability_coverage,
         traceable_requirement_count=traceable_count,
         recent_requirements=[dict(row) for row in recent_requirements],
         high_attention_requirements=[dict(row) for row in high_attention_requirements],
