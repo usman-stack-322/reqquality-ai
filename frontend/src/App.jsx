@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Home from './pages/Home';
 import RequirementInput from './pages/RequirementInput';
 import Dashboard from './pages/Dashboard';
@@ -12,6 +12,47 @@ function currentPage() {
   return ['home', 'requirements', 'dashboard', 'login', 'register'].includes(hash)
     ? hash
     : 'home';
+}
+
+function AppFooter({ user }) {
+  const footerRef = useRef(null);
+
+  useEffect(() => {
+    const footer = footerRef.current;
+    const shell = footer?.closest('.app-shell');
+    if (!footer || !shell) return undefined;
+
+    const updateReservedSpace = () => {
+      shell.style.setProperty('--app-footer-height', `${Math.ceil(footer.getBoundingClientRect().height)}px`);
+    };
+    updateReservedSpace();
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateReservedSpace);
+      return () => window.removeEventListener('resize', updateReservedSpace);
+    }
+
+    const observer = new ResizeObserver(updateReservedSpace);
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <footer className="app-footer" ref={footerRef}>
+      <div className="footer-inner">
+        <div className="footer-brand-block">
+          <a className="footer-brand" href="#home">ReqQuality <span>AI</span></a>
+          <p>AI-Powered Requirements &amp; Software Quality Engineering Platform</p>
+        </div>
+        <nav className="footer-nav" aria-label="Footer navigation">
+          <a href="#home">Home</a>
+          {user?.role === 'Analyst' && <a href="#requirements">Add Requirement</a>}
+          <a href="#dashboard">Dashboard</a>
+        </nav>
+        <div className="footer-meta"><span>Final Year Project</span><span>{new Date().getFullYear()}</span></div>
+      </div>
+    </footer>
+  );
 }
 
 export default function App() {
@@ -77,11 +118,16 @@ export default function App() {
   }
 
   if (isCheckingSession) {
-    return <main><p className="requirements-empty">Checking your session...</p></main>;
+    return (
+      <div className="app-shell">
+        <main><p className="requirements-empty">Checking your session...</p></main>
+        <AppFooter user={null} />
+      </div>
+    );
   }
 
   if (!user) {
-    return page === 'register'
+    const authPage = page === 'register'
       ? <Register
         onLogin={() => { window.location.hash = 'login'; }}
         onRegistered={(email) => {
@@ -96,6 +142,7 @@ export default function App() {
         setLoginNotice('');
         window.location.hash = 'dashboard';
       }} onRegister={() => { window.location.hash = 'register'; }} />;
+    return <div className="app-shell auth-app-shell">{authPage}</div>;
   }
 
   let content;
@@ -116,7 +163,7 @@ export default function App() {
   }
 
   return (
-    <>
+    <div className="app-shell">
       <header className="app-header">
         <a className="brand" href="#dashboard" aria-label="ReqQuality AI dashboard">
           <span className="brand-mark" aria-hidden="true">RQ</span>
@@ -135,20 +182,7 @@ export default function App() {
         </div>
       </header>
       <main className={page === 'home' ? 'home-main' : undefined}>{content}{logoutError && <p className="error" role="alert">{logoutError}</p>}</main>
-      <footer className="app-footer">
-        <div className="footer-inner">
-          <div className="footer-brand-block">
-            <a className="footer-brand" href="#home">ReqQuality <span>AI</span></a>
-            <p>AI-Powered Requirements &amp; Software Quality Engineering Platform</p>
-          </div>
-          <nav className="footer-nav" aria-label="Footer navigation">
-            <a href="#home">Home</a>
-            {user.role === 'Analyst' && <a href="#requirements">Add Requirement</a>}
-            <a href="#dashboard">Dashboard</a>
-          </nav>
-          <div className="footer-meta"><span>Final Year Project</span><span>{new Date().getFullYear()}</span></div>
-        </div>
-      </footer>
-    </>
+      <AppFooter user={user} />
+    </div>
   );
 }
