@@ -140,7 +140,9 @@ export default function Home({ user }) {
             ReqQuality AI helps software teams analyze requirements, identify ambiguity and missing information, assess quality risk, generate acceptance criteria and test scenarios, and maintain requirement traceability through SQA review.
           </p>
           <div className="hero-actions">
-            {isAnalyst ? (
+            {!user ? (
+              <a className="button hero-primary" href="#login">Sign in to get started<span aria-hidden="true">&rarr;</span></a>
+            ) : isAnalyst ? (
               <a className="button hero-primary" href="#requirements">Analyze a Requirement<span aria-hidden="true">&rarr;</span></a>
             ) : (
               <a className="button hero-primary" href="#dashboard">Review Requirements<span aria-hidden="true">&rarr;</span></a>
@@ -209,7 +211,7 @@ export default function Home({ user }) {
         </article>
         <article className="role-panel role-panel-reviewer">
           <span className="role-panel-label">02 / VERIFY</span>
-          <h3>SQA Reviewer</h3>
+          <h3>SQA Engineer</h3>
           <ul>
             <li><span aria-hidden="true">&#10003;</span>Reviews analyzed requirements</li>
             <li><span aria-hidden="true">&#10003;</span>Verifies quality findings</li>

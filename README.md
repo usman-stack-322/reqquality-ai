@@ -2,7 +2,10 @@
 
 A beginner-friendly starting point for a Requirements Engineering and Software
 Quality Engineering platform. It includes a React frontend, a Flask API, and
-basic SQLite storage. AI features and authentication are not included yet.
+SQLite/PostgreSQL storage, AI analysis, and session authentication.
+Admin-managed invitations assign Analyst and SQA Engineer roles.
+The existing Admin now opens the QA Manager workspace; see
+[dashboard setup, metrics and API documentation](QA_MANAGER_DASHBOARD.md).
 
 ## Project structure
 
@@ -53,8 +56,8 @@ after changing the environment file.
 
 For authentication, set a persistent `REQQUALITY_SECRET_KEY` in the same `.env`
 file. Generate one with `python -c "import secrets; print(secrets.token_hex(32))"`.
-Set `SQA_REGISTRATION_CODE` to a private invite value before registering SQA
-Reviewers; public registration defaults to Analyst. Set
+Create an Admin locally with `backend/.venv/Scripts/python.exe backend/create_admin.py`.
+New accounts require an Admin invitation; see [invitation setup](INVITATIONS.md). Set
 `SESSION_COOKIE_SECURE=true` when serving over HTTPS. Sessions use HttpOnly,
 SameSite=Lax cookies and expire after eight hours.
 
@@ -82,8 +85,7 @@ Stop either server with Ctrl+C.
 ## API and Database
 
 - `GET /api/health`: returns the API status.
-- `POST /api/auth/register`: creates an Analyst account, or an SQA Reviewer account
-    when the configured reviewer registration code is provided.
+- `POST /api/auth/register`: returns 403; registration now requires an invitation.
 - `POST /api/auth/login`: validates credentials and starts a session.
 - `POST /api/auth/logout`: ends the session and requires its CSRF token.
 - `GET /api/auth/me`: returns the authenticated user's public profile and CSRF token.
@@ -132,7 +134,7 @@ Authentication adds a `users` table with password hashes and roles. Requirements
 gain nullable `created_by_user_id`, `reviewed_by_user_id`, and `reviewed_at` fields
 so existing records remain intact. Passwords use Werkzeug's scrypt hash and user
 responses never include password hashes. Analysts can analyze and create
-requirements; only SQA Reviewers can change review status or notes. Authenticated
+requirements; only SQA Engineers can change review status or notes. Authenticated
 write requests require a CSRF token.
 
 ## PostgreSQL Production Setup
@@ -144,7 +146,7 @@ access. SQLite-to-PostgreSQL data transfer is never run automatically.
 
 Set the variables listed in `.env.example` through the deployment environment or
 secret manager. Production deployments should use a persistent
-`REQQUALITY_SECRET_KEY`, a private `SQA_REGISTRATION_CODE`, a provider-issued
+`REQQUALITY_SECRET_KEY`, invitation SMTP configuration, a provider-issued
 `DATABASE_URL`, and `SESSION_COOKIE_SECURE=true` when requests are served over
 HTTPS. Do not commit real values.
 

@@ -490,3 +490,15 @@ textarea { width: 100%; padding: 0.75rem 0.85rem; border: 1px solid #cbd5d1; bor
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+.invitation-panel { padding: 2rem; }
+.invitation-form { max-width: 520px; margin: 1.5rem 0; }
+.invitation-table-wrap { overflow-x: auto; margin-top: 1.5rem; }
+.invitation-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.invitation-table caption { text-align: left; font-weight: 600; padding: 1rem 0; }
+.invitation-table th, .invitation-table td { text-align: left; padding: .8rem; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+.invitation-table th { background: var(--color-background); }
+.invitation-actions button, .invitation-details button { margin: .2rem; padding: .4rem .6rem; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-surface); color: var(--color-green-dark); cursor: pointer; }
+.invitation-details { margin-top: 1rem; padding: 1rem; background: var(--color-background); border-radius: 10px; }
+
+.invitation-actions button:hover, .invitation-details button:hover { color: white; }

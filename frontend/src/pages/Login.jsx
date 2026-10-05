@@ -54,7 +54,8 @@ export default function Login({ onLogin, onRegister, initialEmail = '', notice =
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-        <p className="auth-switch">New to ReqQuality AI? <button type="button" className="text-button" onClick={onRegister}>Create an account</button></p>
+        <p className="auth-switch">To create an account, ask your administrator for an invitation.</p>
+        <p className="auth-switch"><a href="#home">Back to Home</a></p>
       </section>
     </main>
   );

@@ -33,7 +33,7 @@ function AnalysisItems({ items, fallbackSource, confirmed }) {
   );
 }
 
-export default function RequirementDetails({ requirementId, user, csrfToken }) {
+export default function RequirementDetails({ requirementId, user, csrfToken, managerView = false, onAssign, openReview = false, revision = 0 }) {
   const [requirement, setRequirement] = useState(null);
   const [reviewStatus, setReviewStatus] = useState('Pending');
   const [reviewerNotes, setReviewerNotes] = useState('');
@@ -60,7 +60,11 @@ export default function RequirementDetails({ requirementId, user, csrfToken }) {
       }
     }
     loadRequirement();
-  }, [requirementId]);
+  }, [requirementId, revision]);
+
+  useEffect(() => {
+    if (openReview && requirement && !isLoading) document.getElementById('sqa-review-title')?.scrollIntoView({ block: 'start' });
+  }, [openReview, requirement, isLoading]);
 
   async function handleSaveReview(event) {
     event.preventDefault();
@@ -88,9 +92,9 @@ export default function RequirementDetails({ requirementId, user, csrfToken }) {
   }
 
   if (isLoading) return <p className="requirements-empty">Loading requirement...</p>;
-  if (error && !requirement) return <p className="error" role="alert">{error} <a href="#dashboard">Return to requirements</a></p>;
+  if (error && !requirement) return <p className="error" role="alert">{error} <a href={managerView ? '#admin/requirements' : '#dashboard'}>Return to requirements</a></p>;
   if (!requirement) return null;
-  const canReview = user?.role === 'SQA Reviewer';
+  const canReview = user?.role === 'SQA Engineer';
   const reviewedAt = requirement.reviewed_at
     ? new Date(requirement.reviewed_at).toLocaleString()
     : 'Not reviewed yet';
@@ -101,7 +105,8 @@ export default function RequirementDetails({ requirementId, user, csrfToken }) {
   return (
     <div className="requirement-detail-page">
       <div className="detail-actions">
-        <a className="back-link" href="#dashboard">&larr; All requirements</a>
+        <a className="back-link" href={managerView ? '#admin/requirements' : '#dashboard'}>&larr; All requirements</a>
+        {managerView && <button onClick={() => onAssign(requirement)}>Assign / Reassign Reviewer</button>}
         <a className="button export-button" href={`/api/requirements/${requirement.id}/report.pdf`} download>Export PDF</a>
       </div>
       <section className="requirement-detail-heading">
@@ -268,9 +273,10 @@ export default function RequirementDetails({ requirementId, user, csrfToken }) {
           <div className="review-read-only">
             <p><strong>Review Status</strong><span className={`review-status review-${requirement.review_status.toLowerCase().replaceAll(' ', '-')}`}>{requirement.review_status}</span></p>
             <p><strong>Reviewer Notes</strong><span>{requirement.reviewer_notes || 'No reviewer notes.'}</span></p>
-            <p><strong>Reviewed by</strong><span>{requirement.reviewed_by_name || 'Not assigned'}</span></p>
+            <p><strong>Assigned reviewer</strong><span>{requirement.assigned_reviewer || 'Unassigned'}</span></p>
+            <p><strong>Reviewed by</strong><span>{requirement.reviewed_by_name || 'Not recorded'}</span></p>
             <p><strong>Reviewed at</strong><span>{reviewedAt}</span></p>
-            <p className="field-hint">SQA review details are read-only for Analysts.</p>
+            <p className="field-hint">SQA Engineers record review decisions.</p>
           </div>
         )}
       </section>

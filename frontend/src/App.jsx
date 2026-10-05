@@ -5,11 +5,16 @@ import Dashboard from './pages/Dashboard';
 import RequirementDetails from './pages/RequirementDetails';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ManagerDashboard from './pages/ManagerDashboard';
+import AcceptInvitation from './pages/AcceptInvitation';
 
 function currentPage() {
   const hash = window.location.hash.slice(1);
+  if (hash === 'accept-invitation' || (window.location.pathname === '/accept-invitation' && new URLSearchParams(window.location.search).has('token'))) return 'accept-invitation';
+  if (window.location.pathname === '/admin' && !hash) return 'admin';
+  if (/^admin(?:\/|\?|$)/.test(hash)) return 'admin';
   if (/^requirement\/\d+$/.test(hash)) return 'requirement-detail';
-  return ['home', 'requirements', 'dashboard', 'login', 'register'].includes(hash)
+  return ['home', 'requirements', 'dashboard', 'login', 'register', 'admin'].includes(hash)
     ? hash
     : 'home';
 }
@@ -19,13 +24,13 @@ function AppFooter({ user }) {
     <footer className="app-footer">
       <div className="footer-inner">
         <div className="footer-brand-block">
-          <a className="footer-brand" href="#home">ReqQuality <span>AI</span></a>
+          <a className="footer-brand" href={user ? (user.role === 'admin' ? '#admin' : '#dashboard') : '#home'}>ReqQuality <span>AI</span></a>
           <p>AI-Powered Requirements &amp; Software Quality Engineering Platform</p>
         </div>
         <nav className="footer-nav" aria-label="Footer navigation">
-          <a href="#home">Home</a>
+          {!user && <a href="#home">Home</a>}
           {user?.role === 'Analyst' && <a href="#requirements">Add Requirement</a>}
-          <a href="#dashboard">Dashboard</a>
+          {user ? <a href="#dashboard">Dashboard</a> : <a href="#login">Sign in</a>}
         </nav>
         <div className="footer-meta"><span>Final Year Project</span><span>{new Date().getFullYear()}</span></div>
       </div>
@@ -68,11 +73,12 @@ export default function App() {
 
   useEffect(() => {
     if (isCheckingSession) return;
-    if (!user && !['login', 'register'].includes(page)) {
+    if (page === 'accept-invitation') return;
+    if (!user && !['home', 'login', 'register'].includes(page)) {
       window.location.hash = 'login';
-    } else if (user && ['login', 'register'].includes(page)) {
-      window.location.hash = 'dashboard';
-    } else if (user?.role === 'SQA Reviewer' && page === 'requirements') {
+    } else if (user && ['home', 'login', 'register'].includes(page)) {
+      window.location.hash = user?.role === 'admin' ? 'admin' : 'dashboard';
+    } else if (user?.role === 'SQA Engineer' && page === 'requirements') {
       window.location.hash = 'dashboard';
     }
   }, [isCheckingSession, page, user]);
@@ -95,7 +101,7 @@ export default function App() {
     }
   }
 
-  if (isCheckingSession) {
+  if (isCheckingSession || (user && ['home', 'login', 'register'].includes(page))) {
     return (
       <div className="app-shell">
         <main><p className="requirements-empty">Checking your session...</p></main>
@@ -103,27 +109,36 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    const authPage = page === 'register'
-      ? <Register
-        onLogin={() => { window.location.hash = 'login'; }}
-        onRegistered={(email) => {
-          setLoginEmail(email);
-          setLoginNotice('Account created successfully. Sign in with your new credentials.');
-          window.location.hash = 'login';
-        }}
-      />
-      : <Login initialEmail={loginEmail} notice={loginNotice} onLogin={(data) => {
-        setUser(data.user);
-        setCsrfToken(data.csrf_token);
-        setLoginNotice('');
-        window.location.hash = 'dashboard';
-      }} onRegister={() => { window.location.hash = 'register'; }} />;
-    return <div className="app-shell">{authPage}</div>;
+  if (page === 'accept-invitation') {
+    return <div className="app-shell"><AcceptInvitation onRegistered={(email) => {
+      setUser(null);
+      setCsrfToken('');
+      setLoginEmail(email);
+      setLoginNotice('Account created successfully. Sign in with your new credentials.');
+      window.history.replaceState(null, '', '/#login');
+      setPage('login');
+    }} /></div>;
+  }
+  if (!user && page === 'register') {
+    return <div className="app-shell"><Register onLogin={() => { window.location.hash = 'login'; }} /></div>;
+  }
+  if (!user && page !== 'home') {
+    return <div className="app-shell"><Login initialEmail={loginEmail} notice={loginNotice} onLogin={(data) => {
+      setUser(data.user); setCsrfToken(data.csrf_token); setLoginNotice('');
+      window.location.hash = data.user.role === 'admin' ? 'admin' : 'dashboard';
+    }} /></div>;
+  }
+
+  if (user?.role === 'admin' && ['admin', 'dashboard', 'requirement-detail'].includes(page)) {
+    return <ManagerDashboard user={user} csrfToken={csrfToken} onLogout={handleLogout} logoutError={logoutError} onSignedOut={(message) => {
+      setUser(null); setCsrfToken(''); setLoginNotice(message); window.location.hash = 'login';
+    }} />;
   }
 
   let content;
-  if (page === 'requirements' && user.role === 'Analyst') {
+  if (page === 'admin') {
+    content = <section className="card"><h1>Forbidden</h1><p className="error" role="alert">Your account does not have permission to access the Admin Panel.</p></section>;
+  } else if (page === 'requirements' && user.role === 'Analyst') {
     content = <RequirementInput csrfToken={csrfToken} />;
   } else if (page === 'requirement-detail') {
     content = (
@@ -142,20 +157,23 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <a className="brand" href="#dashboard" aria-label="ReqQuality AI dashboard">
+        <a className="brand" href={user ? (user.role === 'admin' ? '#admin' : '#dashboard') : '#home'} aria-label={user ? 'ReqQuality AI workspace' : 'ReqQuality AI home'}>
           <span className="brand-mark" aria-hidden="true">RQ</span>
           <span>ReqQuality <span className="brand-ai">AI</span></span>
         </a>
         <nav aria-label="Main navigation">
-          <a href="#home" aria-current={page === 'home' ? 'page' : undefined}>Home</a>
-          {user.role === 'Analyst' && (
+          {user?.role === 'admin' && <a href="#admin" aria-current={page === 'admin' ? 'page' : undefined}>Admin Panel</a>}
+          {!user && <a href="#home" aria-current={page === 'home' ? 'page' : undefined}>Home</a>}
+          {user?.role === 'Analyst' && (
             <a href="#requirements" aria-current={page === 'requirements' ? 'page' : undefined}>Add Requirement</a>
           )}
-          <a href="#dashboard" aria-current={page === 'dashboard' || page === 'requirement-detail' ? 'page' : undefined}>Dashboard</a>
+          {user && <a href="#dashboard" aria-current={page === 'dashboard' || page === 'requirement-detail' ? 'page' : undefined}>Dashboard</a>}
         </nav>
         <div className="account-bar">
-          <div className="account-identity"><strong>{user.name}</strong><span>{user.role}</span></div>
-          <button className="logout-button" type="button" onClick={handleLogout}>Log out</button>
+          {user ? <>
+            <div className="account-identity"><strong>{user.name}</strong><span>{user.role}</span></div>
+            <button className="logout-button" type="button" onClick={handleLogout}>Log out</button>
+          </> : <a className="button" href="#login">Sign in</a>}
         </div>
       </header>
       <main className={page === 'home' ? 'home-main' : undefined}>{content}{logoutError && <p className="error" role="alert">{logoutError}</p>}</main>

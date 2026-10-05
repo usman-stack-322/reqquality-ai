@@ -9,6 +9,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from database import connect_database, initialize_postgresql_schema
+from invitations import initialize_invitations
+from admin_dashboard import initialize_management_schema
 
 BACKEND_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = BACKEND_ROOT.parent
@@ -17,13 +19,19 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 TABLE_COLUMNS = {
     "users": (
-        "id", "name", "email", "password_hash", "role", "created_at",
+        "id", "name", "email", "password_hash", "role", "created_at", "is_active", "auth_version",
+    ),
+    "user_invitations": (
+        "id", "name", "email", "role", "token_hash", "status", "failed_attempts",
+        "window_failed_attempts", "failure_window_started_at", "last_failed_attempt_at",
+        "temporarily_locked_until", "created_at", "expires_at", "accepted_at", "revoked_at",
+        "invited_by", "delivery_status",
     ),
     "requirements": (
         "id", "title", "description", "requirement_type", "priority", "created_at",
         "user_priority", "suggested_priority", "risk_score", "risk_level", "review_status",
         "reviewer_notes", "updated_at", "source", "needs_confirmation", "created_by_user_id",
-        "reviewed_by_user_id", "reviewed_at", "analysis_summary",
+        "reviewed_by_user_id", "reviewed_at", "analysis_summary", "assigned_reviewer_user_id",
     ),
     "requirement_acceptance_criteria": (
         "id", "requirement_id", "criterion_code", "description", "source",
@@ -38,6 +46,8 @@ TABLE_COLUMNS = {
         "id", "requirement_id", "assumption_code", "description", "source",
         "needs_confirmation", "introduced_values",
     ),
+    "activity_events": ("id", "actor_id", "actor_name", "action", "entity_type", "entity_id", "summary", "created_at"),
+    "organization_settings": ("id", "name", "overdue_days"),
 }
 
 
@@ -59,13 +69,24 @@ def migrate(sqlite_path, postgres_url):
 
     try:
         initialize_postgresql_schema(destination)
+        initialize_invitations(destination)
+        settings_existed = destination.execute("SELECT to_regclass('organization_settings') AS name").fetchone()['name'] is not None
+        initialize_management_schema(destination)
         counts = {}
         with destination:
             for table, columns in TABLE_COLUMNS.items():
+                if table in ("user_invitations", "activity_events", "organization_settings") and not source.execute("SELECT name FROM sqlite_master WHERE name = ?", (table,)).fetchone():
+                    continue
+                available = {row['name'] for row in source.execute(f'PRAGMA table_info({table})')}
+                # Older source databases legitimately lack the new management columns.
+                optional = {'is_active', 'auth_version', 'assigned_reviewer_user_id'}
+                columns = tuple(column for column in columns if column in available or column not in optional)
                 column_list = ", ".join(columns)
                 source_rows = source.execute(
                     f"SELECT {column_list} FROM {table} ORDER BY id"
                 ).fetchall()
+                if table == 'organization_settings' and not settings_existed and source_rows:
+                    destination.execute('DELETE FROM organization_settings WHERE id=1')
                 migrated = 0
                 already_present = 0
                 placeholders = ", ".join("?" for _ in columns)
@@ -74,7 +95,7 @@ def migrate(sqlite_path, postgres_url):
                     "ON CONFLICT (id) DO NOTHING"
                 )
                 for row in source_rows:
-                    values = tuple(row[column] for column in columns)
+                    values = tuple("SQA Engineer" if column == "role" and row[column] == "SQA Reviewer" else row[column] for column in columns)
                     existing = destination.execute(
                         f"SELECT {column_list} FROM {table} WHERE id = ?",
                         (row["id"],),
@@ -100,6 +121,8 @@ def migrate(sqlite_path, postgres_url):
                 }
 
             for table in TABLE_COLUMNS:
+                if table == 'organization_settings':
+                    continue
                 destination.execute(
                     "SELECT setval(pg_get_serial_sequence(?, 'id')::regclass, "
                     "GREATEST(COALESCE(MAX(id), 1), 1), COUNT(*) > 0) "

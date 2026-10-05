@@ -13,18 +13,23 @@ from functools import wraps
 from pathlib import Path
 from threading import Lock
 
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent / ".env")
+load_dotenv(Path(__file__).parent.parent / ".env")
+
 from flask import Flask, g, jsonify, request, send_file, session
 from flask_cors import CORS
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash
 
 from analyzers.hybrid_analyzer import analyze_hybrid
 from database import (
     DATABASE_ERRORS,
-    DATABASE_INTEGRITY_ERRORS,
     connect_database,
     initialize_postgresql_schema,
 )
 from reporting import build_project_summary_pdf, build_requirement_pdf
+from admin_dashboard import initialize_management_schema, record_activity, register_management_routes
 
 DATABASE_URL = os.getenv("DATABASE_URL") or None
 
@@ -56,9 +61,7 @@ REVIEW_STATUSES = {"Pending", "In Review", "Approved", "Needs Revision"}
 RISK_LEVELS = {"Low", "Medium", "High", "Critical"}
 SCENARIO_CATEGORIES = {"Positive", "Negative", "Boundary", "Edge-case"}
 CONTENT_SOURCES = {"original", "rule_based", "ai_suggestion", "ai_assumption", "confirmed"}
-USER_ROLES = {"Analyst", "SQA Reviewer"}
 EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
-MIN_PASSWORD_LENGTH = 12
 
 
 def _masked_email(email):
@@ -76,7 +79,7 @@ def _initialize_database(connection):
         "CREATE TABLE IF NOT EXISTS users "
         "(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, "
         "email TEXT NOT NULL UNIQUE COLLATE NOCASE, password_hash TEXT NOT NULL, "
-        "role TEXT NOT NULL CHECK(role IN ('Analyst', 'SQA Reviewer')), "
+        "role TEXT NOT NULL CHECK(role IN ('admin', 'Analyst', 'SQA Engineer')), "
         "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
     )
     connection.execute(
@@ -224,13 +227,19 @@ def get_connection():
                 with _POSTGRES_SCHEMA_LOCK:
                     if _POSTGRES_SCHEMA_URL != DATABASE_URL:
                         initialize_postgresql_schema(connection)
+                        initialize_management_schema(connection)
                         _POSTGRES_SCHEMA_URL = DATABASE_URL
         except Exception:
             connection.close()
             raise
     else:
+        from invitations import migrate_sqlite_roles
+        migrate_sqlite_roles(connection)
         connection.execute("PRAGMA foreign_keys = ON")
         _initialize_database(connection)
+        initialize_management_schema(connection)
+    from invitations import initialize_invitations
+    initialize_invitations(connection)
     return connection
 
 
@@ -263,9 +272,12 @@ def _get_current_user():
             connection = get_connection()
             try:
                 g.current_user = connection.execute(
-                    "SELECT id, name, email, role, created_at FROM users WHERE id = ?",
+                    "SELECT id, name, email, role, created_at, is_active, auth_version FROM users WHERE id = ?",
                     (user_id,),
                 ).fetchone()
+                if g.current_user is not None and (not g.current_user["is_active"] or g.current_user["auth_version"] != session.get("auth_version", 0)):
+                    g.current_user = None
+                    session.clear()
             finally:
                 connection.close()
     return g.current_user
@@ -325,14 +337,18 @@ def api_errors(public_message):
 
 def _get_requirement_detail(connection, requirement_id):
     row = connection.execute(
-        "SELECT * FROM requirements WHERE id = ?", (requirement_id,)
+        "SELECT r.*, u.name AS assigned_reviewer FROM requirements r LEFT JOIN users u ON u.id=r.assigned_reviewer_user_id WHERE r.id = ?", (requirement_id,)
     ).fetchone()
     if row is None:
         return None
 
     requirement = dict(row)
     requirement["needs_confirmation"] = bool(requirement["needs_confirmation"])
-    requirement["analysis_summary"] = json.loads(requirement.get("analysis_summary") or "{}")
+    try:
+        analysis = json.loads(requirement.get("analysis_summary") or "{}")
+        requirement["analysis_summary"] = analysis if isinstance(analysis, dict) else {}
+    except (ValueError, TypeError):
+        requirement["analysis_summary"] = {}
     if requirement.get("reviewed_by_user_id") is not None:
         reviewer = connection.execute(
             "SELECT name FROM users WHERE id = ?",
@@ -451,72 +467,7 @@ def health():
 
 @app.post("/api/auth/register")
 def register():
-    data = request.get_json(silent=True)
-    if not isinstance(data, dict):
-        LOGGER.warning("registration failure normalized_email=<invalid> reason=invalid_payload")
-        return jsonify(error="Send a JSON object with registration details."), 400
-
-    name = data.get("name")
-    email = data.get("email")
-    password = data.get("password")
-    role = data.get("role", "Analyst")
-    normalized_email = email.strip().lower() if isinstance(email, str) else ""
-    safe_email = _masked_email(normalized_email)
-    if not isinstance(name, str) or not 2 <= len(name.strip()) <= 80:
-        LOGGER.warning("registration failure normalized_email=%s reason=invalid_name", safe_email)
-        return jsonify(error="Name must be between 2 and 80 characters."), 400
-    if not isinstance(email, str) or len(email.strip()) > 254 or not EMAIL_PATTERN.fullmatch(email.strip()):
-        LOGGER.warning("registration failure normalized_email=%s reason=invalid_email", safe_email)
-        return jsonify(error="Enter a valid email address."), 400
-    if not isinstance(password, str) or not MIN_PASSWORD_LENGTH <= len(password) <= 128:
-        LOGGER.warning("registration failure normalized_email=%s reason=invalid_password_length", safe_email)
-        return jsonify(error=f"Password must be between {MIN_PASSWORD_LENGTH} and 128 characters."), 400
-    if not isinstance(role, str) or role not in USER_ROLES:
-        LOGGER.warning("registration failure normalized_email=%s reason=invalid_role", safe_email)
-        return jsonify(error="Choose a valid account role."), 400
-    if role == "SQA Reviewer":
-        reviewer_code = data.get("reviewer_code")
-        expected_code = os.getenv("SQA_REGISTRATION_CODE", "")
-        if not expected_code or not isinstance(reviewer_code, str) or not hmac.compare_digest(reviewer_code, expected_code):
-            LOGGER.warning("registration failure normalized_email=%s role=%s reason=invalid_reviewer_code", safe_email, role)
-            return jsonify(error="A valid SQA Reviewer registration code is required."), 403
-
-    LOGGER.info("registration attempt normalized_email=%s role=%s", safe_email, role)
-    connection = get_connection()
-    try:
-        with connection:
-            insert_statement = (
-                "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)"
-            )
-            if connection.dialect == "postgres":
-                insert_statement += " RETURNING id"
-            cursor = connection.execute(
-                insert_statement,
-                (
-                    name.strip(),
-                    normalized_email,
-                    generate_password_hash(password, method="scrypt"),
-                    role,
-                ),
-            )
-            user = connection.execute(
-                "SELECT id, name, email, role, created_at FROM users WHERE id = ?",
-                (_inserted_id(connection, cursor),),
-            ).fetchone()
-    except DATABASE_INTEGRITY_ERRORS:
-        LOGGER.warning("registration failure normalized_email=%s reason=duplicate_email", safe_email)
-        return jsonify(error="An account with that email already exists."), 409
-    except DATABASE_ERRORS as error:
-        LOGGER.error(
-            "registration failure normalized_email=%s reason=database_error error_type=%s",
-            safe_email,
-            type(error).__name__,
-        )
-        return jsonify(error="Unable to create the account. Please try again."), 500
-    finally:
-        connection.close()
-    LOGGER.info("registration success normalized_email=%s user_id=%s role=%s", safe_email, user["id"], role)
-    return jsonify(user=_public_user(user), message="Registration successful. Please log in."), 201
+    return jsonify(error="Account creation requires an invitation from your administrator."), 403
 
 
 @app.post("/api/auth/login")
@@ -537,12 +488,12 @@ def login():
     connection = get_connection()
     try:
         user = connection.execute(
-            "SELECT id, name, email, password_hash, role, created_at FROM users WHERE email = ?",
+            "SELECT id, name, email, password_hash, role, created_at, is_active, auth_version FROM users WHERE lower(email) = ?",
             (normalized_email,),
         ).fetchone()
     finally:
         connection.close()
-    if user is None:
+    if user is None or not user["is_active"]:
         LOGGER.warning("login user_found=false normalized_email=%s", safe_email)
         LOGGER.warning("login password_verification=not_run reason=user_not_found")
         return jsonify(error="Email or password is incorrect."), 401
@@ -555,6 +506,7 @@ def login():
     session.clear()
     session.permanent = True
     session["user_id"] = user["id"]
+    session["auth_version"] = user["auth_version"]
     session["csrf_token"] = secrets.token_urlsafe(32)
     return jsonify(user=_public_user(user), csrf_token=session["csrf_token"])
 
@@ -722,6 +674,7 @@ def create_requirement():
                     if isinstance(item, dict) and isinstance(item.get("text"), str) and item["text"].strip()
                 ],
             )
+            record_activity(connection, g.current_user, "requirement_created", "requirement", requirement_id, f"Created REQ-{requirement_id}")
             requirement = _get_requirement_detail(connection, requirement_id)
     finally:
         connection.close()
@@ -1023,6 +976,7 @@ def _save_review(requirement_id, data, required_fields=()):
                     requirement_id,
                     approved=review_status == "Approved",
                 )
+            record_activity(connection, g.current_user, "review_updated", "requirement", requirement_id, f"Reviewed REQ-{requirement_id}: {data.get('review_status', 'notes updated')}")
             requirement = _get_requirement_detail(connection, requirement_id)
     finally:
         connection.close()
@@ -1085,7 +1039,7 @@ def _update_related_confirmation(connection, requirement_id, approved):
 
 @app.patch("/api/requirements/<int:requirement_id>/review")
 @login_required
-@roles_required("SQA Reviewer")
+@roles_required("SQA Engineer")
 @csrf_required
 def update_review(requirement_id):
     return _save_review(requirement_id, request.get_json(silent=True))
@@ -1093,7 +1047,7 @@ def update_review(requirement_id):
 
 @app.patch("/api/requirements/<int:requirement_id>/review-status")
 @login_required
-@roles_required("SQA Reviewer")
+@roles_required("SQA Engineer")
 @csrf_required
 def update_review_status(requirement_id):
     return _save_review(
@@ -1105,7 +1059,7 @@ def update_review_status(requirement_id):
 
 @app.patch("/api/requirements/<int:requirement_id>/reviewer-notes")
 @login_required
-@roles_required("SQA Reviewer")
+@roles_required("SQA Engineer")
 @csrf_required
 def update_reviewer_notes(requirement_id):
     return _save_review(
@@ -1139,6 +1093,11 @@ def analyze_requirement_endpoint():
         return jsonify(error="Choose a valid priority."), 400
 
     return jsonify(analyze_hybrid(title, description, requirement_type, priority))
+
+
+from invitations import register_invitation_routes
+register_invitation_routes(app, get_connection, roles_required, csrf_required)
+register_management_routes(app, get_connection, roles_required, csrf_required, login_required)
 
 
 if __name__ == "__main__":
