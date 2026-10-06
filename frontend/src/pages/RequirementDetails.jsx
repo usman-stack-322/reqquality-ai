@@ -133,13 +133,6 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
         </div>
       </section>
 
-      <nav className="traceability-path" aria-label="Requirement traceability">
-        <span>Requirement</span><span aria-hidden="true">&rarr;</span>
-        <span>Acceptance Criteria</span><span aria-hidden="true">&rarr;</span>
-        <span>Test Scenarios</span><span aria-hidden="true">&rarr;</span>
-        <span>SQA Review</span>
-      </nav>
-
       {hasSavedAnalysis && (
         <section className="detail-section saved-analysis-section" aria-labelledby="saved-analysis-title">
           <div className="detail-section-heading">
