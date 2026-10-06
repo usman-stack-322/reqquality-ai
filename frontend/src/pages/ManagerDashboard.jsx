@@ -4,7 +4,7 @@ import RequirementDetails from './RequirementDetails';
 import { ActivityList, Badge, Distribution, Empty, Icon, Panel, RequirementTable } from '../components/ManagerUI';
 import '../manager.css';
 
-const NAV = [['dashboard', 'Dashboard'], ['projects', 'Projects'], ['requirements', 'Requirements'], ['reviews', 'Reviews'], ['team', 'Team Management'], ['invitations', 'Invitations'], ['traceability', 'Traceability'], ['reports', 'Reports'], ['activity', 'Activity Logs'], ['settings', 'Settings']];
+const NAV = [['dashboard', 'Dashboard'], ['projects', 'Projects'], ['requirements', 'Requirements'], ['reviews', 'Reviews'], ['team', 'Team Management'], ['permissions', 'Role Permissions'], ['invitations', 'Invitations'], ['traceability', 'Traceability'], ['reports', 'Reports'], ['activity', 'Activity Logs'], ['settings', 'Settings']];
 const FILTER_KEYS = ['project', 'type', 'risk', 'review', 'reviewer', 'from', 'to', 'q', 'quality', 'page'];
 const QUALITY = [['ambiguity', 'Ambiguity issues'], ['missing_information', 'Missing information'], ['testability', 'Testability issues'], ['conflicts', 'Conflict / inconsistency issues'], ['missing_criteria', 'Missing acceptance criteria'], ['missing_tests', 'Missing test scenarios'], ['high_risk', 'High / critical risk'], ['refinement', 'Needs refinement']];
 
@@ -21,6 +21,21 @@ async function api(path, options = {}) {
   try { data = await response.json(); } catch { throw new Error('The server returned an invalid response. Please try again.'); }
   if (!response.ok) throw new Error(data.error || 'Unable to complete this request.');
   return data;
+}
+
+function RolePermissions({ csrfToken }) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { let active = true; api('/api/admin/roles').then((result) => { if (active) setData(result); }).catch((err) => { if (active) setError(err.message); }); return () => { active = false; }; }, []);
+  async function save(role) {
+    setBusy(true); setError(''); setNotice('');
+    try { const result = await api(`/api/admin/roles/${encodeURIComponent(role)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken }, body: JSON.stringify(data.roles[role]) }); setNotice(result.message); }
+    catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  }
+  return <Panel title="Role Permissions" subtitle="Changes apply immediately to all users in the selected role. Admin access is fixed.">{error && <p className="error" role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}{!data && !error && <p role="status">Loading permissions...</p>}{data && Object.entries(data.roles).map(([role, permissions]) => <fieldset key={role} disabled={busy}><legend>{role}</legend>{data.permissions.map((permission) => <label key={permission} style={{ display: 'block', margin: '12px 0' }}><input type="checkbox" checked={permissions[permission]} onChange={(event) => setData((previous) => ({ ...previous, roles: { ...previous.roles, [role]: { ...previous.roles[role], [permission]: event.target.checked } } }))} /> {permission.replaceAll('_', ' ')}</label>)}<button onClick={() => save(role)} disabled={busy}>Save {role} permissions</button></fieldset>)}</Panel>;
 }
 
 function Filters({ values, reviewers, onChange, onReset }) {
@@ -55,7 +70,7 @@ function AssignmentDialog({ row, reviewers, csrfToken, onClose, onSaved }) {
 
 function TeamTable({ members, onChange, busy }) {
   if (!members.length) return <Empty>No team members have joined yet.</Empty>;
-  return <div className="qm-table-scroll"><table className="qm-table"><thead><tr><th>Team member</th><th>Role</th><th>Status</th><th>Open assignments</th><th>Manage access</th></tr></thead><tbody>{members.map((member) => <tr key={member.id}><td><strong>{member.name}</strong><small>{member.email}</small></td><td>{member.role === 'admin' ? 'QA Manager' : <select aria-label={`Role for ${member.name}`} value={member.role} disabled={busy || !onChange} onChange={(event) => onChange(member.id, { role: event.target.value })}><option>Analyst</option><option>SQA Engineer</option></select>}</td><td><Badge value={member.status} /></td><td>{member.workload}</td><td>{member.role === 'admin' ? <small>Organization administrator</small> : onChange ? <button className="qm-secondary" disabled={busy} onClick={() => onChange(member.id, { is_active: member.status !== 'Active' })}>{member.status === 'Active' ? 'Disable account' : 'Enable account'}</button> : <a href="#admin/team">Manage</a>}</td></tr>)}</tbody></table></div>;
+  return <div className="qm-table-scroll"><table className="qm-table"><thead><tr><th>Team member</th><th>Role</th><th>Status</th><th>Open assignments</th><th>Manage access</th></tr></thead><tbody>{members.map((member) => <tr key={member.id}><td><strong>{member.name}</strong><small>{member.email}</small></td><td>{member.role === 'admin' ? 'QA Manager' : <select aria-label={`Role for ${member.name}`} value={member.role} disabled={busy || !onChange} onChange={(event) => onChange(member.id, { role: event.target.value })}><option>Analyst</option><option>SQA Engineer</option><option>Manager</option></select>}</td><td><Badge value={member.status} /></td><td>{member.workload}</td><td>{member.role === 'admin' ? <small>Organization administrator</small> : onChange ? <button className="qm-secondary" disabled={busy} onClick={() => onChange(member.id, { is_active: member.status !== 'Active' })}>{member.status === 'Active' ? 'Disable account' : 'Enable account'}</button> : <a href="#admin/team">Manage</a>}</td></tr>)}</tbody></table></div>;
 }
 
 function Workload({ members, onSelect }) {
@@ -186,6 +201,7 @@ export default function ManagerDashboard({ user, csrfToken, onLogout, logoutErro
         {route.section === 'projects' && <Panel title="Project Overview" subtitle="This installation currently stores one shared project"><div className="qm-project-card"><span className="qm-project-icon"><Icon name="projects" size={28} /></span><div><h3>ReqQuality AI</h3><p>{data.summary.total} requirements · {data.summary.analyzed} analyzed</p></div><div className="qm-project-stats"><span><strong>{data.summary.pending_reviews}</strong>Pending</span><span><strong>{data.summary.approved}</strong>Approved</span><span><strong>{data.summary.high_risk}</strong>High risk</span></div><button onClick={() => navigate('requirements', { project: 'current' })}>Open project</button></div><div className="qm-track qm-trace-track"><span style={{ width: `${data.summary.total ? data.summary.approved * 100 / data.summary.total : 0}%` }} /></div><p className="qm-footnote">Review progress: {data.summary.total ? Math.round(data.summary.approved * 100 / data.summary.total) : 0}% approved. This workspace contains one shared project.</p></Panel>}
         {route.section === 'reports' && <Panel title="Quality Reports" subtitle="Exports include all requirements in the current shared project"><div className="qm-report-grid"><article><Icon name="reports" size={30} /><h3>Project quality report</h3><p>Review progress, risk, scenarios, and requirement traceability.</p><a className="button" href="/api/reports/project.pdf" download>Download PDF</a></article><article><Icon name="requirements" size={30} /><h3>Requirements register</h3><p>Export the existing requirement fields for further analysis.</p><a className="button" href="/api/exports/requirements.csv" download>Download CSV</a></article></div></Panel>}
         {route.section === 'activity' && <Panel title="Activity Logs" subtitle="Latest 50 recorded events · logging begins with this dashboard upgrade"><ActivityList items={data.activity} /></Panel>}
+        {route.section === 'permissions' && <RolePermissions csrfToken={csrfToken} />}
         {route.section === 'settings' && <Settings key={params.get('tab') || 'organization'} organization={data.organization} user={user} csrfToken={csrfToken} onSaved={saved} onSignedOut={onSignedOut} tab={params.get('tab')} />}
       </>}
       <footer className="qm-footer">ReqQuality AI <span>AI-Powered Requirements &amp; Software Quality Engineering</span></footer>

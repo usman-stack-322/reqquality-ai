@@ -79,7 +79,7 @@ def _initialize_database(connection):
         "CREATE TABLE IF NOT EXISTS users "
         "(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, "
         "email TEXT NOT NULL UNIQUE COLLATE NOCASE, password_hash TEXT NOT NULL, "
-        "role TEXT NOT NULL CHECK(role IN ('admin', 'Analyst', 'SQA Engineer')), "
+        "role TEXT NOT NULL CHECK(role IN ('admin', 'Manager', 'Analyst', 'SQA Engineer')), "
         "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)"
     )
     connection.execute(
@@ -254,7 +254,16 @@ def _inserted_id(connection, cursor):
 
 
 def _public_user(user):
+    connection = get_connection()
+    try:
+        permissions = [row['permission'] for row in connection.execute('SELECT permission FROM role_permissions WHERE role=? AND enabled=1', (user['role'],))]
+    finally:
+        connection.close()
+    if user['role'] == 'admin':
+        from admin_dashboard import PERMISSIONS
+        permissions = list(PERMISSIONS)
     return {
+        'permissions': permissions,
         "id": user["id"],
         "name": user["name"],
         "email": user["email"],
@@ -300,7 +309,34 @@ def roles_required(*roles):
             if user is None:
                 return jsonify(error="Please log in to continue."), 401
             g.current_user = user
-            if user["role"] not in roles:
+            allowed = user['role'] in roles
+            if user['role'] != 'admin':
+                from admin_dashboard import DEFAULT_PERMISSIONS
+                permission = None
+                if roles == ('admin',):
+                    allowed = user['role'] == 'Manager'
+                    if '/roles' in request.path:
+                        permission = 'manage_permissions'
+                    elif '/invitations' in request.path:
+                        permission = 'manage_invitations'
+                    elif '/users/' in request.path:
+                        permission = 'manage_users'
+                    elif request.path.endswith('/reviewer'):
+                        permission = 'assign_reviewers'
+                    elif request.path.endswith('/settings'):
+                        permission = 'manage_settings'
+                elif roles == ('Analyst',):
+                    permission = 'create_requirements'
+                elif roles == ('SQA Engineer',):
+                    permission = 'review_requirements'
+                if permission:
+                    connection = get_connection()
+                    try:
+                        row = connection.execute('SELECT enabled FROM role_permissions WHERE role=? AND permission=?', (user['role'], permission)).fetchone()
+                        allowed = bool(row and row['enabled'])
+                    finally:
+                        connection.close()
+            if not allowed:
                 return jsonify(error="Your account does not have permission for this action."), 403
             return view(*args, **kwargs)
         return wrapped

@@ -33,6 +33,33 @@ class ManagerTests(unittest.TestCase):
             self.sql("INSERT INTO users(name,email,password_hash,role) VALUES(?,?,?,?)", (name, name.replace(' ', '').lower()+'@example.com', self.password_hash, role))
         self.admin = self.client(1)
 
+    def test_manager_promotion_and_permission_revocation(self):
+        old_session = self.client(2)
+        response = self.admin.patch('/api/admin/users/2', json={'role': 'Manager'}, headers=HEADERS)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(old_session.get('/api/auth/me').get_json()['authenticated'])
+        promoted = self.client()
+        with promoted.session_transaction() as session:
+            session.update(user_id=2, csrf_token='test-csrf', auth_version=1)
+        self.assertEqual(promoted.get('/api/admin/dashboard').status_code, 200)
+        self.assertEqual(promoted.get('/api/admin/roles').status_code, 200)
+        self.assertEqual(promoted.patch('/api/admin/users/1', json={'role': 'Analyst'}, headers=HEADERS).status_code, 403)
+        self.assertEqual(promoted.patch('/api/admin/users/2', json={'role': 'Analyst'}, headers=HEADERS).status_code, 403)
+        with patch.object(invitations, 'send_invitation'):
+            response = promoted.post('/api/admin/invitations', json={'name': 'New Manager', 'email': 'newmanager@example.com', 'role': 'Manager'}, headers=HEADERS)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(self.admin.patch('/api/admin/roles/Manager', json={'manage_invitations': False}, headers=HEADERS).status_code, 200)
+        self.assertEqual(promoted.get('/api/admin/invitations').status_code, 403)
+        self.assertEqual(self.admin.get('/api/admin/invitations').status_code, 200)
+        self.assertEqual(promoted.patch('/api/admin/roles/Manager', json={'manage_permissions': False}, headers=HEADERS).status_code, 200)
+        self.assertEqual(promoted.get('/api/admin/roles').status_code, 403)
+
+    def test_role_permission_validation_and_csrf(self):
+        self.assertEqual(self.admin.patch('/api/admin/roles/Manager', json={'manage_users': False}).status_code, 403)
+        for role, data in [('admin', {'manage_users': False}), ('Manager', {'unknown': True}), ('Manager', {'manage_users': 'false'})]:
+            self.assertEqual(self.admin.patch('/api/admin/roles/' + role, json=data, headers=HEADERS).status_code, 400)
+        self.assertEqual(self.client(2).get('/api/admin/roles').status_code, 403)
+
     def tearDown(self):
         self.clock.stop()
         self.settings.stop()

@@ -189,3 +189,22 @@ A transactional mail outbox, bounce tracking, pagination, and broader IP-based A
 throttling are useful future improvements. Current SMTP delivery occurs inside the
 invitation transaction: a database commit failure after SMTP acceptance can result
 in an email link that does not work. An outbox would address that failure window.
+
+## Manager and role permissions
+
+Team Management now supports promoting registered members to Manager. Invitations
+support Manager, Analyst and SQA Engineer. Managers open the management dashboard
+and initially can manage members, invitations, role permissions, reviewer assignments
+and organization settings. Admin access remains fixed; Admin accounts and your own
+role/active status cannot be changed through team management.
+
+Use Role Permissions in the sidebar to change permissions for Manager, Analyst and
+SQA Engineer. Changes are enforced by the backend on the next request, including
+existing sessions. User role/active changes invalidate existing sessions. Permission
+changes are recorded in activity logs. Role permission APIs are GET /api/admin/roles
+and PATCH /api/admin/roles/<role>, with authentication and CSRF for mutations.
+
+Existing SQLite users and invitations migrate while preserving all columns and
+indexes. PostgreSQL role constraints are updated on schema initialization. Restart
+the backend and reload the frontend after updating. Back up deployment databases
+before schema migration. Live PostgreSQL and SMTP delivery require separate checks.

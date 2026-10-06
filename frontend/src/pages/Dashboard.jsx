@@ -133,7 +133,7 @@ export default function Dashboard({ user }) {
           <h1 id="dashboard-title">SQA Dashboard</h1>
         </div>
         <div className="dashboard-actions">
-          {user?.role === 'Analyst' && <a className="button" href="#requirements">Add requirement</a>}
+          {user?.permissions?.includes('create_requirements') && <a className="button" href="#requirements">Add requirement</a>}
           <a className="button export-button" href="/api/reports/project.pdf" download>Export Project PDF</a>
           <a className="button export-button" href="/api/exports/requirements.csv" download>Export CSV</a>
         </div>
@@ -210,7 +210,7 @@ export default function Dashboard({ user }) {
                   <RequirementRow requirement={requirement} key={requirement.id} />
                 ))}
               </div>
-            ) : <p className="dashboard-empty">No saved requirements yet.{user?.role === 'Analyst' && <> <a href="#requirements">Add a requirement</a> to begin.</>}</p>}
+            ) : <p className="dashboard-empty">No saved requirements yet.{user?.permissions?.includes('create_requirements') && <> <a href="#requirements">Add a requirement</a> to begin.</>}</p>}
           </section>
 
           <section className="dashboard-section" aria-labelledby="all-requirements-title">

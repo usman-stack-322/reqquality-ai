@@ -34,7 +34,15 @@ def parse_time(value):
         return None
 
 
+PERMISSIONS = ('manage_users', 'manage_invitations', 'manage_permissions', 'assign_reviewers', 'manage_settings', 'create_requirements', 'review_requirements')
+DEFAULT_PERMISSIONS = {'Manager': PERMISSIONS[:5], 'Analyst': ('create_requirements',), 'SQA Engineer': ('review_requirements',)}
+
+
 def initialize_management_schema(connection):
+    connection.execute('CREATE TABLE IF NOT EXISTS role_permissions (role TEXT NOT NULL, permission TEXT NOT NULL, enabled INTEGER NOT NULL, PRIMARY KEY(role,permission))')
+    for role, defaults in DEFAULT_PERMISSIONS.items():
+        for permission in PERMISSIONS:
+            connection.execute('INSERT INTO role_permissions(role,permission,enabled) VALUES(?,?,?) ON CONFLICT(role,permission) DO NOTHING', (role, permission, int(permission in defaults)))
     additions = {
         'users': {'is_active': 'INTEGER NOT NULL DEFAULT 1', 'auth_version': 'INTEGER NOT NULL DEFAULT 0'},
         'requirements': {'assigned_reviewer_user_id': 'BIGINT REFERENCES users(id)'},
@@ -296,6 +304,25 @@ def register_management_routes(app, get_connection, roles_required, csrf_require
                     connection.close()
         return wrapped
 
+    @app.get('/api/admin/roles')
+    @roles_required('admin')
+    @database_action
+    def get_roles(connection):
+        return jsonify(permissions=list(PERMISSIONS), roles={role: {row['permission']: bool(row['enabled']) for row in connection.execute('SELECT permission,enabled FROM role_permissions WHERE role=?', (role,))} for role in DEFAULT_PERMISSIONS})
+
+    @app.patch('/api/admin/roles/<role>')
+    @roles_required('admin')
+    @csrf_required
+    @database_action
+    def update_role(connection, role):
+        data = request.get_json(silent=True)
+        if role not in DEFAULT_PERMISSIONS or not isinstance(data, dict) or not data or any(key not in PERMISSIONS or type(value) is not bool for key, value in data.items()):
+            raise DashboardError('Provide a supported role and boolean permissions.')
+        for permission, enabled in data.items():
+            connection.execute('UPDATE role_permissions SET enabled=? WHERE role=? AND permission=?', (int(enabled), role, permission))
+        record_activity(connection, g.current_user, 'permissions_updated', 'role', None, f'Updated permissions for {role}')
+        return jsonify(message='Role permissions saved.')
+
     @app.get('/api/admin/dashboard')
     @roles_required('admin')
     @database_action
@@ -351,9 +378,11 @@ def register_management_routes(app, get_connection, roles_required, csrf_require
             raise DashboardError('Team member not found.', 404)
         if member['role'] == 'admin':
             raise DashboardError('QA Manager accounts cannot be changed from team management.', 403)
+        if user_id == g.current_user['id']:
+            raise DashboardError('You cannot change your own role or active status.', 403)
         role, active = data.get('role', member['role']), data.get('is_active', bool(member['is_active']))
-        if role not in ('Analyst', 'SQA Engineer') or type(active) is not bool:
-            raise DashboardError('Choose Analyst or SQA Engineer and a valid active status.')
+        if role not in ('Manager', 'Analyst', 'SQA Engineer') or type(active) is not bool:
+            raise DashboardError('Choose Manager, Analyst or SQA Engineer and a valid active status.')
         if role != member['role'] or active != bool(member['is_active']):
             connection.execute('UPDATE users SET role=?,is_active=?,auth_version=auth_version+1 WHERE id=?', (role, int(active), user_id))
             if role != 'SQA Engineer' or not active:

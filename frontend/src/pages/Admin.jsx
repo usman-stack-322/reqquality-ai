@@ -40,22 +40,22 @@ export default function Admin({ csrfToken, initialInvite = false, onChanged }) {
     if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('Enter a valid email address.'); return;
     }
-    if (!['SQA Engineer', 'Analyst'].includes(form.role)) {
-      setError('Choose SQA Engineer or Analyst.'); return;
+    if (!['Manager', 'SQA Engineer', 'Analyst'].includes(form.role)) {
+      setError('Choose Manager, SQA Engineer or Analyst.'); return;
     }
     act('/api/admin/invitations', { name, email, role: form.role });
   }
   const date = (value) => value ? new Date(value).toLocaleString() : '—';
   return <section className="card invitation-panel">
     <p className="eyebrow">ADMIN PANEL</p><h1>Invitations / User Management</h1>
-    <p>Invite Analysts and SQA Engineers. Links expire after 24 hours.</p>
+    <p>Invite Managers, Analysts and SQA Engineers. Links expire after 24 hours.</p>
     {error && <p className="error" role="alert">{error}</p>}
     {notice && <p className="success" role="status">{notice}</p>}
     <button className="requirement-save-button" disabled={busy} onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : 'Invite User'}</button>
     {showForm && <form className="auth-form invitation-form" onSubmit={submitInvitation}>
       <div className="requirement-field"><label htmlFor="invite-name">Full Name</label><input id="invite-name" autoComplete="name" required minLength={2} maxLength={80} disabled={busy} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
       <div className="requirement-field"><label htmlFor="invite-email">Email Address</label><input id="invite-email" type="email" autoComplete="email" required maxLength={254} disabled={busy} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-      <div className="requirement-field"><label htmlFor="invite-role">Role</label><select id="invite-role" disabled={busy} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}><option>SQA Engineer</option><option>Analyst</option></select></div>
+      <div className="requirement-field"><label htmlFor="invite-role">Role</label><select id="invite-role" disabled={busy} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}><option>SQA Engineer</option><option>Manager</option><option>Analyst</option></select></div>
       <button className="requirement-save-button" disabled={busy}>{busy ? 'Sending...' : 'Generate Invitation'}</button>
     </form>}
     {loading ? <p role="status">Loading invitations...</p> : <div className="invitation-table-wrap"><table className="invitation-table"><caption>Existing invitations</caption><thead><tr>{['Name', 'Email', 'Role', 'Status', 'Created', 'Expires', 'Accepted', 'Email delivery', 'Actions'].map((heading) => <th key={heading} scope="col">{heading}</th>)}</tr></thead><tbody>

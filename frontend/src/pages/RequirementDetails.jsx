@@ -94,7 +94,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
   if (isLoading) return <p className="requirements-empty">Loading requirement...</p>;
   if (error && !requirement) return <p className="error" role="alert">{error} <a href={managerView ? '#admin/requirements' : '#dashboard'}>Return to requirements</a></p>;
   if (!requirement) return null;
-  const canReview = user?.role === 'SQA Engineer';
+  const canReview = user?.permissions?.includes('review_requirements');
   const reviewedAt = requirement.reviewed_at
     ? new Date(requirement.reviewed_at).toLocaleString()
     : 'Not reviewed yet';
