@@ -1,3 +1,4 @@
+import PdfExportButton from '../components/PdfExportButton';
 import React, { useEffect, useState } from 'react';
 import SourceBadges from '../components/SourceBadges';
 
@@ -107,7 +108,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
       <div className="detail-actions">
         <a className="back-link" href={managerView ? '#admin/requirements' : '#dashboard'}>&larr; All requirements</a>
         {managerView && <button onClick={() => onAssign(requirement)}>Assign / Reassign Reviewer</button>}
-        <a className="button export-button" href={`/api/requirements/${requirement.id}/report.pdf`} download>Export PDF</a>
+        <PdfExportButton url={`/api/requirements/${requirement.id}/report.pdf`} filename={`requirement-${requirement.id}.pdf`} />
       </div>
       <section className="requirement-detail-heading">
         <p className="eyebrow">REQUIREMENT {requirement.id}</p>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PdfExportButton from '../components/PdfExportButton';
 
 const REVIEW_DISTRIBUTION = [
   ['Pending', 'pending_count', 'pending'],
@@ -77,6 +78,7 @@ function RequirementRow({ requirement, attention = false }) {
 }
 
 export default function Dashboard({ user }) {
+  const isEngineer = user?.role === 'SQA Engineer';
   const [dashboard, setDashboard] = useState(null);
   const [requirements, setRequirements] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -125,16 +127,23 @@ export default function Dashboard({ user }) {
     loadRequirements();
   }, []);
 
+  const [search, setSearch] = useState('');
+  const [reviewFilter, setReviewFilter] = useState('');
+  const visibleRequirements = requirements.filter(requirement =>
+    (!reviewFilter || requirement.review_status === reviewFilter)
+    && requirement.title.toLowerCase().includes(search.trim().toLowerCase()));
+
   return (
-    <section className="requirements-dashboard" aria-labelledby="dashboard-title">
+    <section className={`requirements-dashboard${isEngineer ? ' engineer-dashboard' : ''}`} aria-labelledby="dashboard-title">
       <div className="dashboard-heading">
         <div>
           <p className="eyebrow">QUALITY OVERVIEW</p>
-          <h1 id="dashboard-title">SQA Dashboard</h1>
+          <h1 id="dashboard-title">{isEngineer ? 'SQA Engineer Dashboard' : 'SQA Dashboard'}</h1>
+          {isEngineer && <p className="dashboard-intro">Review requirement quality, prioritize risks, and track test coverage.</p>}
         </div>
         <div className="dashboard-actions">
           {user?.permissions?.includes('create_requirements') && <a className="button" href="#requirements">Add requirement</a>}
-          <a className="button export-button" href="/api/reports/project.pdf" download>Export Project PDF</a>
+          <PdfExportButton url="/api/reports/project.pdf" filename="project-quality-report.pdf">Export Project PDF</PdfExportButton>
           <a className="button export-button" href="/api/exports/requirements.csv" download>Export CSV</a>
         </div>
       </div>
@@ -162,7 +171,7 @@ export default function Dashboard({ user }) {
             <MetricCard label="Traceability Coverage" value={`${dashboard.traceability_coverage_percent}%`} detail={`${dashboard.traceable_requirement_count} of ${dashboard.total_requirements} requirements`} tone="metric-coverage" />
           </section>
 
-          <section className="analytics-section" aria-labelledby="distribution-title">
+          {!isEngineer && <section className="analytics-section" aria-labelledby="distribution-title">
             <div className="dashboard-section-heading">
               <div><p className="eyebrow">DISTRIBUTION</p><h2 id="distribution-title">Portfolio composition</h2></div>
               <span>{dashboard.total_requirements} requirements</span>
@@ -172,7 +181,7 @@ export default function Dashboard({ user }) {
               <Distribution title="Risk Level" items={RISK_DISTRIBUTION} data={dashboard} total={dashboard.total_requirements} />
               <Distribution title="Requirement Type" items={TYPE_DISTRIBUTION} data={dashboard} total={dashboard.total_requirements} />
             </div>
-          </section>
+          </section>}
 
           <section className="coverage-section" aria-labelledby="coverage-title">
             <div className="coverage-heading">
@@ -187,7 +196,7 @@ export default function Dashboard({ user }) {
 
           <section className="dashboard-section" aria-labelledby="attention-title">
             <div className="dashboard-section-heading">
-              <div><p className="eyebrow">PRIORITY QUEUE</p><h2 id="attention-title">High Attention Requirements</h2></div>
+              <div><p className="eyebrow">PRIORITY QUEUE</p><h2 id="attention-title">{isEngineer ? 'Review priorities' : 'High Attention Requirements'}</h2></div>
               <span>{dashboard.high_attention_requirements.length} items</span>
             </div>
             {dashboard.high_attention_requirements.length ? (
@@ -216,15 +225,19 @@ export default function Dashboard({ user }) {
           <section className="dashboard-section" aria-labelledby="all-requirements-title">
             <div className="dashboard-section-heading">
               <div><p className="eyebrow">REGISTER</p><h2 id="all-requirements-title">All Requirements</h2></div>
-              <span>{requirements.length} items</span>
+              <span>{visibleRequirements.length} of {requirements.length} items</span>
             </div>
-            {requirements.length ? (
+            <div className="dashboard-filters">
+              <label>Search requirements<input type="search" placeholder="Search by title" value={search} onChange={event => setSearch(event.target.value)} /></label>
+              <label>Review status<select value={reviewFilter} onChange={event => setReviewFilter(event.target.value)}><option value="">All statuses</option>{REVIEW_DISTRIBUTION.map(([label]) => <option key={label}>{label}</option>)}</select></label>
+            </div>
+            {visibleRequirements.length ? (
               <div className="dashboard-requirement-list">
-                {requirements.map((requirement) => (
+                {visibleRequirements.map((requirement) => (
                   <RequirementRow requirement={requirement} key={requirement.id} />
                 ))}
               </div>
-            ) : <p className="dashboard-empty">No saved requirements yet.</p>}
+            ) : <p className="dashboard-empty">{requirements.length ? 'No requirements match these filters.' : 'No saved requirements yet.'}</p>}
           </section>
         </>
       )}
