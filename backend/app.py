@@ -1132,6 +1132,8 @@ def analyze_requirement_endpoint():
 
 
 from invitations import register_invitation_routes
+from password_reset import register_password_reset_routes
+register_password_reset_routes(app, get_connection)
 register_invitation_routes(app, get_connection, roles_required, csrf_required)
 register_management_routes(app, get_connection, roles_required, csrf_required, login_required)
 

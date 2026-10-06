@@ -3,3 +3,14 @@ WARNING: This is a development server. Do not use it in a production deployment.
 Press CTRL+C to quit
 127.0.0.1 - - [06/Oct/2026 10:27:08] "GET /api/health HTTP/1.1" 200 -
 127.0.0.1 - - [06/Oct/2026 10:27:08] "GET /api/admin/roles HTTP/1.1" 401 -
+127.0.0.1 - - [06/Oct/2026 10:27:43] "GET /api/auth/me HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2026 10:27:46] "GET /api/auth/me HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2026 10:27:47] "GET /api/admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2026 10:27:48] "GET /api/admin/dashboard HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2026 10:27:51] "GET /api/admin/roles HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2026 10:27:54] "GET /api/admin/roles HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2026 10:32:44] "PATCH /api/admin/roles/Analyst HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2026 10:32:53] "PATCH /api/admin/roles/SQA%20Engineer HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2026 10:33:05] "GET /api/admin/requirements?review=pending-reviews HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2026 10:33:06] "GET /api/admin/dashboard?review=pending-reviews HTTP/1.1" 200 -
+127.0.0.1 - - [06/Oct/2026 10:33:08] "GET /api/admin/dashboard HTTP/1.1" 200 -

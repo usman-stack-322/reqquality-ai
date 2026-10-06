@@ -172,9 +172,13 @@ def register_invitation_routes(app, get_connection, roles_required, csrf_require
     def deliver(connection, row, token):
         try:
             send_invitation(row, token)
-        except Exception:
+        except Exception as error:
             # Never log SMTP exceptions: their text can contain message bodies/tokens.
-            app.logger.warning('Invitation email delivery failed invitation_id=%s', row['id'])
+            # Exception class and numeric SMTP status are safe; never include
+            # exception messages, credentials, recipient addresses or tokens.
+            smtp_code = getattr(error, 'smtp_code', None)
+            app.logger.warning('Invitation email delivery failed invitation_id=%s error_type=%s smtp_code=%s',
+                               row['id'], type(error).__name__, smtp_code if isinstance(smtp_code, int) else None)
             connection.execute("UPDATE user_invitations SET delivery_status = 'failed' WHERE id = ?", (row['id'],))
             record_activity(connection, g.current_user, 'invitation_delivery_failed', 'invitation', row['id'], 'Invitation saved; email delivery failed')
             return jsonify(error='Invitation saved, but email delivery failed. Check email configuration and resend.', invitation_id=row['id']), 502

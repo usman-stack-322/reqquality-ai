@@ -7,9 +7,12 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ManagerDashboard from './pages/ManagerDashboard';
 import AcceptInvitation from './pages/AcceptInvitation';
+import PasswordRecovery from './pages/PasswordRecovery';
 
 function currentPage() {
   const hash = window.location.hash.slice(1);
+  if (hash.startsWith('reset-password?')) return 'reset-password';
+  if (['forgot-password', 'reset-password'].includes(hash)) return hash;
   if (hash === 'accept-invitation' || (window.location.pathname === '/accept-invitation' && new URLSearchParams(window.location.search).has('token'))) return 'accept-invitation';
   if (window.location.pathname === '/admin' && !hash) return 'admin';
   if (/^admin(?:\/|\?|$)/.test(hash)) return 'admin';
@@ -73,7 +76,7 @@ export default function App() {
 
   useEffect(() => {
     if (isCheckingSession) return;
-    if (page === 'accept-invitation') return;
+    if (['accept-invitation', 'forgot-password', 'reset-password'].includes(page)) return;
     if (!user && !['home', 'login', 'register'].includes(page)) {
       window.location.hash = 'login';
     } else if (user && ['home', 'login', 'register'].includes(page)) {
@@ -109,6 +112,12 @@ export default function App() {
     );
   }
 
+  if (['forgot-password', 'reset-password'].includes(page)) {
+    return <div className="app-shell"><PasswordRecovery key={page} reset={page === 'reset-password'} onReset={(message) => {
+      setUser(null); setCsrfToken(''); setLoginNotice(message);
+      window.history.replaceState(null, '', '/#login'); setPage('login');
+    }} /></div>;
+  }
   if (page === 'accept-invitation') {
     return <div className="app-shell"><AcceptInvitation onRegistered={(email) => {
       setUser(null);
