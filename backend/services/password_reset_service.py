@@ -6,7 +6,7 @@ import ssl
 from datetime import timedelta
 from email.message import EmailMessage
 from urllib.parse import urlsplit
-from flask import session
+from flask import g, session
 from werkzeug.security import generate_password_hash
 from invitations import EMAIL, digest, now, stamp
 from database import DATABASE_ERRORS
@@ -86,7 +86,11 @@ def create_services(app, get_connection):
                 cursor = connection.execute('UPDATE users SET password_hash=?,auth_version=auth_version+1\n                    WHERE is_active=1 AND id IN (SELECT user_id FROM password_resets\n                    WHERE token_hash=? AND expires_at>? AND auth_version=users.auth_version)', (password_hash, digest(token), stamp(now())))
                 if not cursor.rowcount:
                     return (response_payload(error='This reset link is invalid or expired. Request a new link.'), 400)
+                from services.token_service import revoke_user_tokens
+                # The reset above increments auth_version; revoke that account's stored refresh credentials.
+                connection.execute('UPDATE auth_refresh_tokens SET revoked_at=? WHERE user_id IN (SELECT user_id FROM password_resets WHERE token_hash=?) AND revoked_at IS NULL', (int(now().timestamp()), digest(token)))
                 connection.execute('DELETE FROM password_resets WHERE token_hash=?', (digest(token),))
+            g.clear_auth_cookies = True
             session.clear()
             return response_payload(message='Password reset successfully. Sign in with your new password.')
         except DATABASE_ERRORS:

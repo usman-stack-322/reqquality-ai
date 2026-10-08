@@ -39,24 +39,30 @@ def _initialize_database(connection):
 
 def get_connection():
     import app as config
+    from invitations import initialize_invitations, migrate_sqlite_roles
+    from services.token_service import initialize_token_schema
+
     connection = connect_database(config.DATABASE_URL, config.DATABASE)
-    if connection.dialect == 'postgres':
-        try:
+    try:
+        if connection.dialect == 'postgres':
+            # All schema work belongs to initialization, never the warm request path.
+            # Publish the marker only after every migration succeeds.
             if config._POSTGRES_SCHEMA_URL != config.DATABASE_URL:
                 with config._POSTGRES_SCHEMA_LOCK:
                     if config._POSTGRES_SCHEMA_URL != config.DATABASE_URL:
                         initialize_postgresql_schema(connection)
                         initialize_management_schema(connection)
+                        initialize_invitations(connection)
+                        initialize_token_schema(connection)
                         config._POSTGRES_SCHEMA_URL = config.DATABASE_URL
-        except Exception:
-            connection.close()
-            raise
-    else:
-        from invitations import migrate_sqlite_roles
-        migrate_sqlite_roles(connection)
-        connection.execute('PRAGMA foreign_keys = ON')
-        _initialize_database(connection)
-        initialize_management_schema(connection)
-    from invitations import initialize_invitations
-    initialize_invitations(connection)
-    return connection
+        else:
+            migrate_sqlite_roles(connection)
+            connection.execute('PRAGMA foreign_keys = ON')
+            _initialize_database(connection)
+            initialize_management_schema(connection)
+            initialize_invitations(connection)
+            initialize_token_schema(connection)
+        return connection
+    except Exception:
+        connection.close()
+        raise

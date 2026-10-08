@@ -7,27 +7,37 @@ def get_connection():
     return connect()
 
 def _get_current_user():
+    from services.token_service import read_access_claims
+    import time
     if not hasattr(g, 'current_user'):
-        user_id = session.get('user_id')
-        if not user_id:
-            g.current_user = None
-        else:
+        g.current_user = None
+        claims = read_access_claims()
+        if claims:
             connection = get_connection()
             try:
-                g.current_user = connection.execute('SELECT id, name, email, role, created_at, is_active, auth_version FROM users WHERE id = ?', (user_id,)).fetchone()
-                if g.current_user is not None and (not g.current_user['is_active'] or g.current_user['auth_version'] != session.get('auth_version', 0)):
-                    g.current_user = None
-                    session.clear()
+                with connection.autocommit_reads():
+                    user = connection.execute(
+                        'SELECT u.id,u.name,u.email,u.role,u.created_at,u.is_active,u.auth_version '
+                        'FROM users u WHERE u.id=? AND EXISTS ('
+                        'SELECT 1 FROM auth_refresh_tokens r WHERE r.user_id=u.id AND r.family_id=? '
+                        'AND r.revoked_at IS NULL AND r.expires_at>?)',
+                        (int(claims['sub']), claims['sid'], int(time.time())),
+                    ).fetchone()
+                if user and user['is_active'] and user['auth_version'] == claims['ver']:
+                    g.current_user = user
+                else:
+                    g.clear_auth_cookies = True
             finally:
                 connection.close()
     return g.current_user
+
 
 def login_required(view):
 
     @wraps(view)
     def wrapped(*args, **kwargs):
         if _get_current_user() is None:
-            return (jsonify(error='Please log in to continue.'), 401)
+            return (jsonify(error='Please log in to continue.', code=getattr(g, 'access_error', 'unauthenticated')), 401)
         return view(*args, **kwargs)
     return wrapped
 
@@ -39,7 +49,7 @@ def roles_required(*roles):
         def wrapped(*args, **kwargs):
             user = _get_current_user()
             if user is None:
-                return (jsonify(error='Please log in to continue.'), 401)
+                return (jsonify(error='Please log in to continue.', code=getattr(g, 'access_error', 'unauthenticated')), 401)
             g.current_user = user
             allowed = user['role'] in roles
             if user['role'] != 'admin':
@@ -75,15 +85,15 @@ def roles_required(*roles):
     return decorator
 
 def csrf_required(view):
-
     @wraps(view)
     def wrapped(*args, **kwargs):
-        expected = session.get('csrf_token', '')
-        supplied = request.headers.get('X-CSRF-Token', '')
-        if not expected or not supplied or (not hmac.compare_digest(expected, supplied)):
-            return (jsonify(error='CSRF validation failed. Refresh your session and try again.'), 403)
+        from services.token_service import read_access_claims, check_csrf
+        claims = read_access_claims()
+        if not claims or not check_csrf(claims['csrf']):
+            return jsonify(error='CSRF validation failed. Obtain a fresh CSRF token.', code='csrf_failed'), 403
         return view(*args, **kwargs)
     return wrapped
+
 
 def api_errors(public_message):
 

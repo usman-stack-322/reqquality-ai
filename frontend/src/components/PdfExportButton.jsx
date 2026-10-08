@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../api.js';
 import React, { useRef, useState } from 'react';
 
 export default function PdfExportButton({ url, filename, children = 'Export PDF' }) {

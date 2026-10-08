@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../api.js';
 import React, { useEffect, useState } from 'react';
 import PdfExportButton from '../components/PdfExportButton';
 

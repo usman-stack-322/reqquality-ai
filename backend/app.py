@@ -53,11 +53,28 @@ DATABASE_URL = os.getenv('DATABASE_URL') or None
 
 app = Flask(__name__)
 
-frontend_origins = [origin.strip() for origin in os.getenv('FRONTEND_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',') if origin.strip()]
+frontend_origins = [origin.strip() for origin in os.getenv('FRONTEND_ORIGINS', 'https://localhost:5173,https://127.0.0.1:5173').split(',') if origin.strip()]
 
 CORS(app, origins=frontend_origins, supports_credentials=True)
 
 app.config.update(SECRET_KEY=os.getenv('REQQUALITY_SECRET_KEY') or secrets.token_hex(32), SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax', SESSION_COOKIE_SECURE=os.getenv('SESSION_COOKIE_SECURE', 'false').lower() == 'true', PERMANENT_SESSION_LIFETIME=timedelta(hours=8))
+
+# Token cookies always require HTTPS; invitation verification keeps its separate session.
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY') or app.config['SECRET_KEY']
+if len(app.config['JWT_SECRET_KEY'].encode('utf-8')) < 32:
+    raise RuntimeError('JWT_SECRET_KEY must contain at least 32 bytes.')
+app.config['SESSION_COOKIE_SECURE'] = True
+from services.token_service import apply_auth_cookies
+app.after_request(apply_auth_cookies)
+
+@app.before_request
+def require_secure_authentication():
+    if request.path in ('/api/auth/login', '/api/auth/refresh') and not request.is_secure:
+        return jsonify(error='Use HTTPS for Secure authentication cookies.'), 426
+
+if int(os.getenv('TRUST_PROXY_HOPS', '0')):
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=int(os.getenv('TRUST_PROXY_HOPS')))
 
 LOGGER = app.logger
 
@@ -111,4 +128,5 @@ register_invitation_routes(app, get_connection, roles_required, csrf_required)
 register_management_routes(app, get_connection, roles_required, csrf_required, login_required)
 
 if __name__ == "__main__":
-    app.run(debug=False, host="127.0.0.1", port=5000)
+    from dev_https import certificate_paths
+    app.run(debug=False, host="127.0.0.1", port=5000, ssl_context=certificate_paths())

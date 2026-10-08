@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from werkzeug.security import generate_password_hash
 import app as application
+from test_auth_helpers import authenticate
 import admin_dashboard as manager
 import invitations
 
@@ -39,8 +40,7 @@ class ManagerTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(old_session.get('/api/auth/me').get_json()['authenticated'])
         promoted = self.client()
-        with promoted.session_transaction() as session:
-            session.update(user_id=2, csrf_token='test-csrf', auth_version=1)
+        authenticate(promoted, 2, csrf='test-csrf', auth_version=1)
         self.assertEqual(promoted.get('/api/admin/dashboard').status_code, 200)
         self.assertEqual(promoted.get('/api/admin/roles').status_code, 200)
         self.assertEqual(promoted.patch('/api/admin/users/1', json={'role': 'Analyst'}, headers=HEADERS).status_code, 403)
@@ -77,8 +77,7 @@ class ManagerTests(unittest.TestCase):
     def client(self, user_id=None):
         client = application.app.test_client()
         if user_id:
-            with client.session_transaction() as session:
-                session.update(user_id=user_id, csrf_token='test-csrf', auth_version=0)
+            authenticate(client, user_id, csrf='test-csrf')
         return client
 
     def requirement(self, **changes):

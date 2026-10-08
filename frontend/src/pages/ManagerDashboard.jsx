@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../api.js';
 import React, { useEffect, useRef, useState } from 'react';
 import Admin from './Admin';
 import RequirementDetails from './RequirementDetails';

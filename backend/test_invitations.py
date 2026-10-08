@@ -10,6 +10,7 @@ from threading import Barrier
 from unittest.mock import patch
 
 import app as application
+from test_auth_helpers import authenticate
 import invitations as inv
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -40,9 +41,7 @@ class InvitationTests(unittest.TestCase):
     def client(self, user_id=None):
         client = application.app.test_client()
         if user_id:
-            with client.session_transaction() as session:
-                session['user_id'] = user_id
-                session['csrf_token'] = 'admin-csrf'
+            authenticate(client, user_id, csrf='admin-csrf')
         return client
 
     def create(self, role='Analyst', email='invited@example.com'):

@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../api.js';
 import React, { useState } from 'react';
 
 export default function PasswordRecovery({ reset, onReset }) {

@@ -7,3 +7,8 @@ backend/instance/
 .env
 .vscode/
 .DS_Store
+# Local HTTPS private keys
+backend/.certs/
+
+# Backend runtime logs
+backend/server.*.log

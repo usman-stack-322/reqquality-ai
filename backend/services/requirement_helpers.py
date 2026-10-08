@@ -22,16 +22,26 @@ def _inserted_id(connection, cursor):
         return cursor.fetchone()['id']
     return cursor.lastrowid
 
-def _public_user(user):
-    connection = get_connection()
-    try:
-        permissions = [row['permission'] for row in connection.execute('SELECT permission FROM role_permissions WHERE role=? AND enabled=1', (user['role'],))]
-    finally:
-        connection.close()
+def _public_user(user, connection=None):
+    # Admin permissions are static; other roles must use fresh database values.
     if user['role'] == 'admin':
         from admin_dashboard import PERMISSIONS
         permissions = list(PERMISSIONS)
-    return {'permissions': permissions, 'id': user['id'], 'name': user['name'], 'email': user['email'], 'role': user['role'], 'created_at': user['created_at']}
+    else:
+        owns_connection = connection is None
+        if owns_connection:
+            connection = get_connection()
+        try:
+            permissions = [row['permission'] for row in connection.execute(
+                'SELECT permission FROM role_permissions WHERE role=? AND enabled=1',
+                (user['role'],),
+            )]
+        finally:
+            if owns_connection:
+                connection.close()
+    return {'permissions': permissions, 'id': user['id'], 'name': user['name'],
+            'email': user['email'], 'role': user['role'], 'created_at': user['created_at']}
+
 
 def _get_requirement_detail(connection, requirement_id):
     row = connection.execute('SELECT r.*, u.name AS assigned_reviewer FROM requirements r LEFT JOIN users u ON u.id=r.assigned_reviewer_user_id WHERE r.id = ?', (requirement_id,)).fetchone()

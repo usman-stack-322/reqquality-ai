@@ -1,10 +1,15 @@
 """Small SQLite/PostgreSQL connection adapter for the Flask application."""
 
 import re
+import atexit
+import os
+from contextlib import contextmanager
+from threading import Lock
 import sqlite3
 from pathlib import Path
 
 import psycopg
+from psycopg_pool import ConnectionPool
 
 
 def _postgres_row_factory(cursor):
@@ -28,9 +33,16 @@ class DatabaseRow(dict):
 
 
 class DatabaseConnection:
-    def __init__(self, connection, dialect):
+    def __init__(self, connection, dialect, pool=None):
         self._connection = connection
         self.dialect = dialect
+        self._pool = pool
+        self._released = False
+
+    def _ensure_open(self):
+        if self._released:
+            error_type = psycopg.InterfaceError if self.dialect == 'postgres' else sqlite3.ProgrammingError
+            raise error_type('This database connection has already been closed.')
 
     def _adapt_sql(self, statement):
         if self.dialect == "postgres":
@@ -38,25 +50,93 @@ class DatabaseConnection:
         return statement
 
     def execute(self, statement, parameters=()):
+        self._ensure_open()
         return self._connection.execute(self._adapt_sql(statement), parameters)
 
     def executemany(self, statement, parameters):
+        self._ensure_open()
         cursor = self._connection.cursor()
         cursor.executemany(self._adapt_sql(statement), parameters)
         return cursor
 
     def commit(self):
+        self._ensure_open()
         self._connection.commit()
 
     def close(self):
-        self._connection.close()
+        if self._released:
+            return
+        self._released = True
+        if self._pool is not None:
+            self._pool.putconn(self._connection)
+        else:
+            self._connection.close()
+
+    @contextmanager
+    def autocommit_reads(self):
+        """Avoid BEGIN/ROLLBACK round trips for a sequence containing only reads."""
+        self._ensure_open()
+        if self.dialect != 'postgres':
+            yield self
+            return
+        previous = self._connection.autocommit
+        self._connection.autocommit = True
+        try:
+            yield self
+        finally:
+            self._connection.autocommit = previous
+
 
     def __enter__(self):
+        self._ensure_open()
         self._connection.__enter__()
         return self
 
     def __exit__(self, exception_type, exception, traceback):
         return self._connection.__exit__(exception_type, exception, traceback)
+
+
+# Pools are created lazily and never shared across worker processes.
+_POSTGRES_POOLS = {}
+_POOL_LOCK = Lock()
+
+
+def _get_postgres_pool(database_url):
+    key = (os.getpid(), database_url)
+    with _POOL_LOCK:
+        pool = _POSTGRES_POOLS.get(key)
+        if pool is None or pool.closed:
+            pool = ConnectionPool(
+                conninfo=database_url,
+                kwargs={'row_factory': _postgres_row_factory, 'connect_timeout': 10},
+                min_size=1,
+                max_size=int(os.getenv('DB_POOL_MAX_SIZE', '5')),
+                timeout=float(os.getenv('DB_POOL_TIMEOUT', '10')),
+                max_idle=60,
+                max_lifetime=1800,
+                open=True,
+            )
+            _POSTGRES_POOLS[key] = pool
+        return pool
+
+
+def close_database_pools():
+    with _POOL_LOCK:
+        pools = list(_POSTGRES_POOLS.values())
+        _POSTGRES_POOLS.clear()
+    for pool in pools:
+        pool.close()
+
+
+def _reset_pools_after_fork():
+    global _POOL_LOCK, _POSTGRES_POOLS
+    _POOL_LOCK = Lock()
+    _POSTGRES_POOLS = {}
+
+
+if hasattr(os, 'register_at_fork'):
+    os.register_at_fork(after_in_child=_reset_pools_after_fork)
+atexit.register(close_database_pools)
 
 
 def connect_database(database_url, sqlite_path):
@@ -66,8 +146,9 @@ def connect_database(database_url, sqlite_path):
             normalized_url = "postgresql://" + normalized_url[len("postgres://"):]
         if normalized_url.startswith("postgresql+psycopg://"):
             normalized_url = "postgresql://" + normalized_url[len("postgresql+psycopg://"):]
-        connection = psycopg.connect(normalized_url, row_factory=_postgres_row_factory)
-        return DatabaseConnection(connection, "postgres")
+        pool = _get_postgres_pool(normalized_url)
+        connection = pool.getconn()
+        return DatabaseConnection(connection, "postgres", pool=pool)
 
     database_path = Path(sqlite_path)
     database_path.parent.mkdir(parents=True, exist_ok=True)

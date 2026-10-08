@@ -249,6 +249,11 @@ def create_services(app, get_connection, roles_required, csrf_required):
         connection.execute("UPDATE user_invitations SET status = 'accepted', accepted_at = ? WHERE id = ?", (stamp(now()), row['id']))
         joined = connection.execute('SELECT id,name FROM users WHERE lower(email)=?', (row['email'],)).fetchone()
         record_activity(connection, joined, 'invitation_accepted', 'invitation', row['id'], f"Joined as {row['role']}")
+        from services.token_service import read_access_claims, revoke_family
+        claims = read_access_claims()
+        if claims:
+            revoke_family(connection, claims['sid'])
+        g.clear_auth_cookies = True
         session.clear()
         return (response_payload(message='Account created successfully. Please sign in.'), 201)
     return SimpleNamespace(list_invitations=list_invitations, view_invitation=view_invitation, create_invitation=create_invitation, revoke_invitation=revoke_invitation, resend_invitation=resend_invitation, validate_invitation=validate_invitation, verify_email=verify_email, accept_invitation=accept_invitation)

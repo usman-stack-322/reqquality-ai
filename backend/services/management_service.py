@@ -264,6 +264,8 @@ def create_services(app, get_connection, roles_required, csrf_required, login_re
             raise DashboardError('Choose Manager, Analyst or SQA Engineer and a valid active status.')
         if role != member['role'] or active != bool(member['is_active']):
             connection.execute('UPDATE users SET role=?,is_active=?,auth_version=auth_version+1 WHERE id=?', (role, int(active), user_id))
+            from services.token_service import revoke_user_tokens
+            revoke_user_tokens(connection, user_id)
             if role != 'SQA Engineer' or not active:
                 connection.execute("UPDATE requirements SET assigned_reviewer_user_id=NULL,updated_at=? WHERE assigned_reviewer_user_id=? AND review_status IN ('Pending','In Review','Needs Revision')", (timestamp(), user_id))
             record_activity(connection, g.current_user, 'member_updated', 'user', user_id, f"Updated {member['name']}: {role}, {('Active' if active else 'Disabled')}; open assignments cleared when ineligible")
@@ -291,6 +293,9 @@ def create_services(app, get_connection, roles_required, csrf_required, login_re
         if not check_password_hash(user['password_hash'], data['current_password']):
             raise DashboardError('Current password is incorrect.', 400)
         connection.execute('UPDATE users SET password_hash=?,auth_version=auth_version+1 WHERE id=?', (generate_password_hash(data['new_password'], method='scrypt'), g.current_user['id']))
+        from services.token_service import revoke_user_tokens
+        revoke_user_tokens(connection, g.current_user['id'])
+        g.clear_auth_cookies = True
         record_activity(connection, g.current_user, 'password_changed', 'user', g.current_user['id'], 'Changed account password')
         session.clear()
         return response_payload(message='Password changed. Sign in again on all devices.')
