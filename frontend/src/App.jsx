@@ -1,14 +1,30 @@
 import { apiFetch as fetch } from './api.js';
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import Home from './pages/Home';
-import RequirementInput from './pages/RequirementInput';
-import Dashboard from './pages/Dashboard';
-import RequirementDetails from './pages/RequirementDetails';
 import Login from './pages/Login';
-import Register from './pages/Register';
-import ManagerDashboard from './pages/ManagerDashboard';
-import AcceptInvitation from './pages/AcceptInvitation';
-import PasswordRecovery from './pages/PasswordRecovery';
+import LoadingSkeleton from './components/LoadingSkeleton';
+
+const RequirementInput = lazy(() => import('./pages/RequirementInput'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const RequirementDetails = lazy(() => import('./pages/RequirementDetails'));
+const Register = lazy(() => import('./pages/Register'));
+const ManagerDashboard = lazy(() => import('./pages/ManagerDashboard'));
+const AcceptInvitation = lazy(() => import('./pages/AcceptInvitation'));
+const PasswordRecovery = lazy(() => import('./pages/PasswordRecovery'));
+
+class PageBoundary extends React.Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    return this.state.failed
+      ? <main className="card"><h1>Unable to load this page</h1><p role="alert">Check your connection and reload to try again.</p><button onClick={() => window.location.reload()}>Reload</button></main>
+      : this.props.children;
+  }
+}
+
+export default function App() {
+  return <PageBoundary><Suspense fallback={<LoadingSkeleton label="Loading workspace" />}><AppContent /></Suspense></PageBoundary>;
+}
 
 function currentPage() {
   const hash = window.location.hash.slice(1);
@@ -33,7 +49,7 @@ function AppFooter({ user }) {
         </div>
         <nav className="footer-nav" aria-label="Footer navigation">
           {!user && <a href="#home">Home</a>}
-          {user?.permissions?.includes('create_requirements') && <a href="#requirements">Add Requirement</a>}
+          {user?.role !== 'admin' && user?.permissions?.includes('create_requirements') && <a href="#requirements">Add Requirement</a>}
           {user ? <a href="#dashboard">Dashboard</a> : <a href="#login">Sign in</a>}
         </nav>
         <div className="footer-meta"><span>Final Year Project</span><span>{new Date().getFullYear()}</span></div>
@@ -42,7 +58,7 @@ function AppFooter({ user }) {
   );
 }
 
-export default function App() {
+function AppContent() {
   const [page, setPage] = useState(currentPage);
   const [user, setUser] = useState(null);
   const [csrfToken, setCsrfToken] = useState('');
@@ -50,6 +66,9 @@ export default function App() {
   const [loginNotice, setLoginNotice] = useState('');
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [logoutError, setLogoutError] = useState('');
+  const canCreate = user?.role !== 'admin' && user?.permissions?.includes('create_requirements');
+  const sessionRequest = useRef(null);
+  const authRevision = useRef(0);
 
   useEffect(() => {
     const onHashChange = () => setPage(currentPage());
@@ -58,21 +77,29 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    const revision = authRevision.current;
     async function loadSession() {
       try {
-        const response = await fetch('/api/auth/me', { credentials: 'include' });
-        const data = await response.json();
+        // Share the bootstrap across StrictMode's effect replay, without caching auth.
+        sessionRequest.current ||= fetch('/api/auth/me', { credentials: 'include' }).then(response => {
+          if (!response.ok) throw new Error('Session lookup failed');
+          return response.json();
+        });
+        const data = await sessionRequest.current;
+        if (!active || revision !== authRevision.current) return;
         if (data.authenticated) {
           setUser(data.user);
           setCsrfToken(data.csrf_token || '');
         }
       } catch {
-        setUser(null);
+        if (active && revision === authRevision.current) setUser(null);
       } finally {
-        setIsCheckingSession(false);
+        if (active && revision === authRevision.current) setIsCheckingSession(false);
       }
     }
     loadSession();
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -82,10 +109,10 @@ export default function App() {
       window.location.hash = 'login';
     } else if (user && ['home', 'login', 'register'].includes(page)) {
       window.location.hash = ['admin', 'Manager'].includes(user?.role) ? 'admin' : 'dashboard';
-    } else if (user && !user.permissions?.includes('create_requirements') && page === 'requirements') {
+    } else if (user && !canCreate && page === 'requirements') {
       window.location.hash = 'dashboard';
     }
-  }, [isCheckingSession, page, user]);
+  }, [isCheckingSession, page, user, canCreate]);
 
   async function handleLogout() {
     setLogoutError('');
@@ -97,6 +124,7 @@ export default function App() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to log out.');
+      authRevision.current++;
       setUser(null);
       setCsrfToken('');
       window.location.hash = 'login';
@@ -105,22 +133,25 @@ export default function App() {
     }
   }
 
-  if (isCheckingSession || (user && ['home', 'login', 'register'].includes(page))) {
+  const publicPage = ['home', 'login', 'register', 'accept-invitation', 'forgot-password', 'reset-password'].includes(page);
+  if ((isCheckingSession && !publicPage) || (user && ['home', 'login', 'register'].includes(page))) {
     return (
       <div className="app-shell">
-        <main><p className="requirements-empty">Checking your session...</p></main>
+        <main><LoadingSkeleton label="Loading your secure workspace" /></main>
       </div>
     );
   }
 
   if (['forgot-password', 'reset-password'].includes(page)) {
     return <div className="app-shell"><PasswordRecovery key={page} reset={page === 'reset-password'} onReset={(message) => {
+      authRevision.current++; setIsCheckingSession(false);
       setUser(null); setCsrfToken(''); setLoginNotice(message);
       window.history.replaceState(null, '', '/#login'); setPage('login');
     }} /></div>;
   }
   if (page === 'accept-invitation') {
     return <div className="app-shell"><AcceptInvitation onRegistered={(email) => {
+      authRevision.current++; setIsCheckingSession(false);
       setUser(null);
       setCsrfToken('');
       setLoginEmail(email);
@@ -134,6 +165,7 @@ export default function App() {
   }
   if (!user && page !== 'home') {
     return <div className="app-shell"><Login initialEmail={loginEmail} notice={loginNotice} onLogin={(data) => {
+      authRevision.current++; setIsCheckingSession(false);
       setUser(data.user); setCsrfToken(data.csrf_token); setLoginNotice('');
       window.location.hash = ['admin', 'Manager'].includes(data.user.role) ? 'admin' : 'dashboard';
     }} /></div>;
@@ -148,7 +180,7 @@ export default function App() {
   let content;
   if (page === 'admin') {
     content = <section className="card"><h1>Forbidden</h1><p className="error" role="alert">Your account does not have permission to access the Admin Panel.</p></section>;
-  } else if (page === 'requirements' && user.permissions?.includes('create_requirements')) {
+  } else if (page === 'requirements' && canCreate) {
     content = <RequirementInput csrfToken={csrfToken} />;
   } else if (page === 'requirement-detail') {
     content = (
@@ -174,14 +206,14 @@ export default function App() {
         <nav aria-label="Main navigation">
           {['admin', 'Manager'].includes(user?.role) && <a href="#admin" aria-current={page === 'admin' ? 'page' : undefined}>Admin Panel</a>}
           {!user && <a href="#home" aria-current={page === 'home' ? 'page' : undefined}>Home</a>}
-          {user?.permissions?.includes('create_requirements') && (
+          {canCreate && (
             <a href="#requirements" aria-current={page === 'requirements' ? 'page' : undefined}>Add Requirement</a>
           )}
           {user && <a href="#dashboard" aria-current={page === 'dashboard' || page === 'requirement-detail' ? 'page' : undefined}>Dashboard</a>}
         </nav>
         <div className="account-bar">
           {user ? <>
-            <div className="account-identity"><strong>{user.name}</strong><span>{user.role}</span></div>
+            <div className="account-identity"><strong>{user.name}</strong><span>{user.role === 'admin' ? 'SQA Admin' : user.role}</span></div>
             <button className="logout-button" type="button" onClick={handleLogout}>Log out</button>
           </> : <a className="button" href="#login">Sign in</a>}
         </div>

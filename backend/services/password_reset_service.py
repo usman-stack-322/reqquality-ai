@@ -10,6 +10,7 @@ from flask import g, session
 from werkzeug.security import generate_password_hash
 from invitations import EMAIL, digest, now, stamp
 from database import DATABASE_ERRORS
+from services.rate_limit_service import check_rate_limit
 
 def send_reset_email(email, token):
     base = os.getenv('PASSWORD_RESET_FRONTEND_URL') or os.getenv('INVITATION_FRONTEND_URL', '')
@@ -52,6 +53,10 @@ def create_services(app, get_connection):
             return (response_payload(error='Enter a valid email address.'), 400)
         connection = connect()
         try:
+            with connection:
+                limited = check_rate_limit(connection, 'forgot-password', email)
+            if limited:
+                return limited
             user = connection.execute('SELECT id,email,auth_version FROM users WHERE lower(email)=? AND is_active=1', (email.strip().lower(),)).fetchone()
             if user:
                 token, current = (secrets.token_urlsafe(32), now())
@@ -79,9 +84,13 @@ def create_services(app, get_connection):
             return (response_payload(error='This reset link is invalid or expired. Request a new link.'), 400)
         if not isinstance(password, str) or not 12 <= len(password) <= 128:
             return (response_payload(error='Password must be between 12 and 128 characters.'), 400)
-        password_hash = generate_password_hash(password, method='scrypt')
         connection = connect()
         try:
+            with connection:
+                limited = check_rate_limit(connection, 'reset-password')
+            if limited:
+                return limited
+            password_hash = generate_password_hash(password, method='scrypt')
             with connection:
                 cursor = connection.execute('UPDATE users SET password_hash=?,auth_version=auth_version+1\n                    WHERE is_active=1 AND id IN (SELECT user_id FROM password_resets\n                    WHERE token_hash=? AND expires_at>? AND auth_version=users.auth_version)', (password_hash, digest(token), stamp(now())))
                 if not cursor.rowcount:

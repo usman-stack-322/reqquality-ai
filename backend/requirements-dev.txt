@@ -1,0 +1,3 @@
+-r requirements.txt
+# Audit tests parse generated exports; this is not an application dependency.
+pypdf

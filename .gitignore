@@ -12,3 +12,7 @@ backend/.certs/
 
 # Backend runtime logs
 backend/server.*.log
+backend/local-server.*.log
+frontend/local-server.*.log
+backend/local-transport-tests.log
+backend/local-login*.log

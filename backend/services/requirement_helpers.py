@@ -125,8 +125,8 @@ def _save_review(requirement_id, data, required_fields=()):
         values.append('confirmed' if review_status == 'Approved' else 'original')
     if 'reviewer_notes' in data:
         reviewer_notes = data['reviewer_notes']
-        if not isinstance(reviewer_notes, str):
-            return (response_payload(error='Reviewer notes must be text.'), 400)
+        if not isinstance(reviewer_notes, str) or len(reviewer_notes) > 20000:
+            return (response_payload(error='Reviewer notes must be text with at most 20,000 characters.'), 400)
         updates.append('reviewer_notes = ?')
         values.append(reviewer_notes.strip())
     review_timestamp = _utc_timestamp()

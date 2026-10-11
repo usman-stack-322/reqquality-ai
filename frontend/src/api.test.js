@@ -52,6 +52,35 @@ test('initial user lookup refreshes after a 200 unauthenticated response', async
   assert.equal((await (await fetch('/api/auth/me')).json()).authenticated, true);
 });
 
+test('anonymous session lookup skips refresh bootstrap when no refresh cookie exists', async () => {
+  const calls = [];
+  const fetch = await fresh(async url => {
+    calls.push(url);
+    return json({ authenticated: false, refresh_available: false });
+  });
+  assert.equal((await (await fetch('/api/auth/me')).json()).authenticated, false);
+  assert.deepEqual(calls, ['/api/auth/me']);
+});
+
+test('late session response cannot overwrite login CSRF or start a stale refresh', async () => {
+  let resolveSession;
+  const calls = [];
+  const fetch = await fresh(async (url, options) => {
+    calls.push(url);
+    if (url === '/api/auth/me') return new Promise(resolve => { resolveSession = resolve; });
+    if (url === '/api/auth/login') return json({ csrf_token: 'new-login-csrf' });
+    assert.equal(options.headers.get('X-CSRF-Token'), 'new-login-csrf');
+    return json({});
+  });
+  const session = fetch('/api/auth/me');
+  await fetch('/api/auth/login', { method: 'POST' });
+  resolveSession(json({ authenticated: false, csrf_token: 'stale-csrf' }));
+  await session;
+  await fetch('/api/requirements', { method: 'POST' });
+  assert.ok(!calls.includes('/api/auth/refresh'));
+  assert.ok(!calls.includes('/api/auth/csrf'));
+});
+
 test('parallel unauthorized requests share a single refresh operation', async () => {
   const attempts = new Map();
   let refreshes = 0;

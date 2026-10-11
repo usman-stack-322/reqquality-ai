@@ -15,6 +15,11 @@ ISSUER = 'reqquality-api'
 AUDIENCE = 'reqquality-client'
 
 
+def cookie_name(production_name):
+    # __Secure- cookies must never be sent without Secure.
+    return production_name.removeprefix('__Secure-') if current_app.config.get('LOCAL_HTTP_DEVELOPMENT', False) else production_name
+
+
 def initialize_token_schema(connection):
     connection.execute('''CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
         token_hash TEXT PRIMARY KEY,
@@ -47,14 +52,14 @@ def check_csrf(expected):
 
 
 def read_refresh_cookie():
-    token = request.cookies.get(REFRESH_COOKIE, '')
+    token = request.cookies.get(cookie_name(REFRESH_COOKIE), '')
     return token if 40 <= len(token) <= 128 and token.isascii() else None
 
 
 def read_access_claims():
     if hasattr(g, 'access_claims'):
         return g.access_claims
-    encoded = request.cookies.get(ACCESS_COOKIE)
+    encoded = request.cookies.get(cookie_name(ACCESS_COOKIE))
     g.access_claims = None
     g.access_error = 'unauthenticated'
     if not encoded or len(encoded) > 4096:
@@ -204,10 +209,10 @@ def apply_auth_cookies(response):
     if values and 200 <= response.status_code < 300:
         for name, key, path in [(ACCESS_COOKIE, 'access', '/api/'), (REFRESH_COOKIE, 'refresh', '/api/auth/')]:
             expiry = values[key + '_expires']
-            response.set_cookie(name, values[key], max_age=max(0, expiry - int(time.time())),
+            response.set_cookie(cookie_name(name), values[key], max_age=max(0, expiry - int(time.time())),
                                 expires=datetime.fromtimestamp(expiry, timezone.utc),
-                                path=path, secure=True, httponly=True, samesite='Lax')
+                                path=path, secure=not current_app.config.get('LOCAL_HTTP_DEVELOPMENT', False), httponly=True, samesite='Lax')
     if getattr(g, 'clear_auth_cookies', False) and response.status_code < 500:
-        response.delete_cookie(ACCESS_COOKIE, path='/api/', secure=True, httponly=True, samesite='Lax')
-        response.delete_cookie(REFRESH_COOKIE, path='/api/auth/', secure=True, httponly=True, samesite='Lax')
+        response.delete_cookie(cookie_name(ACCESS_COOKIE), path='/api/', secure=not current_app.config.get('LOCAL_HTTP_DEVELOPMENT', False), httponly=True, samesite='Lax')
+        response.delete_cookie(cookie_name(REFRESH_COOKIE), path='/api/auth/', secure=not current_app.config.get('LOCAL_HTTP_DEVELOPMENT', False), httponly=True, samesite='Lax')
     return response

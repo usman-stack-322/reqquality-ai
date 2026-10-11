@@ -39,20 +39,23 @@ export default function RequirementInput({ csrfToken }) {
   const [analysisError, setAnalysisError] = useState('');
 
   useEffect(() => {
+    const controller = new AbortController();
     async function loadRequirements() {
       try {
-        const response = await fetch('/api/requirements', { credentials: 'include' });
+        const response = await fetch('/api/requirements?view=summary', { signal: controller.signal });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Unable to load requirements.');
-        setRequirements(data.requirements);
+        if (!controller.signal.aborted) setRequirements(data.requirements);
       } catch (error) {
+        if (controller.signal.aborted) return;
         setErrorMessage(error.message || 'Unable to reach the requirements API.');
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     }
 
     loadRequirements();
+    return () => controller.abort();
   }, []);
 
   async function handleSubmit(event) {
@@ -140,6 +143,7 @@ export default function RequirementInput({ csrfToken }) {
             <label htmlFor="requirement-title">Requirement Title</label>
             <input
               id="requirement-title"
+              maxLength={200}
               type="text"
               value={title}
               onChange={(event) => {
@@ -157,6 +161,7 @@ export default function RequirementInput({ csrfToken }) {
             <label htmlFor="requirement-description">Requirement Description</label>
             <textarea
               id="requirement-description"
+              maxLength={20000}
               rows={5}
               value={description}
               onChange={(event) => {
@@ -240,6 +245,7 @@ export default function RequirementInput({ csrfToken }) {
               {analysis.analysis_mode === 'hybrid' ? 'HYBRID REVIEW' : 'RULE-BASED REVIEW'}
             </p>
             <h2 id="analysis-results-title">Requirement analysis</h2>
+            <p>Suggestions require human review. Risk indicates requirement-quality concerns, not proven defects. Generated scenarios have not been executed.</p>
             <p className="analysis-status">
               {analysis.analysis_mode === 'hybrid' ? 'Rules + Gemini' : 'Rule-based only'}
               {analysis.llm_status && ` | Gemini: ${analysis.llm_status.replaceAll('_', ' ')}`}
@@ -253,6 +259,45 @@ export default function RequirementInput({ csrfToken }) {
             <strong>{analysis.labeled_analysis?.original_requirement?.title || title}</strong>
             <p>{analysis.labeled_analysis?.original_requirement?.description || description}</p>
           </article>
+          <div className="analysis-grid">
+            <article className="card analysis-card improved-requirement-card">
+              <div className="analysis-item-heading">
+                <h3>Suggested improved requirement</h3>
+                <SourceBadges
+                  source={analysis.labeled_analysis?.improved_requirement?.source || (analysis.analysis_mode === 'hybrid' ? 'ai_suggestion' : 'rule_based')}
+                  needsConfirmation={analysis.labeled_analysis?.improved_requirement?.needs_confirmation}
+                />
+              </div>
+              <p>{analysis.labeled_analysis?.improved_requirement?.text || analysis.improved_requirement}</p>
+              {analysis.labeled_analysis?.improved_requirement?.introduced_values?.length > 0 && (
+                <div className="confirmation-note">
+                  <strong>AI-introduced values:</strong>
+                  <ul className="introduced-value-chips">
+                    {analysis.labeled_analysis.improved_requirement.introduced_values.map((value) => (
+                      <li key={value}>{value}</li>
+                    ))}
+                  </ul>
+                  <p>These values are suggestions and require stakeholder/SQA confirmation before they are treated as requirements.</p>
+                </div>
+              )}
+            </article>
+            {[
+              ['Ambiguity', 'ambiguity_issues', analysis.ambiguity_issues || [], 'rule_based'],
+              ['Missing information', 'missing_information', analysis.missing_information || [], 'rule_based'],
+              ['Testability', 'testability_issues', analysis.testability_issues || [], 'rule_based'],
+              ['Assumptions', 'assumptions', analysis.assumptions || [], 'ai_assumption'],
+              ['Possible edge cases', 'edge_cases', analysis.edge_cases || [], 'rule_based'],
+              ['Acceptance criteria', 'acceptance_criteria', analysis.acceptance_criteria || [], 'rule_based'],
+            ].map(([heading, field, fallbackItems, fallbackSource]) => {
+              const items = analysis.labeled_analysis?.[field] || fallbackItems;
+              return (
+              <article className="card analysis-card" key={heading}>
+                <h3>{heading}</h3>
+                <LabeledItems items={items} defaultSource={fallbackSource} />
+              </article>
+              );
+            })}
+          </div>
           <article className={`card risk-summary risk-${analysis.risk_level?.toLowerCase() || 'low'}`}>
             <div className="risk-summary-heading">
               <h3>Quality risk</h3>
@@ -311,45 +356,6 @@ export default function RequirementInput({ csrfToken }) {
               })}
             </div>
           </section>
-          <div className="analysis-grid">
-            {[
-              ['Ambiguity', 'ambiguity_issues', analysis.ambiguity_issues || [], 'rule_based'],
-              ['Missing information', 'missing_information', analysis.missing_information || [], 'rule_based'],
-              ['Testability', 'testability_issues', analysis.testability_issues || [], 'rule_based'],
-              ['Assumptions', 'assumptions', analysis.assumptions || [], 'ai_assumption'],
-              ['Possible edge cases', 'edge_cases', analysis.edge_cases || [], 'rule_based'],
-              ['Acceptance criteria', 'acceptance_criteria', analysis.acceptance_criteria || [], 'rule_based'],
-            ].map(([heading, field, fallbackItems, fallbackSource]) => {
-              const items = analysis.labeled_analysis?.[field] || fallbackItems;
-              return (
-              <article className="card analysis-card" key={heading}>
-                <h3>{heading}</h3>
-                <LabeledItems items={items} defaultSource={fallbackSource} />
-              </article>
-              );
-            })}
-            <article className="card analysis-card improved-requirement-card">
-              <div className="analysis-item-heading">
-                <h3>Suggested improved requirement</h3>
-                <SourceBadges
-                  source={analysis.labeled_analysis?.improved_requirement?.source || (analysis.analysis_mode === 'hybrid' ? 'ai_suggestion' : 'rule_based')}
-                  needsConfirmation={analysis.labeled_analysis?.improved_requirement?.needs_confirmation}
-                />
-              </div>
-              <p>{analysis.labeled_analysis?.improved_requirement?.text || analysis.improved_requirement}</p>
-              {analysis.labeled_analysis?.improved_requirement?.introduced_values?.length > 0 && (
-                <div className="confirmation-note">
-                  <strong>AI-introduced values:</strong>
-                  <ul className="introduced-value-chips">
-                    {analysis.labeled_analysis.improved_requirement.introduced_values.map((value) => (
-                      <li key={value}>{value}</li>
-                    ))}
-                  </ul>
-                  <p>These values are suggestions and require stakeholder/SQA confirmation before they are treated as requirements.</p>
-                </div>
-              )}
-            </article>
-          </div>
         </section>
       )}
 

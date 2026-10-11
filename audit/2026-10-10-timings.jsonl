@@ -1,0 +1,28 @@
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "SQA Admin", "endpoint": "/api/auth/me", "median_ms": 4.88, "bytes": 315, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "SQA Admin", "endpoint": "/api/dashboard", "median_ms": 5.71, "bytes": 2160, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "SQA Admin", "endpoint": "/api/requirements", "median_ms": 8.75, "bytes": 456201, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "SQA Admin", "endpoint": "/api/requirements?view=summary", "median_ms": 8.37, "bytes": 456201, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "Analyst", "endpoint": "/api/auth/me", "median_ms": 6.95, "bytes": 201, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "Analyst", "endpoint": "/api/dashboard", "median_ms": 6.23, "bytes": 2160, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "Analyst", "endpoint": "/api/requirements", "median_ms": 9.18, "bytes": 456201, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "Analyst", "endpoint": "/api/requirements?view=summary", "median_ms": 8.48, "bytes": 456201, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "SQA Engineer", "endpoint": "/api/auth/me", "median_ms": 6.62, "bytes": 208, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "SQA Engineer", "endpoint": "/api/dashboard", "median_ms": 7.15, "bytes": 2160, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "SQA Engineer", "endpoint": "/api/requirements", "median_ms": 8.36, "bytes": 456201, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_audit.py", "role": "SQA Engineer", "endpoint": "/api/requirements?view=summary", "median_ms": 8.3, "bytes": 456201, "server_timing": null}
+{"revision": "before", "benchmark": "benchmark_login.py", "role": "admin", "milliseconds": [177.22, 184.17, 1029.78], "median_ms": 184.17, "connections": [1, 1, 1]}
+{"revision": "before", "benchmark": "benchmark_login.py", "role": "Analyst", "milliseconds": [221.67, 184.02, 186.12], "median_ms": 186.12, "connections": [1, 1, 1]}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "SQA Admin", "endpoint": "/api/auth/me", "median_ms": 4.61, "bytes": 315, "server_timing": "db_connect;dur=2.0, db_execute;dur=0.1, request;dur=2.6"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "SQA Admin", "endpoint": "/api/dashboard", "median_ms": 5.9, "bytes": 2160, "server_timing": "db_connect;dur=3.8, db_execute;dur=0.8, request;dur=5.5"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "SQA Admin", "endpoint": "/api/requirements", "median_ms": 8.74, "bytes": 456201, "server_timing": "db_connect;dur=3.8, db_execute;dur=0.2, request;dur=8.1"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "SQA Admin", "endpoint": "/api/requirements?view=summary", "median_ms": 5.81, "bytes": 34301, "server_timing": "db_connect;dur=3.8, db_execute;dur=0.2, request;dur=5.6"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "Analyst", "endpoint": "/api/auth/me", "median_ms": 3.02, "bytes": 201, "server_timing": "db_connect;dur=1.9, db_execute;dur=0.2, request;dur=2.7"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "Analyst", "endpoint": "/api/dashboard", "median_ms": 5.64, "bytes": 2160, "server_timing": "db_connect;dur=3.7, db_execute;dur=0.8, request;dur=5.2"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "Analyst", "endpoint": "/api/requirements", "median_ms": 8.77, "bytes": 456201, "server_timing": "db_connect;dur=3.7, db_execute;dur=0.2, request;dur=8.2"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "Analyst", "endpoint": "/api/requirements?view=summary", "median_ms": 5.79, "bytes": 34301, "server_timing": "db_connect;dur=3.6, db_execute;dur=0.2, request;dur=5.3"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "SQA Engineer", "endpoint": "/api/auth/me", "median_ms": 3.64, "bytes": 208, "server_timing": "db_connect;dur=2.0, db_execute;dur=0.2, request;dur=2.8"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "SQA Engineer", "endpoint": "/api/dashboard", "median_ms": 5.58, "bytes": 2160, "server_timing": "db_connect;dur=3.7, db_execute;dur=0.8, request;dur=5.2"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "SQA Engineer", "endpoint": "/api/requirements", "median_ms": 8.68, "bytes": 456201, "server_timing": "db_connect;dur=3.7, db_execute;dur=0.2, request;dur=8.0"}
+{"revision": "after", "benchmark": "benchmark_audit.py", "role": "SQA Engineer", "endpoint": "/api/requirements?view=summary", "median_ms": 5.93, "bytes": 34301, "server_timing": "db_connect;dur=3.7, db_execute;dur=0.2, request;dur=5.4"}
+{"revision": "after", "benchmark": "benchmark_login.py", "role": "admin", "milliseconds": [211.83, 217.23, 213.87], "median_ms": 213.87, "connections": [1, 1, 1]}
+{"revision": "after", "benchmark": "benchmark_login.py", "role": "Analyst", "milliseconds": [210.67, 199.44, 220.84], "median_ms": 210.67, "connections": [1, 1, 1]}

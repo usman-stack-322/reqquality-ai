@@ -1,6 +1,7 @@
 import { apiFetch as fetch } from '../api.js';
 import React, { useEffect, useState } from 'react';
 import PdfExportButton from '../components/PdfExportButton';
+import LoadingSkeleton from '../components/LoadingSkeleton';
 
 const REVIEW_DISTRIBUTION = [
   ['Pending', 'pending_count', 'pending'],
@@ -86,11 +87,12 @@ export default function Dashboard({ user }) {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    const controller = new AbortController();
     async function loadRequirements() {
       try {
         const [dashboardResponse, requirementsResponse] = await Promise.all([
-          fetch('/api/dashboard', { credentials: 'include' }),
-          fetch('/api/requirements', { credentials: 'include' }),
+          fetch('/api/dashboard', { signal: controller.signal }),
+          fetch('/api/requirements?view=summary', { signal: controller.signal }),
         ]);
         const [dashboardData, requirementsData] = await Promise.all([
           dashboardResponse.json(),
@@ -112,9 +114,11 @@ export default function Dashboard({ user }) {
         ) {
           throw new Error('The dashboard response was incomplete. Refresh the page and try again.');
         }
+        if (controller.signal.aborted) return;
         setDashboard(dashboardData);
         setRequirements(requirementsData.requirements);
       } catch (loadError) {
+        if (controller.signal.aborted) return;
         const message = loadError instanceof SyntaxError
           ? 'The dashboard API returned an invalid response. Refresh the page or contact support.'
           : loadError instanceof TypeError
@@ -122,10 +126,11 @@ export default function Dashboard({ user }) {
             : loadError.message || 'Unable to load dashboard data.';
         setError(message);
       } finally {
-        setIsLoading(false);
+        if (!controller.signal.aborted) setIsLoading(false);
       }
     }
     loadRequirements();
+    return () => controller.abort();
   }, []);
 
   const [search, setSearch] = useState('');
@@ -140,17 +145,17 @@ export default function Dashboard({ user }) {
         <div>
           <p className="eyebrow">QUALITY OVERVIEW</p>
           <h1 id="dashboard-title">{isEngineer ? 'SQA Engineer Dashboard' : 'SQA Dashboard'}</h1>
-          {isEngineer && <p className="dashboard-intro">Review requirement quality, prioritize risks, and track test coverage.</p>}
+          {isEngineer && <p className="dashboard-intro">Review requirement quality, prioritize risks, and track links to generated scenarios.</p>}
         </div>
         <div className="dashboard-actions">
           {user?.permissions?.includes('create_requirements') && <a className="button" href="#requirements">Add requirement</a>}
           <PdfExportButton url="/api/reports/project.pdf" filename="project-quality-report.pdf">Export Project PDF</PdfExportButton>
-          <a className="button export-button" href="/api/exports/requirements.csv" download>Export CSV</a>
+          <PdfExportButton url="/api/exports/requirements.csv" filename="requirements.csv" format="CSV">Export CSV</PdfExportButton>
         </div>
       </div>
       {error && <p className="error" role="alert">{error}</p>}
       {isLoading ? (
-        <p className="requirements-empty" role="status">Loading dashboard...</p>
+        <LoadingSkeleton />
       ) : !dashboard ? (
         <p className="requirements-empty">Dashboard statistics are unavailable.</p>
       ) : (

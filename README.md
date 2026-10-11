@@ -2,8 +2,11 @@
 
 A beginner-friendly starting point for a Requirements Engineering and Software
 Quality Engineering platform. It includes a React frontend, a Flask API, and
-SQLite/PostgreSQL storage, AI analysis, and session authentication.
+SQLite/PostgreSQL storage, AI analysis, and cookie-token authentication.
 Admin-managed invitations assign Analyst and SQA Engineer roles.
+See the [2026-10-10 audit report](AUDIT_REPORT.md) for measured improvements,
+validation results and remaining limits. [Cookie authentication](backend/TOKEN_AUTH.md)
+documents local HTTP and production HTTPS setup, expiry, CSRF and rate limits.
 The existing Admin now opens the QA Manager workspace; see
 [dashboard setup, metrics and API documentation](QA_MANAGER_DASHBOARD.md).
 
@@ -54,22 +57,27 @@ this README) using `.env.example` as a template. Set `GEMINI_API_KEY` and
 requirement analysis continues with the rule-based analyzer only. Restart Flask
 after changing the environment file.
 
-For authentication, set a persistent `REQQUALITY_SECRET_KEY` in the same `.env`
-file. Generate one with `python -c "import secrets; print(secrets.token_hex(32))"`.
+For authentication, set separate persistent `REQQUALITY_SECRET_KEY` and
+`JWT_SECRET_KEY` values of at least 32 bytes in the same `.env` file.
+Generate each with `python -c "import secrets; print(secrets.token_hex(32))"`.
 Create an Admin locally with `backend/.venv/Scripts/python.exe backend/create_admin.py`.
 New accounts require an Admin invitation; see [invitation setup](INVITATIONS.md). Set
-`SESSION_COOKIE_SECURE=true` when serving over HTTPS. Sessions use HttpOnly,
-SameSite=Lax cookies and expire after eight hours.
+`SESSION_COOKIE_SECURE=true`. Production authentication cookies use Secure, HttpOnly and SameSite=Lax.
+Direct `python app.py` execution binds to loopback over HTTP, uses separate
+local cookie names without Secure, and ignores forwarded headers. WSGI imports
+retain HTTPS enforcement and Secure cookies. No certificate setup is needed locally. Access credentials last up to one hour; refresh rotation keeps
+the original 24-hour session deadline. PostgreSQL startup rejects missing or
+short secrets instead of generating per-worker keys.
 
 ### Terminal 2: frontend
 
 ```powershell
 Set-Location "C:\Users\ua589\ReqQuality AI\frontend"
-npm install
-npm run dev
+npm.cmd install
+npm.cmd run dev
 ```
 
-Open http://localhost:5173. Vite forwards `/api` requests to Flask during
+Open http://127.0.0.1:5173. Vite forwards `/api` requests to Flask during
 development. Flask also enables CORS for frontend requests.
 
 After the first setup, rerun only the backend's `python.exe app.py` command
@@ -80,7 +88,11 @@ Stop either server with Ctrl+C.
 
 - Home page with a brief introduction.
 - Requirement input page with typed fields, priorities, and SQLite save confirmation.
-- Dashboard placeholder for future summaries and quality indicators.
+- Dashboards for saved requirement quality risk, review progress and artifact traceability.
+
+Run checks with `npm.cmd test` and `npm.cmd run build` in `frontend`. In `backend`,
+install `requirements-dev.txt` and run `.venv/Scripts/python.exe -m unittest discover -v`.
+Tests use temporary databases and mocked AI/email; they do not create production records.
 
 ## API and Database
 

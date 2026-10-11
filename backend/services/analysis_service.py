@@ -18,4 +18,8 @@ def analyze_requirement_endpoint(payload):
         return (response_payload(error='Choose a valid requirement type.'), 400)
     if not isinstance(priority, str) or priority not in PRIORITIES:
         return (response_payload(error='Choose a valid priority.'), 400)
+    from validators.requirement_validator import validate_requirement_text
+    error = validate_requirement_text(title, description)
+    if error:
+        return response_payload(error=error), 400
     return response_payload(analyze_hybrid(title, description, requirement_type, priority))

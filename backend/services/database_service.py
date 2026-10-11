@@ -37,12 +37,15 @@ def _initialize_database(connection):
         connection.execute("UPDATE requirement_assumptions SET needs_confirmation = 0 WHERE requirement_id IN (SELECT id FROM requirements WHERE review_status = 'Approved')")
     connection.commit()
 
-def get_connection():
+def _get_connection():
     import app as config
     from invitations import initialize_invitations, migrate_sqlite_roles
     from services.token_service import initialize_token_schema
+    from services.rate_limit_service import initialize_rate_limit_schema
 
     connection = connect_database(config.DATABASE_URL, config.DATABASE)
+    # Initialization is part of db_connect; avoid double-counting its schema SQL.
+    connection._instrument = False
     try:
         if connection.dialect == 'postgres':
             # All schema work belongs to initialization, never the warm request path.
@@ -54,6 +57,7 @@ def get_connection():
                         initialize_management_schema(connection)
                         initialize_invitations(connection)
                         initialize_token_schema(connection)
+                        initialize_rate_limit_schema(connection)
                         config._POSTGRES_SCHEMA_URL = config.DATABASE_URL
         else:
             migrate_sqlite_roles(connection)
@@ -62,7 +66,19 @@ def get_connection():
             initialize_management_schema(connection)
             initialize_invitations(connection)
             initialize_token_schema(connection)
+            initialize_rate_limit_schema(connection)
+        connection._instrument = True
         return connection
     except Exception:
         connection.close()
         raise
+
+
+def get_connection():
+    from time import perf_counter
+    from middlewares.observability import record_timing
+    start = perf_counter()
+    try:
+        return _get_connection()
+    finally:
+        record_timing('db_connect', (perf_counter() - start) * 1000)

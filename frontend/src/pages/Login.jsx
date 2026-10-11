@@ -1,5 +1,6 @@
 import { apiFetch as fetch } from '../api.js';
 import React, { useState } from 'react';
+import { BACKEND_UNAVAILABLE, loginErrorMessage } from '../login-errors.js';
 
 export default function Login({ onLogin, onRegister, initialEmail = '', notice = '' }) {
   const [email, setEmail] = useState(initialEmail);
@@ -19,11 +20,12 @@ export default function Login({ onLogin, onRegister, initialEmail = '', notice =
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Unable to log in.');
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(loginErrorMessage(response.status, data || {}));
+      if (!data?.user || !data.csrf_token) throw new Error(BACKEND_UNAVAILABLE);
       onLogin(data);
     } catch (loginError) {
-      setError(loginError.message || 'Unable to reach the authentication API.');
+      setError(loginError instanceof TypeError ? BACKEND_UNAVAILABLE : loginError.message || BACKEND_UNAVAILABLE);
     } finally {
       setIsSubmitting(false);
     }
@@ -44,7 +46,7 @@ export default function Login({ onLogin, onRegister, initialEmail = '', notice =
           <div className="requirement-field">
             <label htmlFor="login-password">Password</label>
             <div className="password-input-row">
-              <input id="login-password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" required disabled={isSubmitting} value={password} onChange={(event) => setPassword(event.target.value)} />
+              <input id="login-password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" required maxLength={1024} disabled={isSubmitting} value={password} onChange={(event) => setPassword(event.target.value)} />
               <button className="password-toggle" type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword((visible) => !visible)} disabled={isSubmitting}>
                 {showPassword ? 'Hide' : 'Show'}
               </button>

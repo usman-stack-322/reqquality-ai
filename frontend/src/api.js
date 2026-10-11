@@ -2,11 +2,13 @@
 const nativeFetch = (...args) => globalThis.fetch(...args);
 let csrfToken = '';
 let refreshPromise = null;
+let authGeneration = 0;
 
-async function rememberCsrf(response, pathname) {
+async function rememberCsrf(response, pathname, generation = authGeneration) {
   if (!pathname.startsWith('/api/auth/') || !response.ok) return;
   try {
     const data = await response.clone().json();
+    if (generation !== authGeneration) return;
     if (data.csrf_token) csrfToken = data.csrf_token;
     if (pathname === '/api/auth/logout' || pathname === '/api/auth/reset-password' || pathname === '/api/auth/change-password') csrfToken = '';
   } catch { /* Download and non-JSON responses have no CSRF value. */ }
@@ -33,6 +35,13 @@ export async function apiFetch(input, options = {}) {
   const url = new URL(typeof input === 'string' ? input : input.url, globalThis.location.origin);
   const pathname = url.pathname;
   if (url.origin !== globalThis.location.origin || !pathname.startsWith('/api/')) return nativeFetch(input, options);
+  if (pathname === '/api/auth/login') {
+    // Complete any rotation before login replaces cookies. A stale /me response
+    // must not start a new refresh or overwrite the successful login's CSRF.
+    if (refreshPromise) await refreshPromise.catch(() => false);
+    authGeneration++;
+  }
+  const generation = authGeneration;
   const send = async () => {
     const headers = new Headers(options.headers);
     const method = (options.method || 'GET').toUpperCase();
@@ -40,7 +49,7 @@ export async function apiFetch(input, options = {}) {
       headers.set('X-CSRF-Token', csrfToken);
     }
     const response = await nativeFetch(input, { ...options, credentials: 'include', headers });
-    await rememberCsrf(response, pathname);
+    await rememberCsrf(response, pathname, generation);
     return response;
   };
   let response = await send();
@@ -58,9 +67,12 @@ export async function apiFetch(input, options = {}) {
   if (!excluded.includes(pathname)) {
     let needsRefresh = response.status === 401;
     if (pathname === '/api/auth/me' && response.ok) {
-      try { needsRefresh = !(await response.clone().json()).authenticated; } catch { /* Invalid JSON is handled by the caller. */ }
+      try {
+        const data = await response.clone().json();
+        needsRefresh = !data.authenticated && data.refresh_available !== false;
+      } catch { /* Invalid JSON is handled by the caller. */ }
     }
-    if (needsRefresh && await refreshAuthentication()) response = await send();
+    if (needsRefresh && generation === authGeneration && await refreshAuthentication()) response = await send();
   }
   return response;
 }

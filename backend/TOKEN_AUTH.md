@@ -4,7 +4,7 @@
 
 - Access: signed HS256 JWT using PyJWT. One-hour lifetime, with issuer, audience, subject, expiry, not-before, token ID, token type, auth version, token-family ID and signed CSRF claim. Only HS256 is accepted.
 - Refresh: 48 cryptographically random bytes encoded as an opaque token. SHA-256 hashes are stored in auth_refresh_tokens; the raw token is never stored in the database. High-entropy random tokens do not need password-style slow hashing.
-- Both credentials travel only in host-only Secure, HttpOnly, SameSite=Lax cookies. They are never returned in JSON or stored in localStorage/sessionStorage.
+- In production, both credentials travel only in host-only Secure, HttpOnly, SameSite=Lax cookies. They are never returned in JSON or stored in localStorage/sessionStorage.
 - Access cookie: __Secure-reqquality_access, path /api/.
 - Refresh cookie: __Secure-reqquality_refresh, path /api/auth/.
 - The refresh family expires 24 hours after login. Rotation keeps the original deadline; it does not extend the session indefinitely. An access token issued near that deadline is capped at the remaining family lifetime.
@@ -31,9 +31,9 @@ frontend/src/api.js keeps only CSRF in memory, supplies credentials: include, ob
 
 Use this local base URL:
 
-    https://127.0.0.1:5000
+    http://127.0.0.1:5000
 
-The development certificate is self-signed. Import/trust backend/.certs/localhost.pem locally, or disable certificate verification for this local Postman request only. Production must use a trusted HTTPS certificate.
+Local direct execution uses HTTP without certificates. Keep certificate validation enabled. Production must use a trusted HTTPS certificate.
 
 1. POST /api/auth/login with the existing email/password JSON. Leave Postman's cookie jar enabled.
 2. Save csrf_token from the response. Tokens are in Set-Cookie and must not be copied to Authorization or JSON.
@@ -51,19 +51,81 @@ Set the request header to:
 
     X-CSRF-Token: {{csrf_token}}
 
-The API rejects plain-HTTP login/refresh with 426. Existing session-based logins must log in again after migration.
+Production WSGI rejects plain-HTTP login/refresh with 426. Existing session-based logins must log in again after migration.
 
-## Local HTTPS and deployment
+## Local HTTP and production HTTPS
 
-From backend:
+From backend, run `.venv\Scripts\python.exe app.py`. From frontend, run
+`npm.cmd run dev`. Open http://127.0.0.1:5173; Vite proxies `/api` over HTTP
+to http://127.0.0.1:5000. The backend binds only to loopback, accepts only
+localhost/127.0.0.1 Host headers, and ignores forwarded headers in this mode.
+Local access/refresh cookies use `reqquality_access` and `reqquality_refresh`,
+with the same paths, HttpOnly, SameSite, CSRF, expiry and rotation rules, but
+without Secure. Invitation sessions also work over local HTTP.
 
-    .venv\Scripts\python.exe dev_https.py
-    .venv\Scripts\python.exe app.py
-
-The certificate is generated automatically by app.py if missing. Private keys are excluded from Git. The Vite development server uses the same certificate; restart it and open https://localhost:5173. Its same-origin /api proxy targets the HTTPS backend. Accept/trust the development certificate in your browser.
+Only direct execution selects this mode; importing `wsgi:app` keeps HTTPS
+login/refresh enforcement, Secure cookies and their `__Secure-` names.
+No environment variable disables production cookie security. Local certificate
+files are unused and certificate validation does not need to be bypassed.
 
 PyJWT and cryptography are in requirements.txt. A persistent, generated JWT_SECRET_KEY was added to this workspace's ignored backend/.env without printing its value. Configure a separate strong JWT_SECRET_KEY of at least 32 bytes in each deployed environment and share it across that deployment's workers. Changing it invalidates existing JWTs and CSRF values; users must log in again.
 
 If TLS terminates at a trusted reverse proxy, configure TRUST_PROXY_HOPS to the exact number of trusted forwarded-protocol hops. Default is 0. Do not enable forwarded-header trust for arbitrary direct clients. Configure FRONTEND_ORIGINS for the deployed HTTPS frontend.
 
 The existing PostgreSQL connection pool remains in use. Successful login now also persists a refresh hash transactionally; access/refresh tokens are an authentication change, not a guarantee of lower password-login latency.
+
+## Audit improvements (2026-10-10)
+
+Public home/login pages render while session recovery runs. Protected routes retain
+an authentication gate with a skeleton. Session bootstrap is shared across React
+StrictMode effect replay; late bootstrap responses cannot overwrite a successful
+login. Anonymous `/me` responses include `refresh_available: false` when no
+refresh cookie exists, avoiding an unnecessary CSRF bootstrap. Cookie expiration
+and server authorization remain authoritative.
+
+Session permission lookup reuses its user-lookup connection. API responses now
+include `Server-Timing` for `request`, `db_connect` and `db_execute`; login also
+reports password, token and rate-limit stages. `db_connect` includes initialization
+on cold connections; `db_execute` excludes initialization and does not include
+fetch/serialization/commit/connection-close time. Request time includes those
+stages. Timings do not include browser or proxy transit.
+
+Rate limits use atomic, database-backed 15-minute fixed windows across workers:
+
+| Action | Limit |
+| --- | --- |
+| Login | 100 requests/IP and 10 requests/IP + normalized email |
+| Forgot password | 20 requests/IP and 5 requests/IP + normalized email |
+| Reset password | 20 requests/IP, before password hashing |
+| Public invitation actions | 60 requests/IP, in addition to invitation mismatch locks |
+| Create/resend invitations | 30 requests/authenticated administrator |
+
+Limited responses return HTTP 429 and `Retry-After`. Successful and failed
+attempts count; only keyed hashes of identities are stored. Counters are separate
+from invitation tokens, so throttling never revokes an invitation. The existing
+five-mismatch temporary lock, 24-hour expiry and single-use transaction remain.
+Prune obsolete `request_limits` rows outside request handling using their
+`window_start` epoch value; no user or requirement rows need removal.
+
+PostgreSQL deployments must explicitly configure both persistent secrets with at
+least 32 bytes; startup rejects missing or short values instead of generating
+different keys per worker. Development without PostgreSQL keeps its existing
+temporary-key fallback. `TRUST_PROXY_HOPS` now covers forwarded client IP as well
+as HTTPS scheme: set it only for the exact trusted chain that overwrites both
+headers. Default 0 ignores forwarded headers. IP limits may affect users sharing
+a NAT/proxy; review deployment topology before release.
+
+Cookie-authenticated API writes retain CSRF checks, and writes with an explicit
+unapproved `Origin` are rejected. Configure `FRONTEND_ORIGINS` to include the real
+frontend origin when it differs from the API host. All API responses use
+`no-store`, `nosniff` and `no-referrer`. Request bodies are capped at 1 MB; new
+titles at 200 characters, descriptions/reviewer notes at 20,000. Existing stored
+content is not truncated or rewritten.
+
+The workspace still contains one shared project. Signed-in roles can read its
+requirements and exports; reviewer assignment is a workload aid, not an access
+boundary. Analyst creation and Engineer review remain subject to fresh role
+permissions. The `admin` role is displayed as SQA Admin and keeps management and
+inspection access. Its static permission metadata lists all permissions, but
+creation/review routes reject that role; the UI now respects those effective
+restrictions. The legacy configurable Manager role remains supported.

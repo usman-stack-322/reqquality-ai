@@ -1,7 +1,7 @@
 import { apiFetch as fetch } from '../api.js';
 import React, { useRef, useState } from 'react';
 
-export default function PdfExportButton({ url, filename, children = 'Export PDF' }) {
+export default function PdfExportButton({ url, filename, children = 'Export PDF', format = 'PDF' }) {
   const locked = useRef(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -17,10 +17,11 @@ export default function PdfExportButton({ url, filename, children = 'Export PDF'
       const response = await fetch(url, { credentials: 'include' });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || 'Unable to export PDF. Please try again.');
+        throw new Error(data.error || `Unable to export ${format}. Please try again.`);
       }
-      if (!response.headers.get('content-type')?.includes('application/pdf')) {
-        throw new Error('The server did not return a PDF. Please sign in and try again.');
+      const expectedType = format === 'CSV' ? 'text/csv' : 'application/pdf';
+      if (!response.headers.get('content-type')?.includes(expectedType)) {
+        throw new Error(`The server did not return ${format}. Please sign in and try again.`);
       }
       const blob = await response.blob();
       objectUrl = URL.createObjectURL(blob);
@@ -30,7 +31,7 @@ export default function PdfExportButton({ url, filename, children = 'Export PDF'
       document.body.appendChild(link);
       link.click();
     } catch (failure) {
-      setError(failure.message || 'Unable to export PDF. Please try again.');
+      setError(failure.message || `Unable to export ${format}. Please try again.`);
     } finally {
       link?.remove();
       if (objectUrl) setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
@@ -41,7 +42,7 @@ export default function PdfExportButton({ url, filename, children = 'Export PDF'
 
   return <div className="pdf-export-control">
     <button className="button export-button" type="button" disabled={busy} aria-busy={busy} onClick={download}>
-      {busy ? 'Exporting PDF...' : children}
+      {busy ? `Exporting ${format}...` : children}
     </button>
     {busy && <span className="pdf-export-status" role="status">Preparing your report...</span>}
     {error && <p className="error pdf-export-error" role="alert">{error}</p>}

@@ -1,12 +1,13 @@
 from functools import wraps
 import hmac
 from flask import g, jsonify, request, session
+from werkzeug.exceptions import HTTPException
 
 def get_connection():
     from app import get_connection as connect
     return connect()
 
-def _get_current_user():
+def _get_current_user(include_permissions=False):
     from services.token_service import read_access_claims
     import time
     if not hasattr(g, 'current_user'):
@@ -23,6 +24,9 @@ def _get_current_user():
                         'AND r.revoked_at IS NULL AND r.expires_at>?)',
                         (int(claims['sub']), claims['sid'], int(time.time())),
                     ).fetchone()
+                    if user and user['is_active'] and user['auth_version'] == claims['ver'] and include_permissions:
+                        from services.requirement_helpers import _public_user
+                        g.public_current_user = _public_user(user, connection=connection)
                 if user and user['is_active'] and user['auth_version'] == claims['ver']:
                     g.current_user = user
                 else:
@@ -101,8 +105,15 @@ def api_errors(public_message):
 
         @wraps(view)
         def wrapped(*args, **kwargs):
+            from database import DATABASE_UNAVAILABLE_ERRORS
             try:
                 return view(*args, **kwargs)
+            except DATABASE_UNAVAILABLE_ERRORS:
+                # The application's shared handler returns a safe 503, including
+                # failures while authorizing protected endpoints.
+                raise
+            except HTTPException:
+                raise
             except Exception as error:
                 __import__('flask').current_app.logger.exception('API endpoint failed endpoint=%s exception_type=%s', request.endpoint, type(error).__name__)
                 return (jsonify(error=public_message), 500)

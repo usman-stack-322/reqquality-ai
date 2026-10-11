@@ -1,5 +1,10 @@
 # Login performance investigation
 
+This document records the earlier pooling investigation. For measurements from
+the 2026-10-10 audit, including session/list timings and rate-limit overhead, see
+[the current audit report](../AUDIT_REPORT.md). Hosted measurements below are
+historical and were not reproduced during that audit.
+
 ## Current changes
 
 Login reuses one database connection. Admin permissions require no query; other role permissions are read fresh from the database. PostgreSQL schema initialization, including invitation migrations, runs once per configured database per process rather than on every request.

@@ -23,7 +23,8 @@ def create_requirement(payload):
         return (response_payload(error='Choose a valid requirement type.'), 400)
     if not isinstance(priority, str) or priority not in PRIORITIES:
         return (response_payload(error='Choose a valid priority.'), 400)
-    validation_error = _validate_analysis_payload(analysis)
+    from validators.requirement_validator import validate_requirement_text
+    validation_error = validate_requirement_text(title, description) or _validate_analysis_payload(analysis)
     if validation_error:
         return (response_payload(error=validation_error), 400)
     analysis = analysis or {}
@@ -57,9 +58,14 @@ def create_requirement(payload):
     return (response_payload(requirement=requirement), 201)
 
 def list_requirements():
+    from flask import request
+    # Opt-in summary preserves the existing full API for other clients.
+    fields = ('id, title, description, requirement_type, priority, user_priority, suggested_priority, '
+              'risk_score, risk_level, review_status, created_at, updated_at') if request.args.get('view') == 'summary' else '*'
     connection = get_connection()
     try:
-        rows = connection.execute('SELECT * FROM requirements ORDER BY id DESC').fetchall()
+        with connection.autocommit_reads():
+            rows = connection.execute(f'SELECT {fields} FROM requirements ORDER BY id DESC').fetchall()
     finally:
         connection.close()
     return response_payload(requirements=[dict(row) for row in rows])

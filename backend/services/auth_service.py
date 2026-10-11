@@ -1,11 +1,15 @@
 from time import perf_counter
 import secrets
 from flask import g, session
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from app import LOGGER, get_connection
 from middlewares.auth import _get_current_user
 from services.requirement_helpers import _masked_email, _public_user
 from services.responses import response_payload
+from services.rate_limit_service import check_rate_limit
+
+# Unknown/disabled users receive the same costly password check as existing users.
+_DUMMY_PASSWORD_HASH = generate_password_hash(secrets.token_urlsafe(32), method='scrypt')
 
 def register():
     return (response_payload(error='Account creation requires an invitation from your administrator.'), 403)
@@ -21,6 +25,8 @@ def login(payload):
         LOGGER.warning('login failure normalized_email=%s reason=invalid_input', _masked_email(email))
         return (response_payload(error='Enter a valid email address and password.'), 400)
     normalized_email = email.strip().lower()
+    if len(normalized_email) > 254 or len(password) > 1024:
+        return response_payload(error='Email or password is too long.'), 400
     safe_email = _masked_email(normalized_email)
     LOGGER.info('login attempt normalized_email=%s', safe_email)
     started = perf_counter()
@@ -30,6 +36,12 @@ def login(payload):
         stage = perf_counter()
         connection = get_connection()
         timings['connect'] = (perf_counter() - stage) * 1000
+        stage = perf_counter()
+        with connection:
+            limited = check_rate_limit(connection, 'login', normalized_email)
+        timings['rate_limit'] = (perf_counter() - stage) * 1000
+        if limited:
+            return limited
         with connection.autocommit_reads():
             stage = perf_counter()
             user = connection.execute(
@@ -37,15 +49,11 @@ def login(payload):
                 'FROM users WHERE lower(email) = ?', (normalized_email,),
             ).fetchone()
             timings['user_query'] = (perf_counter() - stage) * 1000
-            if user is None or not user['is_active']:
-                LOGGER.warning('login user_found=false normalized_email=%s', safe_email)
-                LOGGER.warning('login password_verification=not_run reason=user_not_found')
-                return (response_payload(error='Email or password is incorrect.'), 401)
-            LOGGER.info('login user_found=true normalized_email=%s user_id=%s', safe_email, user['id'])
             stage = perf_counter()
-            verified = check_password_hash(user['password_hash'], password)
+            active_user = user is not None and user['is_active']
+            verified = check_password_hash(user['password_hash'] if active_user else _DUMMY_PASSWORD_HASH, password)
             timings['password'] = (perf_counter() - stage) * 1000
-            if not verified:
+            if not active_user or not verified:
                 LOGGER.warning('login password_verification=false normalized_email=%s', safe_email)
                 return (response_payload(error='Email or password is incorrect.'), 401)
             LOGGER.info('login password_verification=true normalized_email=%s', safe_email)
@@ -73,10 +81,11 @@ def login(payload):
 
 
 def current_user():
-    user = _get_current_user()
+    user = _get_current_user(include_permissions=True)
     if user is None:
-        return response_payload(authenticated=False)
-    return response_payload(authenticated=True, user=_public_user(user), csrf_token=g.access_claims['csrf'])
+        from services.token_service import read_refresh_cookie
+        return response_payload(authenticated=False, refresh_available=bool(read_refresh_cookie()))
+    return response_payload(authenticated=True, user=g.public_current_user, csrf_token=g.access_claims['csrf'])
 
 def logout():
     from services.token_service import logout_tokens

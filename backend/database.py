@@ -7,9 +7,14 @@ from contextlib import contextmanager
 from threading import Lock
 import sqlite3
 from pathlib import Path
+from time import perf_counter
+from middlewares.observability import record_timing
 
 import psycopg
-from psycopg_pool import ConnectionPool
+from psycopg_pool import ConnectionPool, PoolTimeout
+
+# Connectivity failures are service outages, not failed credential checks.
+DATABASE_UNAVAILABLE_ERRORS = (psycopg.OperationalError, PoolTimeout)
 
 
 def _postgres_row_factory(cursor):
@@ -38,6 +43,7 @@ class DatabaseConnection:
         self.dialect = dialect
         self._pool = pool
         self._released = False
+        self._instrument = True
 
     def _ensure_open(self):
         if self._released:
@@ -51,12 +57,23 @@ class DatabaseConnection:
 
     def execute(self, statement, parameters=()):
         self._ensure_open()
-        return self._connection.execute(self._adapt_sql(statement), parameters)
+        if not self._instrument:
+            return self._connection.execute(self._adapt_sql(statement), parameters)
+        start = perf_counter()
+        try:
+            return self._connection.execute(self._adapt_sql(statement), parameters)
+        finally:
+            record_timing('db_execute', (perf_counter() - start) * 1000)
 
     def executemany(self, statement, parameters):
         self._ensure_open()
         cursor = self._connection.cursor()
-        cursor.executemany(self._adapt_sql(statement), parameters)
+        start = perf_counter()
+        try:
+            cursor.executemany(self._adapt_sql(statement), parameters)
+        finally:
+            if self._instrument:
+                record_timing('db_execute', (perf_counter() - start) * 1000)
         return cursor
 
     def commit(self):

@@ -13,6 +13,12 @@ def create_database_action(app, get_connection):
             try:
                 with connection:
                     begin_write(connection)
+                    if request.method == 'POST' and not request.path.endswith('/revoke'):
+                        from services.rate_limit_service import check_rate_limit
+                        limited = check_rate_limit(connection, 'invitation-admin' if request.path.startswith('/api/admin/') else 'invitation-public')
+                        if limited:
+                            from controllers.responses import respond
+                            return respond(limited)
                     try:
                         return view(connection, *args, **kwargs)
                     except InvitationError as error:

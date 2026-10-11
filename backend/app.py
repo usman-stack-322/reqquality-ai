@@ -43,7 +43,7 @@ from werkzeug.security import check_password_hash
 
 from analyzers.hybrid_analyzer import analyze_hybrid
 
-from database import DATABASE_ERRORS, connect_database, initialize_postgresql_schema
+from database import DATABASE_ERRORS, DATABASE_UNAVAILABLE_ERRORS, connect_database, initialize_postgresql_schema
 
 from reporting import build_project_summary_pdf, build_requirement_pdf
 
@@ -51,30 +51,65 @@ from admin_dashboard import initialize_management_schema, record_activity, regis
 
 DATABASE_URL = os.getenv('DATABASE_URL') or None
 
-app = Flask(__name__)
+if DATABASE_URL and any(len((os.getenv(key) or '').encode('utf-8')) < 32
+                        for key in ('REQQUALITY_SECRET_KEY', 'JWT_SECRET_KEY')):
+    raise RuntimeError('PostgreSQL deployments require persistent REQQUALITY_SECRET_KEY and JWT_SECRET_KEY of at least 32 bytes each.')
 
-frontend_origins = [origin.strip() for origin in os.getenv('FRONTEND_ORIGINS', 'https://localhost:5173,https://127.0.0.1:5173').split(',') if origin.strip()]
+# Direct execution is loopback-only development; WSGI imports stay HTTPS-only.
+LOCAL_HTTP_DEVELOPMENT = __name__ == '__main__'
+app = Flask(__name__)
+app.config['LOCAL_HTTP_DEVELOPMENT'] = LOCAL_HTTP_DEVELOPMENT
+from middlewares.observability import register_observability
+register_observability(app)
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
+
+def database_unavailable(error):
+    # Do not log exception text: drivers may include credentials/connection info.
+    app.logger.error('Database unavailable endpoint=%s exception_type=%s', request.endpoint, type(error).__name__)
+    response = jsonify(error='The database is temporarily unavailable. Please try again later.', code='database_unavailable')
+    response.status_code = 503
+    response.headers['Retry-After'] = '30'
+    return response
+
+for database_error in DATABASE_UNAVAILABLE_ERRORS:
+    app.register_error_handler(database_error, database_unavailable)
+
+@app.errorhandler(413)
+def request_too_large(error):
+    return jsonify(error='Request body must be at most 1 MB.'), 413
+
+frontend_origins = [origin.strip() for origin in os.getenv('FRONTEND_ORIGINS', 'https://localhost:5173,https://127.0.0.1:5173,https://www.reqqualityai.site,https://reqqualityai.site').split(',') if origin.strip()]
+
+if LOCAL_HTTP_DEVELOPMENT:
+    frontend_origins += ['http://localhost:5173', 'http://127.0.0.1:5173']
 
 CORS(app, origins=frontend_origins, supports_credentials=True)
 
 app.config.update(SECRET_KEY=os.getenv('REQQUALITY_SECRET_KEY') or secrets.token_hex(32), SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax', SESSION_COOKIE_SECURE=os.getenv('SESSION_COOKIE_SECURE', 'false').lower() == 'true', PERMANENT_SESSION_LIFETIME=timedelta(hours=8))
 
-# Token cookies always require HTTPS; invitation verification keeps its separate session.
+# Production cookies require HTTPS; direct loopback development uses HTTP.
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY') or app.config['SECRET_KEY']
 if len(app.config['JWT_SECRET_KEY'].encode('utf-8')) < 32:
     raise RuntimeError('JWT_SECRET_KEY must contain at least 32 bytes.')
-app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SECURE'] = not LOCAL_HTTP_DEVELOPMENT
 from services.token_service import apply_auth_cookies
 app.after_request(apply_auth_cookies)
 
 @app.before_request
 def require_secure_authentication():
-    if request.path in ('/api/auth/login', '/api/auth/refresh') and not request.is_secure:
+    local_http = app.config.get('LOCAL_HTTP_DEVELOPMENT', False)
+    if local_http and request.host.split(':', 1)[0] not in ('localhost', '127.0.0.1'):
+        return jsonify(error='Local development accepts loopback hosts only.'), 403
+    if request.path in ('/api/auth/login', '/api/auth/refresh') and not request.is_secure and not local_http:
         return jsonify(error='Use HTTPS for Secure authentication cookies.'), 426
+    if request.path.startswith('/api/') and request.method not in ('GET', 'HEAD', 'OPTIONS'):
+        origin = request.headers.get('Origin')
+        if origin and origin not in frontend_origins and origin != request.host_url.rstrip('/'):
+            return jsonify(error='Request origin is not allowed.'), 403
 
-if int(os.getenv('TRUST_PROXY_HOPS', '0')):
+if not LOCAL_HTTP_DEVELOPMENT and int(os.getenv('TRUST_PROXY_HOPS', '0')):
     from werkzeug.middleware.proxy_fix import ProxyFix
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=int(os.getenv('TRUST_PROXY_HOPS')))
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=int(os.getenv('TRUST_PROXY_HOPS')), x_for=int(os.getenv('TRUST_PROXY_HOPS')))
 
 LOGGER = app.logger
 
@@ -128,5 +163,4 @@ register_invitation_routes(app, get_connection, roles_required, csrf_required)
 register_management_routes(app, get_connection, roles_required, csrf_required, login_required)
 
 if __name__ == "__main__":
-    from dev_https import certificate_paths
-    app.run(debug=False, host="127.0.0.1", port=5000, ssl_context=certificate_paths())
+    app.run(debug=False, host="127.0.0.1", port=5000)
