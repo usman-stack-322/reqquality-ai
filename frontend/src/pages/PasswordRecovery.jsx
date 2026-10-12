@@ -1,6 +1,8 @@
 import { apiFetch as fetch } from '../api.js';
 import React, { useState } from 'react';
 
+const RECOVERY_UNAVAILABLE = 'The password reset service is temporarily unavailable. Please try again later.';
+
 export default function PasswordRecovery({ reset, onReset }) {
   const [token] = useState(() => new URLSearchParams(window.location.hash.split('?')[1] || '').get('token') || '');
   const [email, setEmail] = useState('');
@@ -20,11 +22,15 @@ export default function PasswordRecovery({ reset, onReset }) {
         method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reset ? { token, password } : { email: email.trim().toLowerCase() }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Unable to process your request.');
+      const data = await response.json().catch(() => null);
+      if (response.status >= 500 || !data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new Error(RECOVERY_UNAVAILABLE);
+      }
+      if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : 'Unable to process your request.');
+      if (typeof data.message !== 'string' || !data.message.trim()) throw new Error(RECOVERY_UNAVAILABLE);
       if (reset) onReset(data.message);
       else setMessage(data.message);
-    } catch (failure) { setError(failure.message || 'Unable to reach the authentication API.'); }
+    } catch (failure) { setError(failure instanceof TypeError ? RECOVERY_UNAVAILABLE : failure.message || RECOVERY_UNAVAILABLE); }
     finally { setBusy(false); }
   }
 
