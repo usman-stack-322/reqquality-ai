@@ -1,3 +1,5 @@
+> Historical reference. See the [2026-10-17 implementation and verification report](../IMPLEMENTATION_REPORT.md) for current analysis, permissions, lifecycle and performance evidence.
+
 # Login performance investigation
 
 This document records the earlier pooling investigation. For measurements from

@@ -29,7 +29,7 @@ test('public pages render synchronously and protected routes remain gated', asyn
     assert.ok(homepage.includes('SQA Admin'));
     assert.ok(homepage.includes('does not execute tests'));
     assert.ok(!homepage.includes('verified quality'));
-    const steps = ['Requirement Input', 'Hybrid Analysis', 'Refinement', 'Acceptance Criteria', 'Risk / Priority', 'Test Scenarios', 'Traceability', 'SQA Review', 'Dashboard / Reports'];
+    const steps = ['Requirement Input', 'AI Analysis', 'Refinement', 'Acceptance Criteria', 'Risk / Priority', 'Test Scenarios', 'Traceability', 'SQA Review', 'Dashboard / Reports'];
     const workflow = homepage.slice(homepage.indexOf('<ol class="workflow-steps"'));
     let position = -1;
     for (const step of steps) {

@@ -37,14 +37,17 @@ def _validate_analysis_payload(analysis):
             scenario_codes.add(code)
         if not isinstance(scenario.get('category'), str) or scenario['category'] not in SCENARIO_CATEGORIES:
             return 'A test scenario has an invalid category.'
-        if not isinstance(scenario.get('title'), str) or not scenario['title'].strip():
+        if not isinstance(scenario.get('title'), str) or not scenario['title'].strip() or len(scenario['title']) > 200:
             return 'Each test scenario must have a title.'
-        if not isinstance(scenario.get('expected_result'), str):
+        if not isinstance(scenario.get('expected_result'), str) or not scenario['expected_result'].strip() or len(scenario['expected_result']) > 5000:
             return 'Each test scenario must have an expected result.'
         for field in ('preconditions', 'test_steps'):
             values = scenario.get(field, [])
-            if not isinstance(values, list) or any((not isinstance(value, str) for value in values)):
+            if not isinstance(values, list) or len(values) > 100 or any((not isinstance(value, str) or not value.strip() or len(value) > 5000 for value in values)):
                 return f"Scenario {field.replace('_', ' ')} must be a list of strings."
+        codes = scenario.get('criterion_codes', [])
+        if not isinstance(codes, list) or any(not isinstance(v, str) for v in codes):
+            return 'Scenario criterion links must be a list of strings.'
         if 'source' in scenario and (not isinstance(scenario['source'], str) or scenario['source'] not in CONTENT_SOURCES):
             return 'A test scenario has an invalid source.'
         if scenario.get('needs_confirmation') is not None and (not isinstance(scenario['needs_confirmation'], bool)):

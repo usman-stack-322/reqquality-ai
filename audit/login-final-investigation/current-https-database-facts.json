@@ -1,0 +1,12 @@
+{
+  "transport": "certificate-verified HTTPS, read-only diagnostic only",
+  "status": 200,
+  "elapsed_ms": 1646.56,
+  "facts": [
+    {
+      "ok": 1,
+      "project_access_present": false,
+      "schema_marker_present": false
+    }
+  ]
+}

@@ -143,7 +143,7 @@ class ManagerTests(unittest.TestCase):
         self.assertFalse(data['conflicts_available'])
         self.assertEqual(data['attention'][0]['id'], first)
         self.assertEqual(data['pending_reviews'][0]['id'], first)
-        self.assertEqual(data['review_distribution'][0]['percent'], 40)
+        self.assertEqual(next(row for row in data['review_distribution'] if row['value']=='Pending')['percent'], 40)
         self.assertEqual(data['unscored'], 1)
         engineer = next(row for row in data['reviewer_workload'] if row['id'] == 3)
         self.assertEqual([engineer[key] for key in ('assigned', 'pending', 'completed', 'high_risk')], [2, 1, 1, 1])
@@ -250,10 +250,13 @@ class ManagerTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201, response.json)
         _id = response.json['requirement']['id']
         self.assertEqual(self.admin.patch(f'/api/requirements/{_id}/review', json={'review_status': 'Approved'}, headers=HEADERS).status_code, 403)
-        response = self.client(3).patch(f'/api/requirements/{_id}/review', json={'review_status': 'Approved'}, headers=HEADERS)
+        self.criteria(_id)
+        self.assertEqual(analyst.post(f'/api/requirements/{_id}/submit',json={'revision':1},headers=HEADERS).status_code,200)
+        self.assertEqual(self.client(3).patch(f'/api/requirements/{_id}/review',json={'revision':2,'review_status':'In Review'},headers=HEADERS).status_code,200)
+        response = self.client(3).patch(f'/api/requirements/{_id}/review', json={'revision':3,'review_status': 'Approved'}, headers=HEADERS)
         self.assertEqual(response.status_code, 200, response.json)
         self.assertEqual(self.dashboard()['summary']['approved'], 1)
-        self.assertEqual({row['action'] for row in self.dashboard()['activity']}, {'requirement_created', 'review_updated'})
+        self.assertTrue({'requirement_created', 'review_approved', 'submitted_for_review'} <= {row['action'] for row in self.dashboard()['activity']})
 
     def test_bounded_attention_and_activity_and_idempotent_migration(self):
         for index in range(12):

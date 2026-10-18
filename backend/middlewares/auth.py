@@ -18,7 +18,7 @@ def _get_current_user(include_permissions=False):
             try:
                 with connection.autocommit_reads():
                     user = connection.execute(
-                        'SELECT u.id,u.name,u.email,u.role,u.created_at,u.is_active,u.auth_version '
+                        'SELECT u.id,u.name,u.email,u.role,u.created_at,u.is_active,u.auth_version,u.project_access '
                         'FROM users u WHERE u.id=? AND EXISTS ('
                         'SELECT 1 FROM auth_refresh_tokens r WHERE r.user_id=u.id AND r.family_id=? '
                         'AND r.revoked_at IS NULL AND r.expires_at>?)',
@@ -80,6 +80,8 @@ def roles_required(*roles):
                     try:
                         row = connection.execute('SELECT enabled FROM role_permissions WHERE role=? AND permission=?', (user['role'], permission)).fetchone()
                         allowed = bool(row and row['enabled'])
+                        if roles in (('Analyst',), ('SQA Engineer',)):
+                            allowed = allowed and user['role'] in roles
                     finally:
                         connection.close()
             if not allowed:

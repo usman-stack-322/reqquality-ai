@@ -1,0 +1,24 @@
+[
+  {
+    "path": "/api/auth/login",
+    "runtime": "clean network-enabled Flask process",
+    "ms": 10063.24,
+    "status": 503,
+    "body": {
+      "code": "database_unavailable",
+      "error": "The database is temporarily unavailable. Please try again later."
+    },
+    "server_timing": "db_connect;dur=10011.9, request;dur=10026.0"
+  },
+  {
+    "path": "/api/auth/me",
+    "runtime": "clean network-enabled Flask process",
+    "ms": 23.2,
+    "status": 200,
+    "body": {
+      "authenticated": false,
+      "refresh_available": false
+    },
+    "server_timing": "request;dur=0.6"
+  }
+]

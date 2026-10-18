@@ -1,0 +1,15 @@
+{"step": "browser_target", "url": "http://127.0.0.1:5173/#login", "bundle": "production"}
+{"step": "failed_login_preserves_email", "result": "passed"}
+{"step": "analyst_login", "result": "passed"}
+{"step": "browser_unauthorized_admin_and_project_requests", "result": "passed"}
+{"step": "queue_filter_does_not_repeat_dashboard_request", "result": "passed"}
+{"step": "provider_and_offline_failures_preserve_input_and_retry", "result": "passed", "provider": "mock"}
+{"step": "double_save_creates_one_record_and_refresh_restores_session_and_detail", "result": "passed"}
+{"step": "analyze_save_submit", "result": "passed", "provider": "mock"}
+{"step": "revision_feedback_edit_resubmit", "result": "passed"}
+{"step": "sqe_review_approval", "result": "passed"}
+{"step": "approved_material_edit_requires_rereview_and_keeps_history", "result": "passed"}
+{"step": "authenticated_pdf_and_csv", "result": "passed", "pdf": {"status": 200, "type": "application/pdf", "bytes": 4640}, "csv": {"status": 200, "type": "text/csv; charset=utf-8; charset=utf-8", "bytes": 240}}
+{"step": "admin_team_ui_and_authorized_api", "result": "passed"}
+{"step": "logout_revokes_browser_access", "result": "passed"}
+{"step": "browser_evidence", "resources": [{"path": "/api/auth/me", "ms": 10}, {"path": "/api/requirements/1", "ms": 10}, {"path": "/api/auth/me", "ms": 8}, {"path": "/api/requirements/1/submit", "ms": 48}, {"path": "/api/auth/logout", "ms": 41}, {"path": "/api/auth/login", "ms": 892}, {"path": "/api/dashboard", "ms": 16}, {"path": "/api/requirements", "ms": 14}, {"path": "/api/requirements/1", "ms": 11}, {"path": "/api/requirements/1/review", "ms": 412}, {"path": "/api/requirements/1/review", "ms": 330}, {"path": "/api/auth/logout", "ms": 50}, {"path": "/api/auth/login", "ms": 256}, {"path": "/api/dashboard", "ms": 20}, {"path": "/api/requirements", "ms": 16}, {"path": "/api/requirements/1", "ms": 13}, {"path": "/api/requirements/1", "ms": 852}, {"path": "/api/requirements/1/submit", "ms": 85}, {"path": "/api/auth/logout", "ms": 56}, {"path": "/api/auth/login", "ms": 370}, {"path": "/api/dashboard", "ms": 20}, {"path": "/api/requirements", "ms": 25}, {"path": "/api/requirements/1", "ms": 18}, {"path": "/api/requirements/1/review", "ms": 68}, {"path": "/api/requirements/1/scenarios/1", "ms": 69}, {"path": "/api/requirements/1/review", "ms": 1471}, {"path": "/api/auth/logout", "ms": 47}, {"path": "/api/auth/login", "ms": 870}, {"path": "/api/dashboard", "ms": 27}, {"path": "/api/requirements", "ms": 29}, {"path": "/api/requirements/1", "ms": 17}, {"path": "/api/requirements/1", "ms": 58}, {"path": "/api/requirements/1/report.pdf", "ms": 1231}, {"path": "/api/exports/requirements.csv", "ms": 11}, {"path": "/api/auth/logout", "ms": 544}, {"path": "/api/auth/login", "ms": 280}, {"path": "/api/admin/dashboard", "ms": 371}, {"path": "/api/auth/logout", "ms": 47}, {"path": "/api/auth/me", "ms": 5}], "console_exceptions": 0}

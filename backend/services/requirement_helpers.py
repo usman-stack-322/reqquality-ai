@@ -39,15 +39,20 @@ def _public_user(user, connection=None):
         finally:
             if owns_connection:
                 connection.close()
-    return {'permissions': permissions, 'id': user['id'], 'name': user['name'],
+    return {'project_access': bool(user['project_access']) if 'project_access' in user.keys() else True, 'permissions': permissions, 'id': user['id'], 'name': user['name'],
             'email': user['email'], 'role': user['role'], 'created_at': user['created_at']}
 
 
-def _get_requirement_detail(connection, requirement_id):
+def _get_requirement_history(connection, requirement_id):
+    return [dict(item) for item in connection.execute('SELECT h.id,h.actor_id,h.action,h.created_at,u.name AS actor_name FROM requirement_history h LEFT JOIN users u ON u.id=h.actor_id WHERE h.requirement_id=? ORDER BY h.id DESC LIMIT 100', (requirement_id,))]
+
+
+def _get_requirement_detail(connection, requirement_id, include_history=True):
     row = connection.execute('SELECT r.*, u.name AS assigned_reviewer FROM requirements r LEFT JOIN users u ON u.id=r.assigned_reviewer_user_id WHERE r.id = ?', (requirement_id,)).fetchone()
     if row is None:
         return None
     requirement = dict(row)
+    requirement['history'] = _get_requirement_history(connection, requirement_id) if include_history else []
     requirement['needs_confirmation'] = bool(requirement['needs_confirmation'])
     try:
         analysis = json.loads(requirement.get('analysis_summary') or '{}')
@@ -63,10 +68,11 @@ def _get_requirement_detail(connection, requirement_id):
     for criterion in requirement['acceptance_criteria']:
         criterion['needs_confirmation'] = bool(criterion['needs_confirmation'])
         criterion['introduced_values'] = json.loads(criterion['introduced_values'])
-    scenarios = connection.execute('SELECT id, scenario_code, category, title, preconditions, test_steps, expected_result, source, needs_confirmation, introduced_values, assumption_reasons FROM test_scenarios WHERE requirement_id = ? ORDER BY id', (requirement_id,)).fetchall()
+    scenarios = connection.execute('SELECT id, scenario_code, category, title, preconditions, test_steps, expected_result, source, needs_confirmation, introduced_values, assumption_reasons, criterion_codes FROM test_scenarios WHERE requirement_id = ? ORDER BY id', (requirement_id,)).fetchall()
     requirement['test_scenarios'] = []
     for scenario_row in scenarios:
         scenario = dict(scenario_row)
+        scenario['criterion_codes'] = json.loads(scenario.get('criterion_codes') or '[]')
         scenario['preconditions'] = json.loads(scenario['preconditions'])
         scenario['test_steps'] = json.loads(scenario['test_steps'])
         scenario['needs_confirmation'] = bool(scenario['needs_confirmation'])
@@ -78,6 +84,11 @@ def _get_requirement_detail(connection, requirement_id):
     for assumption in requirement['assumptions']:
         assumption['needs_confirmation'] = bool(assumption['needs_confirmation'])
         assumption['introduced_values'] = json.loads(assumption['introduced_values'])
+    codes = {item['criterion_code'] for item in requirement['acceptance_criteria']}
+    linked = {code for item in requirement['test_scenarios'] for code in item['criterion_codes']}
+    requirement['coverage_gaps'] = sorted(codes - linked)
+    requirement['invalid_criterion_links'] = sorted(linked - codes)
+    requirement['unlinked_scenarios'] = [item['scenario_code'] for item in requirement['test_scenarios'] if not item['criterion_codes']]
     return requirement
 
 def _project_report_summary(connection):
@@ -107,65 +118,36 @@ def _download_response(file_stream, filename, mimetype):
     return response
 
 def _save_review(requirement_id, data, required_fields=()):
-    if not isinstance(data, dict):
-        return (response_payload(error='Send a JSON object with review details.'), 400)
-    if not any((field in data for field in ('review_status', 'reviewer_notes'))):
-        return (response_payload(error='Provide a review status or reviewer notes.'), 400)
-    if any((field not in data for field in required_fields)):
-        return (response_payload(error='Include the required review field.'), 400)
-    updates = []
-    values = []
-    if 'review_status' in data:
-        review_status = data['review_status']
-        if not isinstance(review_status, str) or review_status not in REVIEW_STATUSES:
-            return (response_payload(error='Choose a valid review status.'), 400)
-        updates.append('review_status = ?')
-        values.append(review_status)
-        updates.extend(('source = ?', 'needs_confirmation = 0'))
-        values.append('confirmed' if review_status == 'Approved' else 'original')
-    if 'reviewer_notes' in data:
-        reviewer_notes = data['reviewer_notes']
-        if not isinstance(reviewer_notes, str) or len(reviewer_notes) > 20000:
-            return (response_payload(error='Reviewer notes must be text with at most 20,000 characters.'), 400)
-        updates.append('reviewer_notes = ?')
-        values.append(reviewer_notes.strip())
-    review_timestamp = _utc_timestamp()
-    updates.extend(('reviewed_by_user_id = ?', 'reviewed_at = ?'))
-    values.extend((g.current_user['id'], review_timestamp))
-    updates.append('updated_at = ?')
-    values.append(review_timestamp)
-    values.append(requirement_id)
-    connection = get_connection()
+    from flask import abort
+    from services.workflow_service import locked_requirement, snapshot
+    if not isinstance(data, dict) or any(f not in data for f in required_fields) or not any(f in data for f in ('review_status','reviewer_notes')):
+        abort(400, description='Include the required review fields.')
+    if g.current_user['role'] != 'SQA Engineer':
+        abort(403, description='Only SQE Engineers may review requirements.')
+    c = get_connection()
     try:
-        with connection:
-            cursor = connection.execute(f"UPDATE requirements SET {', '.join(updates)} WHERE id = ?", values)
-            if cursor.rowcount == 0:
-                return (response_payload(error='Requirement not found.'), 404)
-            if 'review_status' in data:
-                _update_related_confirmation(connection, requirement_id, approved=review_status == 'Approved')
-            record_activity(connection, g.current_user, 'review_updated', 'requirement', requirement_id, f"Reviewed REQ-{requirement_id}: {data.get('review_status', 'notes updated')}")
-            requirement = _get_requirement_detail(connection, requirement_id)
+        with c:
+            row = locked_requirement(c, requirement_id, data)
+            if row['created_by_user_id'] == g.current_user['id']:
+                abort(403, description='Authors cannot approve or review their own requirements.')
+            target = data.get('review_status', row['review_status'])
+            if not isinstance(target, str) or target not in REVIEW_STATUSES:
+                abort(400, description='Choose a valid review status.')
+            allowed = {'Pending': {'In Review'}, 'Ready for Review': {'In Review'},
+                       'In Review': {'In Review', 'Approved', 'Needs Revision'}}
+            if target not in allowed.get(row['review_status'], set()):
+                abort(409, description='Start a submitted review before deciding; revisions must be resubmitted by an Analyst.')
+            notes = data.get('reviewer_notes', row['reviewer_notes'])
+            if not isinstance(notes, str) or len(notes)>20000:
+                abort(400, description='Reviewer notes must be text of at most 20,000 characters.')
+            if target == 'Needs Revision' and not notes.strip():
+                abort(400, description='Explain the requested changes.')
+            snapshot(c, requirement_id, 'before_review_transition')
+            now = _utc_timestamp()
+            c.execute('UPDATE requirements SET review_status=?,reviewer_notes=?,reviewed_by_user_id=?,reviewed_at=?,updated_at=?,revision=revision+1 WHERE id=?',
+                      (target,notes.strip(),g.current_user['id'],now,now,requirement_id))
+            # Approval never silently confirms AI assumptions or business decisions.
+            snapshot(c, requirement_id, 'review_'+target.lower().replace(' ','_'))
+            return response_payload(requirement=_get_requirement_detail(c,requirement_id))
     finally:
-        connection.close()
-    return response_payload(requirement=requirement)
-
-def _update_related_confirmation(connection, requirement_id, approved):
-    if approved:
-        for table in ('requirement_acceptance_criteria', 'test_scenarios', 'requirement_assumptions'):
-            connection.execute(f'UPDATE {table} SET needs_confirmation = 0 WHERE requirement_id = ?', (requirement_id,))
-        return
-    criteria = connection.execute('SELECT id, source, introduced_values FROM requirement_acceptance_criteria WHERE requirement_id = ?', (requirement_id,)).fetchall()
-    for item in criteria:
-        source = item['source']
-        needs_confirmation = source in {'ai_assumption', 'confirmed'} or bool(json.loads(item['introduced_values']))
-        if source == 'confirmed':
-            source = 'ai_suggestion'
-        connection.execute('UPDATE requirement_acceptance_criteria SET source = ?, needs_confirmation = ? WHERE id = ?', (source, int(needs_confirmation), item['id']))
-    scenarios = connection.execute('SELECT id, source, introduced_values, assumption_reasons FROM test_scenarios WHERE requirement_id = ?', (requirement_id,)).fetchall()
-    for item in scenarios:
-        source = item['source']
-        needs_confirmation = source in {'ai_assumption', 'confirmed'} or bool(json.loads(item['introduced_values'])) or bool(json.loads(item['assumption_reasons']))
-        if source == 'confirmed':
-            source = 'ai_suggestion'
-        connection.execute('UPDATE test_scenarios SET source = ?, needs_confirmation = ? WHERE id = ?', (source, int(needs_confirmation), item['id']))
-    connection.execute('UPDATE requirement_assumptions SET needs_confirmation = 1 WHERE requirement_id = ?', (requirement_id,))
+        c.close()

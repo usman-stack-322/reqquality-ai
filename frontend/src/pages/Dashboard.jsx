@@ -1,10 +1,10 @@
 import { apiFetch as fetch } from '../api.js';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PdfExportButton from '../components/PdfExportButton';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 
 const REVIEW_DISTRIBUTION = [
-  ['Pending', 'pending_count', 'pending'],
+  ['Draft / Ready / Historical pending', 'pending_count', 'pending'],
   ['In Review', 'in_review_count', 'in-review'],
   ['Approved', 'approved_count', 'approved'],
   ['Needs Revision', 'needs_revision_count', 'needs-revision'],
@@ -81,9 +81,13 @@ function RequirementRow({ requirement, attention = false }) {
 
 export default function Dashboard({ user }) {
   const isEngineer = user?.role === 'SQA Engineer';
+  const dashboardSnapshot = useRef(null);
   const [dashboard, setDashboard] = useState(null);
   const [requirements, setRequirements] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [queueFilters, setQueueFilters] = useState({status:'',risk:'',priority:'',type:''});
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -91,14 +95,14 @@ export default function Dashboard({ user }) {
     async function loadRequirements() {
       try {
         const [dashboardResponse, requirementsResponse] = await Promise.all([
-          fetch('/api/dashboard', { signal: controller.signal }),
-          fetch('/api/requirements?view=summary', { signal: controller.signal }),
+          dashboardSnapshot.current?.userId === user?.id ? Promise.resolve(null) : fetch('/api/dashboard', { signal: controller.signal }),
+          fetch(`/api/requirements?view=summary&page=${page}&${new URLSearchParams(queueFilters)}`, { signal: controller.signal }),
         ]);
         const [dashboardData, requirementsData] = await Promise.all([
-          dashboardResponse.json(),
+          dashboardResponse ? dashboardResponse.json() : Promise.resolve(dashboardSnapshot.current.data),
           requirementsResponse.json(),
         ]);
-        if (!dashboardResponse.ok) throw new Error(dashboardData.error || 'Unable to load dashboard statistics.');
+        if (dashboardResponse && !dashboardResponse.ok) throw new Error(dashboardData.error || 'Unable to load dashboard statistics.');
         if (!requirementsResponse.ok) throw new Error(requirementsData.error || 'Unable to load requirements.');
         const dashboardNumbers = [
           'total_requirements', 'pending_count', 'in_review_count', 'approved_count',
@@ -115,8 +119,10 @@ export default function Dashboard({ user }) {
           throw new Error('The dashboard response was incomplete. Refresh the page and try again.');
         }
         if (controller.signal.aborted) return;
+        dashboardSnapshot.current = { userId:user?.id, data:dashboardData };
         setDashboard(dashboardData);
         setRequirements(requirementsData.requirements);
+        setTotal(requirementsData.total);
       } catch (loadError) {
         if (controller.signal.aborted) return;
         const message = loadError instanceof SyntaxError
@@ -131,7 +137,7 @@ export default function Dashboard({ user }) {
     }
     loadRequirements();
     return () => controller.abort();
-  }, []);
+  }, [page, queueFilters, user?.id]);
 
   const [search, setSearch] = useState('');
   const [reviewFilter, setReviewFilter] = useState('');
@@ -167,7 +173,7 @@ export default function Dashboard({ user }) {
             <MetricCard label="In Review Requirements" value={dashboard.in_review_count} tone="metric-review" />
             <MetricCard label="Needs Revision Requirements" value={dashboard.needs_revision_count} tone="metric-revision" />
             <MetricCard
-              label="Average Quality Risk Score"
+              label="Historical numeric risk average"
               value={`${dashboard.average_risk_score}/100`}
               detail="0–29 Low · 30–59 Medium · 60–79 High · 80–100 Critical"
               helpText="Quality Risk Score indicates how much refinement and QA attention a requirement may need before implementation."
@@ -231,11 +237,14 @@ export default function Dashboard({ user }) {
           <section className="dashboard-section" aria-labelledby="all-requirements-title">
             <div className="dashboard-section-heading">
               <div><p className="eyebrow">REGISTER</p><h2 id="all-requirements-title">All Requirements</h2></div>
-              <span>{visibleRequirements.length} of {requirements.length} items</span>
+              <span>{total} items ? page {page}</span>
             </div>
             <div className="dashboard-filters">
-              <label>Search requirements<input type="search" placeholder="Search by title" value={search} onChange={event => setSearch(event.target.value)} /></label>
-              <label>Review status<select value={reviewFilter} onChange={event => setReviewFilter(event.target.value)}><option value="">All statuses</option>{REVIEW_DISTRIBUTION.map(([label]) => <option key={label}>{label}</option>)}</select></label>
+              {Object.entries({status:['Draft','Ready for Review','Pending','In Review','Approved','Needs Revision'],risk:['Low','Medium','High','Critical'],priority:['Low','Medium','High'],type:['Functional','Non-Functional','Business']}).map(([key,choices]) => <label key={key}>Filter {key}<select value={queueFilters[key]} onChange={e => {setQueueFilters({...queueFilters,[key]:e.target.value});setPage(1);}}><option value="">All</option>{choices.map(v => <option key={v}>{v}</option>)}</select></label>)}
+              <button disabled={page===1 || isLoading} onClick={() => setPage(page-1)}>Previous page</button>
+              <button disabled={page*50>=total || isLoading} onClick={() => setPage(page+1)}>Next page</button>
+              <label>Search this page<input type="search" placeholder="Search by title" value={search} onChange={event => setSearch(event.target.value)} /></label>
+              <label>Review status<select value={reviewFilter} onChange={event => setReviewFilter(event.target.value)}><option value="">All statuses</option>{['Draft','Ready for Review','Pending','In Review','Approved','Needs Revision'].map(label => <option key={label}>{label}</option>)}</select></label>
             </div>
             {visibleRequirements.length ? (
               <div className="dashboard-requirement-list">

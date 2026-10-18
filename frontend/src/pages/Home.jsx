@@ -2,7 +2,7 @@ import React from 'react';
 
 const WORKFLOW = [
   ['Requirement Input', 'Capture the stakeholder need, type and user priority.'],
-  ['Hybrid Analysis', 'Rules identify quality issues; Gemini adds suggestions when available.'],
+  ['AI Analysis', 'Gemini analyzes meaning, uncertainty and testability in one structured review.'],
   ['Refinement', 'Review a suggested improved requirement and any introduced assumptions.'],
   ['Acceptance Criteria', 'Review proposed criteria for observable outcomes.'],
   ['Risk / Priority', 'Use requirement-quality risk and suggested priority to guide attention.'],
@@ -12,7 +12,7 @@ const WORKFLOW = [
   ['Dashboard / Reports', 'Track review status, quality risk and artifact links; export PDF or CSV.'],
 ];
 const FEATURES = [
-  ['01', 'Find the unclear parts', 'Rules and optional Gemini analysis flag ambiguity, missing information and testability concerns. If AI is unavailable, deterministic analysis and scenario generation remain available.'],
+  ['01', 'Find the unclear parts', 'Gemini identifies ambiguity, missing information and testability concerns. If AI cannot complete, your input stays available for a safe retry.'],
   ['02', 'Review suggestions in context', 'Compare the original requirement with proposed refinement, acceptance criteria and labeled assumptions. Keep human judgment at the center of each decision.'],
   ['03', 'Connect review artifacts', 'Keep generated scenarios and acceptance criteria linked to their requirement. Traceability coverage measures these links, not executed-test coverage.'],
   ['04', 'Make review progress visible', 'Use dashboards, reviewer notes, review status, requirement PDF reports, project summary PDFs and requirement CSV exports.'],

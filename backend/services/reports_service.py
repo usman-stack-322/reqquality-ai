@@ -1,11 +1,11 @@
 import csv
 from io import BytesIO, StringIO
-from reporting import build_project_summary_pdf, build_requirement_pdf
 from app import get_connection
 from services.requirement_helpers import _get_requirement_detail, _project_report_summary, _download_response
 from services.responses import response_payload
 
 def export_requirement_pdf(requirement_id):
+    from reporting import build_requirement_pdf
     connection = get_connection()
     try:
         requirement = _get_requirement_detail(connection, requirement_id)
@@ -16,6 +16,7 @@ def export_requirement_pdf(requirement_id):
     return _download_response(build_requirement_pdf(requirement), f'reqquality-requirement-{requirement_id}.pdf', 'application/pdf')
 
 def export_project_pdf():
+    from reporting import build_project_summary_pdf
     connection = get_connection()
     try:
         summary = _project_report_summary(connection)

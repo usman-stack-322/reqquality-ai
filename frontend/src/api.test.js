@@ -120,3 +120,41 @@ test('an unavailable refresh returns the original unauthorized response', async 
   assert.equal((await fetch('/api/dashboard')).status, 401);
   assert.deepEqual(calls, ['/api/dashboard', '/api/auth/csrf']);
 });
+
+test('a late session response cannot refresh after logout', async () => {
+  let resolveSession;
+  const calls = [];
+  const fetch = await fresh(async url => {
+    calls.push(url);
+    if (url === '/api/auth/me') return new Promise(resolve => { resolveSession = resolve; });
+    if (url === '/api/auth/logout') return json({});
+    return json({ error: 'Logged out' }, 401);
+  });
+  const session = fetch('/api/auth/me');
+  await fetch('/api/auth/logout', { method: 'POST' });
+  resolveSession(json({ authenticated: false, refresh_available: true }));
+  await session;
+  assert.deepEqual(calls, ['/api/auth/me', '/api/auth/logout']);
+});
+
+test('refresh network failure preserves the original unauthorized response', async () => {
+  const fetch = await fresh(async url => {
+    if (url === '/api/auth/csrf') throw new TypeError('Network disconnected');
+    return json({ error: 'Session expired' }, 401);
+  });
+  assert.equal((await fetch('/api/dashboard')).status, 401);
+});
+
+test('caller cancellation aborts once without replaying a write', async () => {
+  let calls = 0;
+  const controller = new AbortController();
+  const reason = new Error('Navigation cancelled');
+  controller.abort(reason);
+  const fetch = await fresh(async (_url, options) => {
+    calls++;
+    assert.equal(options.signal.aborted, true);
+    throw options.signal.reason;
+  });
+  await assert.rejects(fetch('/api/requirements', { method:'POST', signal:controller.signal }), /Navigation cancelled/);
+  assert.equal(calls, 1);
+});

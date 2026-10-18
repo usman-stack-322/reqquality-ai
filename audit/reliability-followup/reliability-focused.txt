@@ -1,0 +1,45 @@
+test_analysis_cannot_be_relabelled_for_different_text (test_reliability.ReliabilityTests.test_analysis_cannot_be_relabelled_for_different_text) ... [2026-10-17 12:58:23,291] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=64.4 db_connect_ms=6.1 db_execute_ms=4.2
+[2026-10-17 12:58:23,329] INFO in observability: api timing path=/api/requirements status=201 request_ms=36.2 db_connect_ms=3.4 db_execute_ms=3.2
+[2026-10-17 12:58:23,500] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=169.5 db_connect_ms=13.8 db_execute_ms=101.2
+[2026-10-17 12:58:23,515] INFO in observability: api timing path=/api/requirements/1/analysis status=409 request_ms=12.5 db_connect_ms=6.3 db_execute_ms=3.6
+ok
+test_browser_cannot_forge_ai_provenance_or_confirmed_facts (test_reliability.ReliabilityTests.test_browser_cannot_forge_ai_provenance_or_confirmed_facts) ... [2026-10-17 12:58:26,242] INFO in observability: api timing path=/api/requirements status=400 request_ms=6.5 db_connect_ms=2.9 db_execute_ms=2.5
+ok
+test_concurrent_material_edits_reject_stale_writer (test_reliability.ReliabilityTests.test_concurrent_material_edits_reject_stale_writer) ... [2026-10-17 12:58:28,217] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=197.9 db_connect_ms=16.4 db_execute_ms=49.8
+[2026-10-17 12:58:28,334] INFO in observability: api timing path=/api/requirements status=201 request_ms=113.1 db_connect_ms=14.4 db_execute_ms=65.4
+[2026-10-17 12:58:28,507] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=37.3 db_connect_ms=7.5 db_execute_ms=5.2
+[2026-10-17 12:58:28,509] INFO in observability: api timing path=/api/requirements/1 status=409 request_ms=41.0 db_connect_ms=8.2 db_execute_ms=30.7
+[2026-10-17 12:58:28,517] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=7.3 db_connect_ms=3.3 db_execute_ms=2.6
+ok
+test_concurrent_save_retry_creates_one_record (test_reliability.ReliabilityTests.test_concurrent_save_retry_creates_one_record) ... [2026-10-17 12:58:29,652] INFO in observability: api timing path=/api/requirements status=201 request_ms=97.3 db_connect_ms=17.0 db_execute_ms=47.2
+[2026-10-17 12:58:29,655] INFO in observability: api timing path=/api/requirements status=201 request_ms=97.6 db_connect_ms=13.4 db_execute_ms=80.5
+ok
+test_expired_worker_cannot_overwrite_newer_analysis (test_reliability.ReliabilityTests.test_expired_worker_cannot_overwrite_newer_analysis) ... ok
+test_noop_save_preserves_review_history (test_reliability.ReliabilityTests.test_noop_save_preserves_review_history) ... [2026-10-17 12:58:35,104] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=279.3 db_connect_ms=7.7 db_execute_ms=221.9
+[2026-10-17 12:58:35,294] INFO in observability: api timing path=/api/requirements status=201 request_ms=186.5 db_connect_ms=14.5 db_execute_ms=36.9
+[2026-10-17 12:58:35,323] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=25.6 db_connect_ms=13.7 db_execute_ms=7.2
+ok
+test_overlapping_analysis_does_not_start_second_provider_call (test_reliability.ReliabilityTests.test_overlapping_analysis_does_not_start_second_provider_call) ... ok
+test_saved_clarifications_reach_ai_and_are_bound_to_acceptance (test_reliability.ReliabilityTests.test_saved_clarifications_reach_ai_and_are_bound_to_acceptance) ... [2026-10-17 12:58:38,195] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=112.7 db_connect_ms=16.1 db_execute_ms=46.9
+[2026-10-17 12:58:38,229] INFO in observability: api timing path=/api/requirements status=201 request_ms=32.6 db_connect_ms=4.6 db_execute_ms=4.5
+[2026-10-17 12:58:38,264] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=33.8 db_connect_ms=3.7 db_execute_ms=3.4
+[2026-10-17 12:58:38,385] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=119.9 db_connect_ms=11.9 db_execute_ms=52.8
+[2026-10-17 12:58:38,434] INFO in observability: api timing path=/api/requirements/1/analysis status=200 request_ms=46.6 db_connect_ms=8.5 db_execute_ms=9.4
+ok
+test_signed_results_are_user_input_and_content_bound (test_reliability.ReliabilityTests.test_signed_results_are_user_input_and_content_bound) ... [2026-10-17 12:58:41,145] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=165.1 db_connect_ms=15.3 db_execute_ms=85.4
+[2026-10-17 12:58:41,170] INFO in observability: api timing path=/api/requirements status=400 request_ms=21.4 db_connect_ms=12.1 db_execute_ms=5.7
+[2026-10-17 12:58:41,184] INFO in observability: api timing path=/api/requirements status=400 request_ms=10.7 db_connect_ms=5.0 db_execute_ms=3.2
+[2026-10-17 12:58:41,197] INFO in observability: api timing path=/api/requirements status=400 request_ms=11.5 db_connect_ms=5.5 db_execute_ms=3.5
+[2026-10-17 12:58:41,212] INFO in observability: api timing path=/api/requirements status=400 request_ms=11.7 db_connect_ms=5.1 db_execute_ms=3.9
+[2026-10-17 12:58:41,303] INFO in observability: api timing path=/api/requirements status=400 request_ms=12.9 db_connect_ms=7.1 db_execute_ms=3.2
+ok
+test_unchanged_ai_criteria_do_not_become_confirmed_during_text_edit (test_reliability.ReliabilityTests.test_unchanged_ai_criteria_do_not_become_confirmed_during_text_edit) ... [2026-10-17 12:58:42,221] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=50.4 db_connect_ms=8.0 db_execute_ms=6.0
+[2026-10-17 12:58:42,252] INFO in observability: api timing path=/api/requirements status=201 request_ms=30.1 db_connect_ms=3.4 db_execute_ms=3.7
+[2026-10-17 12:58:42,295] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=42.0 db_connect_ms=4.0 db_execute_ms=3.9
+ok
+test_unknown_analysis_fields_and_oversized_scenarios_are_rejected (test_reliability.ReliabilityTests.test_unknown_analysis_fields_and_oversized_scenarios_are_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 26.104s
+
+OK

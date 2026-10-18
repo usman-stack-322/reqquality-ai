@@ -1,0 +1,954 @@
+test_all_admin_endpoints_enforce_roles (test_admin_dashboard.ManagerTests.test_all_admin_endpoints_enforce_roles) ... [2026-10-17 12:59:21,484] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=0.4 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 12:59:21,485] INFO in observability: api timing path=/api/admin/requirements status=401 request_ms=0.2 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 12:59:21,486] INFO in observability: api timing path=/api/admin/settings status=401 request_ms=0.2 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 12:59:21,487] INFO in observability: api timing path=/api/admin/users/2 status=401 request_ms=0.2 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 12:59:21,488] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=401 request_ms=0.2 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 12:59:21,511] INFO in observability: api timing path=/api/admin/dashboard status=403 request_ms=2.6 db_connect_ms=1.5 db_execute_ms=0.5
+[2026-10-17 12:59:21,535] INFO in observability: api timing path=/api/admin/requirements status=403 request_ms=2.8 db_connect_ms=1.6 db_execute_ms=0.7
+[2026-10-17 12:59:21,559] INFO in observability: api timing path=/api/admin/settings status=403 request_ms=3.8 db_connect_ms=2.2 db_execute_ms=1.0
+[2026-10-17 12:59:21,586] INFO in observability: api timing path=/api/admin/users/2 status=403 request_ms=4.5 db_connect_ms=2.8 db_execute_ms=1.1
+[2026-10-17 12:59:21,612] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=403 request_ms=4.5 db_connect_ms=2.8 db_execute_ms=1.0
+[2026-10-17 12:59:21,837] INFO in observability: api timing path=/api/admin/dashboard status=403 request_ms=3.3 db_connect_ms=1.9 db_execute_ms=0.7
+[2026-10-17 12:59:21,861] INFO in observability: api timing path=/api/admin/requirements status=403 request_ms=3.8 db_connect_ms=2.3 db_execute_ms=0.7
+[2026-10-17 12:59:21,905] INFO in observability: api timing path=/api/admin/settings status=403 request_ms=4.2 db_connect_ms=2.5 db_execute_ms=1.1
+[2026-10-17 12:59:21,950] INFO in observability: api timing path=/api/admin/users/2 status=403 request_ms=6.1 db_connect_ms=3.4 db_execute_ms=1.5
+[2026-10-17 12:59:22,409] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=403 request_ms=7.0 db_connect_ms=3.8 db_execute_ms=2.0
+ok
+test_assign_reassign_unassign_and_audit (test_admin_dashboard.ManagerTests.test_assign_reassign_unassign_and_audit) ... [2026-10-17 12:59:24,604] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=200 request_ms=732.9 db_connect_ms=2.6 db_execute_ms=2.3
+[2026-10-17 12:59:24,635] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=200 request_ms=27.0 db_connect_ms=2.1 db_execute_ms=2.9
+[2026-10-17 12:59:24,803] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=200 request_ms=163.9 db_connect_ms=2.0 db_execute_ms=2.6
+[2026-10-17 12:59:24,811] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=5.0 db_connect_ms=1.5 db_execute_ms=2.1
+[2026-10-17 12:59:24,817] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=4.4 db_connect_ms=1.8 db_execute_ms=1.6
+ok
+test_assignment_validation (test_admin_dashboard.ManagerTests.test_assignment_validation) ... [2026-10-17 12:59:25,922] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=400 request_ms=5.5 db_connect_ms=3.2 db_execute_ms=1.3
+[2026-10-17 12:59:25,927] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=400 request_ms=4.2 db_connect_ms=1.9 db_execute_ms=1.3
+[2026-10-17 12:59:25,932] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=400 request_ms=4.2 db_connect_ms=1.9 db_execute_ms=1.3
+[2026-10-17 12:59:25,937] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=400 request_ms=4.1 db_connect_ms=2.0 db_execute_ms=1.1
+[2026-10-17 12:59:25,941] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=400 request_ms=3.0 db_connect_ms=1.6 db_execute_ms=0.7
+[2026-10-17 12:59:25,945] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=400 request_ms=3.0 db_connect_ms=1.6 db_execute_ms=0.7
+[2026-10-17 12:59:25,949] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=400 request_ms=3.2 db_connect_ms=1.6 db_execute_ms=0.7
+[2026-10-17 12:59:25,953] INFO in observability: api timing path=/api/admin/requirements/999/reviewer status=404 request_ms=3.7 db_connect_ms=1.8 db_execute_ms=0.9
+ok
+test_bounded_attention_and_activity_and_idempotent_migration (test_admin_dashboard.ManagerTests.test_bounded_attention_and_activity_and_idempotent_migration) ... [2026-10-17 12:59:28,250] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=5.4 db_connect_ms=2.2 db_execute_ms=1.5
+ok
+test_creation_date_boundaries_and_overdue_exact_threshold (test_admin_dashboard.ManagerTests.test_creation_date_boundaries_and_overdue_exact_threshold) ... [2026-10-17 12:59:29,112] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=22.4 db_connect_ms=3.5 db_execute_ms=3.0
+[2026-10-17 12:59:29,120] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=7.6 db_connect_ms=3.4 db_execute_ms=2.4
+ok
+test_csrf_on_management_mutations (test_admin_dashboard.ManagerTests.test_csrf_on_management_mutations) ... [2026-10-17 12:59:30,444] INFO in observability: api timing path=/api/admin/settings status=403 request_ms=2.9 db_connect_ms=1.7 db_execute_ms=0.6
+[2026-10-17 12:59:30,447] INFO in observability: api timing path=/api/admin/users/2 status=403 request_ms=2.0 db_connect_ms=0.9 db_execute_ms=0.6
+[2026-10-17 12:59:30,450] INFO in observability: api timing path=/api/admin/requirements/1/reviewer status=403 request_ms=2.5 db_connect_ms=1.0 db_execute_ms=0.8
+[2026-10-17 12:59:30,453] INFO in observability: api timing path=/api/auth/change-password status=403 request_ms=2.1 db_connect_ms=0.9 db_execute_ms=0.6
+ok
+test_disable_revokes_sessions_and_clears_only_open_assignments (test_admin_dashboard.ManagerTests.test_disable_revokes_sessions_and_clears_only_open_assignments) ... [2026-10-17 12:59:32,324] INFO in observability: api timing path=/api/auth/me status=200 request_ms=6.2 db_connect_ms=3.5 db_execute_ms=1.3
+[2026-10-17 12:59:32,382] INFO in observability: api timing path=/api/admin/users/3 status=200 request_ms=55.8 db_connect_ms=3.0 db_execute_ms=27.6
+[2026-10-17 12:59:32,392] INFO in observability: api timing path=/api/auth/me status=200 request_ms=8.8 db_connect_ms=4.9 db_execute_ms=2.0
+[2026-10-17 12:59:32,394] INFO in auth_service: login attempt normalized_email=e***@example.com
+[2026-10-17 12:59:32,602] WARNING in auth_service: login password_verification=false normalized_email=e***@example.com
+[2026-10-17 12:59:32,603] INFO in auth_service: login timing total_ms=208.4 connect_ms=1.9 user_query_ms=0.4 password_ms=184.8 permissions_ms=0.0
+[2026-10-17 12:59:32,603] INFO in observability: api timing path=/api/auth/login status=401 request_ms=209.2 db_connect_ms=1.8 db_execute_ms=3.0
+[2026-10-17 12:59:32,635] INFO in observability: api timing path=/api/admin/users/3 status=200 request_ms=27.3 db_connect_ms=1.6 db_execute_ms=1.9
+[2026-10-17 12:59:32,636] INFO in observability: api timing path=/api/auth/me status=200 request_ms=0.2 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 12:59:32,637] INFO in auth_service: login attempt normalized_email=e***@example.com
+[2026-10-17 12:59:32,890] INFO in auth_service: login password_verification=true normalized_email=e***@example.com
+[2026-10-17 12:59:32,915] INFO in auth_service: login timing total_ms=278.3 connect_ms=1.8 user_query_ms=0.4 password_ms=231.9 permissions_ms=0.4
+[2026-10-17 12:59:32,916] INFO in observability: api timing path=/api/auth/login status=200 request_ms=279.5 db_connect_ms=1.8 db_execute_ms=3.7
+ok
+test_empty_dashboard_and_legacy_api (test_admin_dashboard.ManagerTests.test_empty_dashboard_and_legacy_api) ... [2026-10-17 12:59:33,645] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=12.1 db_connect_ms=5.7 db_execute_ms=4.2
+[2026-10-17 12:59:33,658] INFO in observability: api timing path=/api/dashboard status=200 request_ms=10.8 db_connect_ms=4.2 db_execute_ms=4.3
+ok
+test_existing_requirement_and_review_flow_records_activity (test_admin_dashboard.ManagerTests.test_existing_requirement_and_review_flow_records_activity) ... [2026-10-17 12:59:34,449] INFO in observability: api timing path=/api/requirements status=201 request_ms=42.3 db_connect_ms=7.6 db_execute_ms=7.5
+[2026-10-17 12:59:34,457] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=6.4 db_connect_ms=3.4 db_execute_ms=1.5
+[2026-10-17 12:59:34,538] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=41.7 db_connect_ms=8.9 db_execute_ms=7.9
+[2026-10-17 12:59:34,639] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=62.1 db_connect_ms=15.2 db_execute_ms=11.1
+[2026-10-17 12:59:34,737] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=62.6 db_connect_ms=17.3 db_execute_ms=12.5
+[2026-10-17 12:59:34,749] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=11.4 db_connect_ms=5.0 db_execute_ms=4.0
+[2026-10-17 12:59:34,758] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=7.4 db_connect_ms=2.6 db_execute_ms=2.9
+ok
+test_filters_pagination_and_search (test_admin_dashboard.ManagerTests.test_filters_pagination_and_search) ... [2026-10-17 12:59:35,576] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=15.7 db_connect_ms=7.1 db_execute_ms=5.1
+[2026-10-17 12:59:35,587] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=8.9 db_connect_ms=3.2 db_execute_ms=3.5
+[2026-10-17 12:59:35,597] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=8.5 db_connect_ms=3.2 db_execute_ms=3.3
+[2026-10-17 12:59:35,608] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=9.2 db_connect_ms=3.4 db_execute_ms=3.7
+[2026-10-17 12:59:35,618] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=8.9 db_connect_ms=3.3 db_execute_ms=3.5
+[2026-10-17 12:59:35,629] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=8.8 db_connect_ms=3.3 db_execute_ms=3.5
+[2026-10-17 12:59:35,639] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=8.3 db_connect_ms=2.9 db_execute_ms=3.3
+[2026-10-17 12:59:35,649] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=8.7 db_connect_ms=3.2 db_execute_ms=3.3
+[2026-10-17 12:59:35,657] INFO in observability: api timing path=/api/admin/requirements status=200 request_ms=6.4 db_connect_ms=2.8 db_execute_ms=2.2
+[2026-10-17 12:59:35,664] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=6.4 db_connect_ms=2.3 db_execute_ms=2.6
+[2026-10-17 12:59:35,671] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=5.5 db_connect_ms=2.0 db_execute_ms=2.2
+[2026-10-17 12:59:35,677] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=5.5 db_connect_ms=1.8 db_execute_ms=2.4
+ok
+test_invalid_filters_rejected (test_admin_dashboard.ManagerTests.test_invalid_filters_rejected) ... [2026-10-17 12:59:37,162] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=5.8 db_connect_ms=3.4 db_execute_ms=1.0
+[2026-10-17 12:59:37,166] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=3.6 db_connect_ms=2.0 db_execute_ms=0.8
+[2026-10-17 12:59:37,170] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=3.0 db_connect_ms=1.6 db_execute_ms=0.6
+[2026-10-17 12:59:37,174] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=2.9 db_connect_ms=1.6 db_execute_ms=0.6
+[2026-10-17 12:59:37,177] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=3.1 db_connect_ms=1.8 db_execute_ms=0.5
+[2026-10-17 12:59:37,182] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=3.5 db_connect_ms=2.0 db_execute_ms=0.6
+[2026-10-17 12:59:37,186] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=3.8 db_connect_ms=2.1 db_execute_ms=0.8
+[2026-10-17 12:59:37,191] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=3.8 db_connect_ms=2.1 db_execute_ms=0.8
+[2026-10-17 12:59:37,195] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=3.5 db_connect_ms=1.9 db_execute_ms=0.7
+[2026-10-17 12:59:37,199] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=2.9 db_connect_ms=1.7 db_execute_ms=0.5
+[2026-10-17 12:59:37,203] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=3.0 db_connect_ms=1.7 db_execute_ms=0.6
+[2026-10-17 12:59:37,206] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=2.6 db_connect_ms=1.4 db_execute_ms=0.5
+[2026-10-17 12:59:37,209] INFO in observability: api timing path=/api/admin/dashboard status=400 request_ms=2.4 db_connect_ms=1.3 db_execute_ms=0.5
+ok
+test_invitation_counts_expiry_and_no_sensitive_fields (test_admin_dashboard.ManagerTests.test_invitation_counts_expiry_and_no_sensitive_fields) ... [2026-10-17 12:59:37,898] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=41.4 db_connect_ms=5.2 db_execute_ms=4.5
+[2026-10-17 12:59:37,941] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=41.6 db_connect_ms=5.9 db_execute_ms=6.0
+[2026-10-17 12:59:37,988] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=45.6 db_connect_ms=6.6 db_execute_ms=6.0
+[2026-10-17 12:59:38,025] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=35.0 db_connect_ms=5.5 db_execute_ms=5.3
+[2026-10-17 12:59:38,110] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=9.6 db_connect_ms=4.3 db_execute_ms=3.4
+ok
+test_malformed_analysis_does_not_break_existing_detail (test_admin_dashboard.ManagerTests.test_malformed_analysis_does_not_break_existing_detail) ... [2026-10-17 12:59:38,916] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=17.5 db_connect_ms=8.9 db_execute_ms=6.0
+[2026-10-17 12:59:38,931] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=12.6 db_connect_ms=4.6 db_execute_ms=4.9
+ok
+test_manager_promotion_and_permission_revocation (test_admin_dashboard.ManagerTests.test_manager_promotion_and_permission_revocation) ... [2026-10-17 12:59:39,776] INFO in observability: api timing path=/api/admin/users/2 status=200 request_ms=52.3 db_connect_ms=12.7 db_execute_ms=9.5
+[2026-10-17 12:59:39,792] INFO in observability: api timing path=/api/auth/me status=200 request_ms=12.2 db_connect_ms=6.9 db_execute_ms=2.4
+[2026-10-17 12:59:39,836] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=11.1 db_connect_ms=5.3 db_execute_ms=3.8
+[2026-10-17 12:59:39,848] INFO in observability: api timing path=/api/admin/roles status=200 request_ms=10.4 db_connect_ms=5.2 db_execute_ms=3.6
+[2026-10-17 12:59:39,855] INFO in observability: api timing path=/api/admin/users/1 status=403 request_ms=6.5 db_connect_ms=3.3 db_execute_ms=2.0
+[2026-10-17 12:59:39,863] INFO in observability: api timing path=/api/admin/users/2 status=403 request_ms=6.6 db_connect_ms=3.0 db_execute_ms=2.3
+[2026-10-17 12:59:39,898] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=34.5 db_connect_ms=3.3 db_execute_ms=3.8
+[2026-10-17 12:59:39,934] INFO in observability: api timing path=/api/admin/roles/Manager status=200 request_ms=35.1 db_connect_ms=3.2 db_execute_ms=2.7
+[2026-10-17 12:59:39,941] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=5.9 db_connect_ms=3.4 db_execute_ms=1.6
+[2026-10-17 12:59:39,947] INFO in observability: api timing path=/api/admin/invitations status=200 request_ms=4.7 db_connect_ms=2.3 db_execute_ms=1.4
+[2026-10-17 12:59:39,974] INFO in observability: api timing path=/api/admin/roles/Manager status=200 request_ms=26.1 db_connect_ms=3.0 db_execute_ms=3.3
+[2026-10-17 12:59:39,979] INFO in observability: api timing path=/api/admin/roles status=403 request_ms=5.2 db_connect_ms=3.0 db_execute_ms=1.4
+ok
+test_no_users_projection_and_nullable_analysis (test_admin_dashboard.ManagerTests.test_no_users_projection_and_nullable_analysis) ... ok
+test_password_change_invalidates_other_sessions (test_admin_dashboard.ManagerTests.test_password_change_invalidates_other_sessions) ... [2026-10-17 12:59:44,393] INFO in observability: api timing path=/api/auth/change-password status=400 request_ms=191.4 db_connect_ms=3.1 db_execute_ms=1.5
+[2026-10-17 12:59:44,397] INFO in observability: api timing path=/api/auth/change-password status=400 request_ms=3.3 db_connect_ms=1.8 db_execute_ms=0.6
+[2026-10-17 12:59:44,782] INFO in observability: api timing path=/api/auth/change-password status=200 request_ms=384.6 db_connect_ms=1.9 db_execute_ms=2.8
+[2026-10-17 12:59:44,788] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=4.6 db_connect_ms=3.1 db_execute_ms=0.6
+[2026-10-17 12:59:44,789] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 12:59:44,790] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 12:59:45,071] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 12:59:45,091] INFO in auth_service: login timing total_ms=300.8 connect_ms=1.1 user_query_ms=0.2 password_ms=251.2 permissions_ms=0.0
+[2026-10-17 12:59:45,092] INFO in observability: api timing path=/api/auth/login status=200 request_ms=301.7 db_connect_ms=1.1 db_execute_ms=10.1
+ok
+test_real_counts_child_aggregation_and_workload (test_admin_dashboard.ManagerTests.test_real_counts_child_aggregation_and_workload) ... [2026-10-17 12:59:46,222] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=8.0 db_connect_ms=3.6 db_execute_ms=2.7
+ok
+test_role_change_and_admin_protection (test_admin_dashboard.ManagerTests.test_role_change_and_admin_protection) ... [2026-10-17 12:59:50,118] INFO in observability: api timing path=/api/admin/users/3 status=200 request_ms=27.0 db_connect_ms=3.1 db_execute_ms=2.6
+[2026-10-17 12:59:50,123] INFO in observability: api timing path=/api/dashboard status=401 request_ms=3.7 db_connect_ms=2.1 db_execute_ms=0.8
+[2026-10-17 12:59:50,130] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=6.2 db_connect_ms=2.2 db_execute_ms=2.4
+[2026-10-17 12:59:50,136] INFO in observability: api timing path=/api/admin/users/2 status=400 request_ms=4.6 db_connect_ms=2.1 db_execute_ms=1.4
+[2026-10-17 12:59:50,141] INFO in observability: api timing path=/api/admin/users/2 status=400 request_ms=4.4 db_connect_ms=2.0 db_execute_ms=1.4
+[2026-10-17 12:59:50,146] INFO in observability: api timing path=/api/admin/users/2 status=400 request_ms=4.5 db_connect_ms=2.2 db_execute_ms=1.4
+[2026-10-17 12:59:50,151] INFO in observability: api timing path=/api/admin/users/2 status=400 request_ms=3.8 db_connect_ms=2.0 db_execute_ms=0.9
+[2026-10-17 12:59:50,155] INFO in observability: api timing path=/api/admin/users/1 status=403 request_ms=3.3 db_connect_ms=1.6 db_execute_ms=1.0
+ok
+test_role_permission_validation_and_csrf (test_admin_dashboard.ManagerTests.test_role_permission_validation_and_csrf) ... [2026-10-17 12:59:50,859] INFO in observability: api timing path=/api/admin/roles/Manager status=403 request_ms=3.1 db_connect_ms=1.9 db_execute_ms=0.6
+[2026-10-17 12:59:50,863] INFO in observability: api timing path=/api/admin/roles/admin status=400 request_ms=3.5 db_connect_ms=1.9 db_execute_ms=0.7
+[2026-10-17 12:59:50,868] INFO in observability: api timing path=/api/admin/roles/Manager status=400 request_ms=3.6 db_connect_ms=2.0 db_execute_ms=0.8
+[2026-10-17 12:59:50,873] INFO in observability: api timing path=/api/admin/roles/Manager status=400 request_ms=3.9 db_connect_ms=2.0 db_execute_ms=1.1
+[2026-10-17 12:59:50,913] INFO in observability: api timing path=/api/admin/roles status=403 request_ms=4.5 db_connect_ms=2.6 db_execute_ms=1.1
+ok
+test_settings_overdue_threshold (test_admin_dashboard.ManagerTests.test_settings_overdue_threshold) ... [2026-10-17 12:59:52,897] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=6.8 db_connect_ms=2.8 db_execute_ms=2.2
+[2026-10-17 12:59:52,931] INFO in observability: api timing path=/api/admin/settings status=200 request_ms=32.2 db_connect_ms=1.9 db_execute_ms=2.6
+[2026-10-17 12:59:52,937] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=5.5 db_connect_ms=2.5 db_execute_ms=1.8
+[2026-10-17 12:59:52,944] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=5.3 db_connect_ms=1.7 db_execute_ms=1.9
+[2026-10-17 12:59:52,949] INFO in observability: api timing path=/api/admin/settings status=400 request_ms=3.5 db_connect_ms=1.8 db_execute_ms=0.8
+ok
+test_complete_schema_and_malformed_output (test_ai_workflow.AIContractTests.test_complete_schema_and_malformed_output) ... ok
+test_sdk_timeout_quota_and_invalid_json (test_ai_workflow.AIContractTests.test_sdk_timeout_quota_and_invalid_json) ... C:\Users\ua589\ReqQuality AI\backend\.venv\Lib\site-packages\google\genai\types.py:42: DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
+  VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+Gemini diagnostic model=account-model category=network_error http_api_code=none exception_type=TimeoutError llm_status=network_error
+Gemini diagnostic model=account-model category=quota_exceeded http_api_code=429 exception_type=SimpleAPIError llm_status=quota_exceeded
+Gemini diagnostic model=account-model category=schema_validation http_api_code=none exception_type=ValueError llm_status=malformed_json
+Gemini diagnostic model=account-model category=malformed_json http_api_code=none exception_type=JSONDecodeError llm_status=malformed_json
+ok
+test_analysis_acceptance_is_explicit_versioned_and_text_bound (test_ai_workflow.AIWorkflowTests.test_analysis_acceptance_is_explicit_versioned_and_text_bound) ... [2026-10-17 12:59:55,964] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=68.7 db_connect_ms=11.8 db_execute_ms=8.0
+[2026-10-17 12:59:56,020] INFO in observability: api timing path=/api/requirements status=201 request_ms=54.7 db_connect_ms=8.4 db_execute_ms=6.9
+[2026-10-17 12:59:56,030] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=9.1 db_connect_ms=5.0 db_execute_ms=2.3
+[2026-10-17 12:59:56,040] INFO in observability: api timing path=/api/requirements/1/analysis status=409 request_ms=8.4 db_connect_ms=3.7 db_execute_ms=2.7
+[2026-10-17 12:59:56,210] INFO in observability: api timing path=/api/requirements/1/analysis status=200 request_ms=169.6 db_connect_ms=3.5 db_execute_ms=19.0
+[2026-10-17 12:59:56,221] INFO in observability: api timing path=/api/requirements/1/analysis status=403 request_ms=8.4 db_connect_ms=4.6 db_execute_ms=2.2
+[2026-10-17 12:59:56,229] INFO in observability: api timing path=/api/requirements/1/history/3 status=200 request_ms=7.0 db_connect_ms=3.4 db_execute_ms=2.1
+ok
+test_author_cannot_review_even_after_role_change (test_ai_workflow.AIWorkflowTests.test_author_cannot_review_even_after_role_change) ... [2026-10-17 12:59:58,997] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=62.3 db_connect_ms=6.0 db_execute_ms=7.5
+[2026-10-17 12:59:59,033] INFO in observability: api timing path=/api/requirements status=201 request_ms=34.9 db_connect_ms=4.1 db_execute_ms=3.8
+[2026-10-17 12:59:59,069] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=33.0 db_connect_ms=5.2 db_execute_ms=5.9
+[2026-10-17 12:59:59,107] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=7.3 db_connect_ms=4.0 db_execute_ms=1.9
+ok
+test_complete_revision_review_and_rereview (test_ai_workflow.AIWorkflowTests.test_complete_revision_review_and_rereview) ... [2026-10-17 12:59:59,872] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=54.3 db_connect_ms=5.5 db_execute_ms=9.4
+[2026-10-17 12:59:59,902] INFO in observability: api timing path=/api/requirements status=201 request_ms=29.1 db_connect_ms=3.7 db_execute_ms=3.5
+[2026-10-17 12:59:59,911] INFO in observability: api timing path=/api/requirements/1/review status=409 request_ms=7.2 db_connect_ms=4.2 db_execute_ms=1.9
+[2026-10-17 12:59:59,947] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=35.4 db_connect_ms=2.9 db_execute_ms=4.2
+[2026-10-17 12:59:59,995] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=46.8 db_connect_ms=6.4 db_execute_ms=9.8
+[2026-10-17 13:00:00,042] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=44.9 db_connect_ms=10.0 db_execute_ms=9.6
+[2026-10-17 13:00:00,080] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=36.3 db_connect_ms=4.9 db_execute_ms=3.6
+[2026-10-17 13:00:00,119] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=37.5 db_connect_ms=4.0 db_execute_ms=3.9
+[2026-10-17 13:00:00,159] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=39.2 db_connect_ms=4.4 db_execute_ms=4.3
+[2026-10-17 13:00:00,199] INFO in observability: api timing path=/api/requirements/1/scenarios/1 status=200 request_ms=39.1 db_connect_ms=5.2 db_execute_ms=5.6
+[2026-10-17 13:00:01,650] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=1448.8 db_connect_ms=6.5 db_execute_ms=5.9
+[2026-10-17 13:00:01,688] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=36.3 db_connect_ms=4.9 db_execute_ms=4.5
+[2026-10-17 13:00:01,700] INFO in observability: api timing path=/api/requirements/1 status=409 request_ms=10.4 db_connect_ms=5.9 db_execute_ms=2.9
+ok
+test_duplicate_calls_share_only_same_user_receipt (test_ai_workflow.AIWorkflowTests.test_duplicate_calls_share_only_same_user_receipt) ... [2026-10-17 13:00:03,552] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=199.8 db_connect_ms=115.9 db_execute_ms=42.7
+[2026-10-17 13:00:03,564] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=11.2 db_connect_ms=5.8 db_execute_ms=3.3
+[2026-10-17 13:00:03,671] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=57.8 db_connect_ms=5.9 db_execute_ms=5.4
+ok
+test_failure_is_retryable_and_never_creates_requirement (test_ai_workflow.AIWorkflowTests.test_failure_is_retryable_and_never_creates_requirement) ... [2026-10-17 13:00:05,704] INFO in observability: api timing path=/api/analyze-requirement status=503 request_ms=199.3 db_connect_ms=6.5 db_execute_ms=5.0
+[2026-10-17 13:00:05,753] INFO in observability: api timing path=/api/analyze-requirement status=503 request_ms=48.0 db_connect_ms=6.0 db_execute_ms=4.5
+[2026-10-17 13:00:05,805] INFO in observability: api timing path=/api/analyze-requirement status=503 request_ms=49.9 db_connect_ms=5.8 db_execute_ms=4.2
+[2026-10-17 13:00:05,866] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=56.8 db_connect_ms=5.1 db_execute_ms=4.8
+[2026-10-17 13:00:05,904] INFO in observability: api timing path=/api/requirements status=201 request_ms=37.0 db_connect_ms=4.9 db_execute_ms=3.9
+ok
+test_incomplete_analysis_cannot_be_saved_as_success (test_ai_workflow.AIWorkflowTests.test_incomplete_analysis_cannot_be_saved_as_success) ... [2026-10-17 13:00:08,265] INFO in observability: api timing path=/api/requirements status=400 request_ms=4.7 db_connect_ms=2.7 db_execute_ms=1.1
+[2026-10-17 13:00:08,300] INFO in observability: api timing path=/api/requirements status=201 request_ms=34.1 db_connect_ms=2.7 db_execute_ms=3.1
+ok
+test_pagination_and_filters_and_historical_data (test_ai_workflow.AIWorkflowTests.test_pagination_and_filters_and_historical_data) ... [2026-10-17 13:00:14,063] INFO in observability: api timing path=/api/requirements status=200 request_ms=4.7 db_connect_ms=2.4 db_execute_ms=1.3
+[2026-10-17 13:00:14,066] INFO in observability: api timing path=/api/requirements status=400 request_ms=2.1 db_connect_ms=0.9 db_execute_ms=0.6
+[2026-10-17 13:00:14,070] INFO in observability: api timing path=/api/requirements/5 status=200 request_ms=3.9 db_connect_ms=1.5 db_execute_ms=1.7
+[2026-10-17 13:00:14,350] INFO in observability: api timing path=/api/requirements/5/report.pdf status=200 request_ms=279.2 db_connect_ms=2.6 db_execute_ms=3.0
+ok
+test_project_scope_all_reads_writes_and_exports (test_ai_workflow.AIWorkflowTests.test_project_scope_all_reads_writes_and_exports) ... [2026-10-17 13:00:16,111] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=55.9 db_connect_ms=6.6 db_execute_ms=5.1
+[2026-10-17 13:00:16,145] INFO in observability: api timing path=/api/requirements status=201 request_ms=33.0 db_connect_ms=4.1 db_execute_ms=3.8
+[2026-10-17 13:00:16,150] INFO in observability: api timing path=/api/requirements status=403 request_ms=4.2 db_connect_ms=2.8 db_execute_ms=0.6
+[2026-10-17 13:00:16,174] INFO in observability: api timing path=/api/admin/users/2/project-access status=200 request_ms=23.2 db_connect_ms=1.9 db_execute_ms=3.1
+[2026-10-17 13:00:16,179] INFO in observability: api timing path=/api/requirements status=403 request_ms=3.8 db_connect_ms=2.3 db_execute_ms=0.7
+[2026-10-17 13:00:16,181] INFO in observability: api timing path=/api/requirements/1 status=403 request_ms=1.9 db_connect_ms=0.8 db_execute_ms=0.5
+[2026-10-17 13:00:16,184] INFO in observability: api timing path=/api/requirements/1/report.pdf status=403 request_ms=1.8 db_connect_ms=0.8 db_execute_ms=0.5
+[2026-10-17 13:00:16,186] INFO in observability: api timing path=/api/dashboard status=403 request_ms=1.9 db_connect_ms=0.8 db_execute_ms=0.6
+[2026-10-17 13:00:16,189] INFO in observability: api timing path=/api/reports/project.pdf status=403 request_ms=1.9 db_connect_ms=0.8 db_execute_ms=0.6
+[2026-10-17 13:00:16,191] INFO in observability: api timing path=/api/exports/requirements.csv status=403 request_ms=2.0 db_connect_ms=0.8 db_execute_ms=0.6
+[2026-10-17 13:00:16,194] INFO in observability: api timing path=/api/analyze-requirement status=403 request_ms=2.3 db_connect_ms=0.9 db_execute_ms=0.6
+[2026-10-17 13:00:16,198] INFO in observability: api timing path=/api/requirements/1 status=403 request_ms=2.4 db_connect_ms=1.1 db_execute_ms=0.6
+[2026-10-17 13:00:16,201] INFO in observability: api timing path=/api/auth/me status=200 request_ms=2.3 db_connect_ms=0.9 db_execute_ms=0.9
+[2026-10-17 13:00:16,204] INFO in observability: api timing path=/api/admin/users/2/project-access status=403 request_ms=2.5 db_connect_ms=1.1 db_execute_ms=0.7
+[2026-10-17 13:00:16,238] INFO in observability: api timing path=/api/admin/users/2/project-access status=200 request_ms=32.8 db_connect_ms=2.0 db_execute_ms=2.5
+[2026-10-17 13:00:16,245] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=6.3 db_connect_ms=3.3 db_execute_ms=1.9
+ok
+test_save_retry_is_idempotent_and_payload_bound (test_ai_workflow.AIWorkflowTests.test_save_retry_is_idempotent_and_payload_bound) ... [2026-10-17 13:00:17,953] INFO in observability: api timing path=/api/requirements status=201 request_ms=29.5 db_connect_ms=3.8 db_execute_ms=3.6
+[2026-10-17 13:00:17,960] INFO in observability: api timing path=/api/requirements status=201 request_ms=6.2 db_connect_ms=3.1 db_execute_ms=2.0
+[2026-10-17 13:00:17,967] INFO in observability: api timing path=/api/requirements status=409 request_ms=4.8 db_connect_ms=2.4 db_execute_ms=1.5
+[2026-10-17 13:00:17,971] INFO in observability: api timing path=/api/requirements status=400 request_ms=3.7 db_connect_ms=1.6 db_execute_ms=1.3
+ok
+test_submission_key_never_returns_another_users_record (test_ai_workflow.AIWorkflowTests.test_submission_key_never_returns_another_users_record) ... [2026-10-17 13:00:18,950] INFO in observability: api timing path=/api/requirements status=201 request_ms=33.0 db_connect_ms=3.5 db_execute_ms=3.3
+[2026-10-17 13:00:19,002] INFO in observability: api timing path=/api/requirements status=201 request_ms=27.5 db_connect_ms=2.7 db_execute_ms=2.7
+ok
+test_workflow_validation_rejects_unhashable_enums_and_empty_updates (test_ai_workflow.AIWorkflowTests.test_workflow_validation_rejects_unhashable_enums_and_empty_updates) ... [2026-10-17 13:00:21,792] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=96.3 db_connect_ms=12.2 db_execute_ms=44.4
+[2026-10-17 13:00:21,827] INFO in observability: api timing path=/api/requirements status=201 request_ms=34.6 db_connect_ms=4.1 db_execute_ms=3.5
+[2026-10-17 13:00:21,858] INFO in observability: api timing path=/api/requirements/1 status=400 request_ms=28.7 db_connect_ms=15.8 db_execute_ms=8.7
+[2026-10-17 13:00:21,885] INFO in observability: api timing path=/api/requirements/1 status=400 request_ms=21.3 db_connect_ms=12.5 db_execute_ms=2.8
+[2026-10-17 13:00:21,936] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=49.7 db_connect_ms=4.0 db_execute_ms=10.3
+[2026-10-17 13:00:21,944] INFO in observability: api timing path=/api/requirements/1/review status=400 request_ms=7.3 db_connect_ms=4.1 db_execute_ms=1.9
+[2026-10-17 13:00:21,952] INFO in observability: api timing path=/api/requirements/1/review status=400 request_ms=7.2 db_connect_ms=3.4 db_execute_ms=2.4
+[2026-10-17 13:00:21,958] INFO in observability: api timing path=/api/requirements/1/review status=400 request_ms=4.8 db_connect_ms=2.1 db_execute_ms=1.5
+ok
+test_csv_formula_escaping_and_literal_xss_input (test_audit_workflow.AuditWorkflowTests.test_csv_formula_escaping_and_literal_xss_input) ... [2026-10-17 13:00:25,333] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=11.4 db_connect_ms=3.4 db_execute_ms=1.6
+[2026-10-17 13:00:25,388] INFO in observability: api timing path=/api/requirements status=201 request_ms=53.5 db_connect_ms=3.4 db_execute_ms=6.0
+ok
+test_input_bounds_unhashable_values_origin_and_sql_safety (test_audit_workflow.AuditWorkflowTests.test_input_bounds_unhashable_values_origin_and_sql_safety) ... [2026-10-17 13:00:27,374] INFO in observability: api timing path=/api/requirements status=400 request_ms=7.3 db_connect_ms=4.7 db_execute_ms=1.5
+[2026-10-17 13:00:27,380] INFO in observability: api timing path=/api/requirements status=400 request_ms=4.7 db_connect_ms=2.3 db_execute_ms=1.3
+[2026-10-17 13:00:27,386] INFO in observability: api timing path=/api/requirements status=400 request_ms=5.5 db_connect_ms=2.7 db_execute_ms=1.4
+[2026-10-17 13:00:27,391] INFO in observability: api timing path=/api/requirements status=400 request_ms=4.4 db_connect_ms=2.0 db_execute_ms=1.4
+[2026-10-17 13:00:27,396] INFO in observability: api timing path=/api/requirements status=400 request_ms=4.5 db_connect_ms=2.0 db_execute_ms=1.5
+[2026-10-17 13:00:27,401] INFO in observability: api timing path=/api/requirements status=400 request_ms=4.0 db_connect_ms=1.9 db_execute_ms=1.2
+[2026-10-17 13:00:27,406] INFO in observability: api timing path=/api/requirements status=400 request_ms=4.3 db_connect_ms=1.9 db_execute_ms=1.3
+[2026-10-17 13:00:27,407] INFO in observability: api timing path=/api/auth/login status=403 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:27,775] INFO in observability: api timing path=/api/requirements status=201 request_ms=367.0 db_connect_ms=3.1 db_execute_ms=320.4
+[2026-10-17 13:00:27,778] INFO in observability: api timing path=/api/auth/login status=413 request_ms=0.6 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:27,780] INFO in auth_service: login attempt normalized_email=<invalid>
+[2026-10-17 13:00:27,819] WARNING in auth_service: login password_verification=false normalized_email=<invalid>
+[2026-10-17 13:00:27,820] INFO in auth_service: login timing total_ms=39.2 connect_ms=2.9 user_query_ms=0.3 password_ms=0.0 permissions_ms=0.0
+[2026-10-17 13:00:27,820] INFO in observability: api timing path=/api/auth/login status=401 request_ms=40.1 db_connect_ms=2.8 db_execute_ms=3.7
+ok
+test_login_limit_persists_across_clients_and_recovers (test_audit_workflow.AuditWorkflowTests.test_login_limit_persists_across_clients_and_recovers) ... [2026-10-17 13:00:29,965] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,009] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,013] INFO in auth_service: login timing total_ms=46.9 connect_ms=3.4 user_query_ms=0.4 password_ms=0.1 permissions_ms=0.0
+[2026-10-17 13:00:30,013] INFO in observability: api timing path=/api/auth/login status=401 request_ms=48.1 db_connect_ms=3.4 db_execute_ms=4.3
+[2026-10-17 13:00:30,019] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,059] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,059] INFO in auth_service: login timing total_ms=39.9 connect_ms=7.5 user_query_ms=0.3 password_ms=0.1 permissions_ms=0.0
+[2026-10-17 13:00:30,062] INFO in observability: api timing path=/api/auth/login status=401 request_ms=43.1 db_connect_ms=7.5 db_execute_ms=10.4
+[2026-10-17 13:00:30,063] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,110] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,110] INFO in auth_service: login timing total_ms=46.6 connect_ms=10.9 user_query_ms=0.4 password_ms=0.0 permissions_ms=0.0
+[2026-10-17 13:00:30,111] INFO in observability: api timing path=/api/auth/login status=401 request_ms=47.3 db_connect_ms=10.9 db_execute_ms=2.6
+[2026-10-17 13:00:30,112] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,268] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,268] INFO in auth_service: login timing total_ms=156.3 connect_ms=11.4 user_query_ms=0.4 password_ms=0.1 permissions_ms=0.0
+[2026-10-17 13:00:30,269] INFO in observability: api timing path=/api/auth/login status=401 request_ms=157.2 db_connect_ms=11.3 db_execute_ms=26.9
+[2026-10-17 13:00:30,270] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,302] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,303] INFO in auth_service: login timing total_ms=32.8 connect_ms=2.9 user_query_ms=0.3 password_ms=0.1 permissions_ms=0.0
+[2026-10-17 13:00:30,303] INFO in observability: api timing path=/api/auth/login status=401 request_ms=33.5 db_connect_ms=2.8 db_execute_ms=2.2
+[2026-10-17 13:00:30,305] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,337] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,337] INFO in auth_service: login timing total_ms=32.5 connect_ms=6.2 user_query_ms=0.4 password_ms=0.1 permissions_ms=0.0
+[2026-10-17 13:00:30,338] INFO in observability: api timing path=/api/auth/login status=401 request_ms=33.4 db_connect_ms=6.2 db_execute_ms=3.0
+[2026-10-17 13:00:30,339] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,368] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,368] INFO in auth_service: login timing total_ms=28.7 connect_ms=6.3 user_query_ms=0.4 password_ms=0.1 permissions_ms=0.0
+[2026-10-17 13:00:30,369] INFO in observability: api timing path=/api/auth/login status=401 request_ms=29.6 db_connect_ms=6.2 db_execute_ms=5.1
+[2026-10-17 13:00:30,370] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,408] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,408] INFO in auth_service: login timing total_ms=37.9 connect_ms=3.0 user_query_ms=0.3 password_ms=0.1 permissions_ms=0.0
+[2026-10-17 13:00:30,409] INFO in observability: api timing path=/api/auth/login status=401 request_ms=38.6 db_connect_ms=2.9 db_execute_ms=5.0
+[2026-10-17 13:00:30,409] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,445] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,445] INFO in auth_service: login timing total_ms=35.7 connect_ms=1.9 user_query_ms=0.8 password_ms=0.0 permissions_ms=0.0
+[2026-10-17 13:00:30,446] INFO in observability: api timing path=/api/auth/login status=401 request_ms=36.3 db_connect_ms=1.9 db_execute_ms=2.7
+[2026-10-17 13:00:30,447] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,486] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,487] INFO in auth_service: login timing total_ms=39.3 connect_ms=3.1 user_query_ms=0.3 password_ms=0.1 permissions_ms=0.0
+[2026-10-17 13:00:30,487] INFO in observability: api timing path=/api/auth/login status=401 request_ms=40.1 db_connect_ms=3.0 db_execute_ms=6.4
+[2026-10-17 13:00:30,488] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,527] INFO in auth_service: login timing total_ms=38.6 connect_ms=2.2 user_query_ms=0.0 password_ms=0.0 permissions_ms=0.0
+[2026-10-17 13:00:30,528] INFO in observability: api timing path=/api/auth/login status=429 request_ms=39.5 db_connect_ms=2.2 db_execute_ms=1.9
+[2026-10-17 13:00:30,530] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:00:30,562] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:00:30,562] INFO in auth_service: login timing total_ms=32.6 connect_ms=4.7 user_query_ms=0.2 password_ms=0.0 permissions_ms=0.0
+[2026-10-17 13:00:30,563] INFO in observability: api timing path=/api/auth/login status=401 request_ms=33.7 db_connect_ms=4.6 db_execute_ms=8.5
+ok
+test_requirement_to_review_and_exports_with_ai_success (test_audit_workflow.AuditWorkflowTests.test_requirement_to_review_and_exports_with_ai_success) ... [2026-10-17 13:00:34,683] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=1074.9 db_connect_ms=10.4 db_execute_ms=8.6
+[2026-10-17 13:00:34,767] INFO in observability: api timing path=/api/requirements status=201 request_ms=80.1 db_connect_ms=10.8 db_execute_ms=41.4
+[2026-10-17 13:00:34,774] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=6.3 db_connect_ms=2.9 db_execute_ms=2.2
+[2026-10-17 13:00:34,811] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=36.1 db_connect_ms=2.6 db_execute_ms=5.1
+[2026-10-17 13:00:34,853] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=41.4 db_connect_ms=3.9 db_execute_ms=10.1
+[2026-10-17 13:00:34,888] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=33.2 db_connect_ms=3.6 db_execute_ms=3.2
+[2026-10-17 13:00:34,922] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=33.1 db_connect_ms=3.2 db_execute_ms=4.1
+[2026-10-17 13:00:35,474] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=550.9 db_connect_ms=4.4 db_execute_ms=9.7
+[2026-10-17 13:00:35,540] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=63.1 db_connect_ms=12.7 db_execute_ms=15.1
+[2026-10-17 13:00:35,548] INFO in observability: api timing path=/api/dashboard status=200 request_ms=6.7 db_connect_ms=3.2 db_execute_ms=2.4
+[2026-10-17 13:00:35,556] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=7.2 db_connect_ms=1.9 db_execute_ms=3.7
+[2026-10-17 13:00:35,562] INFO in observability: api timing path=/api/dashboard status=200 request_ms=5.1 db_connect_ms=2.1 db_execute_ms=2.1
+[2026-10-17 13:00:35,596] INFO in observability: api timing path=/api/requirements/1/report.pdf status=200 request_ms=33.6 db_connect_ms=2.4 db_execute_ms=2.9
+[2026-10-17 13:00:35,643] INFO in observability: api timing path=/api/reports/project.pdf status=200 request_ms=21.5 db_connect_ms=2.3 db_execute_ms=2.2
+[2026-10-17 13:00:35,666] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=6.7 db_connect_ms=2.9 db_execute_ms=1.9
+[2026-10-17 13:00:35,702] INFO in observability: api timing path=/api/requirements/1/report.pdf status=200 request_ms=35.1 db_connect_ms=2.5 db_execute_ms=2.8
+[2026-10-17 13:00:35,753] INFO in observability: api timing path=/api/reports/project.pdf status=200 request_ms=23.0 db_connect_ms=2.9 db_execute_ms=2.6
+[2026-10-17 13:00:35,773] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=4.6 db_connect_ms=2.1 db_execute_ms=1.4
+[2026-10-17 13:00:35,802] INFO in observability: api timing path=/api/requirements/1/report.pdf status=200 request_ms=28.3 db_connect_ms=2.3 db_execute_ms=2.5
+[2026-10-17 13:00:35,844] INFO in observability: api timing path=/api/reports/project.pdf status=200 request_ms=18.6 db_connect_ms=1.7 db_execute_ms=1.4
+[2026-10-17 13:00:35,872] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=4.6 db_connect_ms=2.1 db_execute_ms=1.3
+ok
+test_reset_limits_before_password_hashing (test_audit_workflow.AuditWorkflowTests.test_reset_limits_before_password_hashing) ... [2026-10-17 13:00:38,556] INFO in observability: api timing path=/api/auth/forgot-password status=200 request_ms=60.8 db_connect_ms=3.1 db_execute_ms=27.3
+[2026-10-17 13:00:38,588] INFO in observability: api timing path=/api/auth/forgot-password status=200 request_ms=30.4 db_connect_ms=9.8 db_execute_ms=2.6
+[2026-10-17 13:00:38,628] INFO in observability: api timing path=/api/auth/forgot-password status=200 request_ms=39.1 db_connect_ms=3.7 db_execute_ms=2.9
+[2026-10-17 13:00:38,663] INFO in observability: api timing path=/api/auth/forgot-password status=200 request_ms=34.1 db_connect_ms=1.9 db_execute_ms=6.4
+[2026-10-17 13:00:38,698] INFO in observability: api timing path=/api/auth/forgot-password status=200 request_ms=34.0 db_connect_ms=1.7 db_execute_ms=5.8
+[2026-10-17 13:00:38,743] INFO in observability: api timing path=/api/auth/forgot-password status=429 request_ms=44.6 db_connect_ms=7.3 db_execute_ms=5.5
+[2026-10-17 13:00:38,826] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=45.3 db_connect_ms=9.7 db_execute_ms=8.1
+[2026-10-17 13:00:38,866] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=37.0 db_connect_ms=7.4 db_execute_ms=5.1
+[2026-10-17 13:00:38,902] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=34.5 db_connect_ms=3.8 db_execute_ms=9.9
+[2026-10-17 13:00:38,927] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=24.1 db_connect_ms=2.6 db_execute_ms=2.7
+[2026-10-17 13:00:38,959] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=31.3 db_connect_ms=1.9 db_execute_ms=4.9
+[2026-10-17 13:00:38,985] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=25.4 db_connect_ms=1.9 db_execute_ms=2.5
+[2026-10-17 13:00:39,020] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=33.7 db_connect_ms=1.7 db_execute_ms=2.2
+[2026-10-17 13:00:39,049] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=28.3 db_connect_ms=2.1 db_execute_ms=3.7
+[2026-10-17 13:00:39,078] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=28.6 db_connect_ms=3.3 db_execute_ms=3.4
+[2026-10-17 13:00:39,114] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=34.7 db_connect_ms=2.7 db_execute_ms=6.1
+[2026-10-17 13:00:39,149] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=34.2 db_connect_ms=2.4 db_execute_ms=6.5
+[2026-10-17 13:00:39,178] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=27.6 db_connect_ms=1.8 db_execute_ms=3.1
+[2026-10-17 13:00:39,217] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=39.1 db_connect_ms=1.7 db_execute_ms=11.8
+[2026-10-17 13:00:39,250] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=31.7 db_connect_ms=3.1 db_execute_ms=3.7
+[2026-10-17 13:00:39,289] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=37.3 db_connect_ms=7.0 db_execute_ms=5.3
+[2026-10-17 13:00:39,314] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=24.2 db_connect_ms=2.6 db_execute_ms=3.4
+[2026-10-17 13:00:40,356] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=1041.2 db_connect_ms=3.1 db_execute_ms=6.8
+[2026-10-17 13:00:40,402] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=42.6 db_connect_ms=9.1 db_execute_ms=8.1
+[2026-10-17 13:00:40,450] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=45.6 db_connect_ms=8.2 db_execute_ms=7.9
+[2026-10-17 13:00:40,548] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=95.9 db_connect_ms=4.3 db_execute_ms=60.0
+[2026-10-17 13:00:40,623] INFO in observability: api timing path=/api/auth/reset-password status=429 request_ms=72.3 db_connect_ms=7.0 db_execute_ms=35.3
+ok
+test_server_side_permissions_and_shared_record_scope (test_audit_workflow.AuditWorkflowTests.test_server_side_permissions_and_shared_record_scope) ... [2026-10-17 13:00:43,138] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=9.8 db_connect_ms=4.7 db_execute_ms=3.3
+[2026-10-17 13:00:43,149] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=10.0 db_connect_ms=3.6 db_execute_ms=4.4
+[2026-10-17 13:00:43,160] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=9.0 db_connect_ms=3.5 db_execute_ms=3.7
+[2026-10-17 13:00:43,162] INFO in observability: api timing path=/api/requirements status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:43,163] INFO in observability: api timing path=/api/requirements/1 status=401 request_ms=0.5 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:43,165] INFO in observability: api timing path=/api/dashboard status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:43,166] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=0.4 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:43,168] INFO in observability: api timing path=/api/exports/requirements.csv status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:43,169] INFO in observability: api timing path=/api/reports/project.pdf status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:43,171] INFO in observability: api timing path=/api/requirements/1/report.pdf status=401 request_ms=0.4 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:43,180] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=7.4 db_connect_ms=3.5 db_execute_ms=2.2
+[2026-10-17 13:00:43,184] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=3.4 db_connect_ms=1.4 db_execute_ms=0.9
+[2026-10-17 13:00:43,189] INFO in observability: api timing path=/api/requirements status=403 request_ms=3.4 db_connect_ms=1.3 db_execute_ms=1.1
+[2026-10-17 13:00:43,195] INFO in observability: api timing path=/api/requirements status=403 request_ms=5.6 db_connect_ms=2.6 db_execute_ms=1.9
+[2026-10-17 13:00:43,202] INFO in observability: api timing path=/api/analyze-requirement status=403 request_ms=5.5 db_connect_ms=2.6 db_execute_ms=1.8
+[2026-10-17 13:00:43,209] INFO in observability: api timing path=/api/requirements status=403 request_ms=6.4 db_connect_ms=3.0 db_execute_ms=2.1
+[2026-10-17 13:00:43,578] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=9.7 db_connect_ms=5.6 db_execute_ms=2.3
+ok
+test_session_reuses_connection_and_permissions_are_fresh (test_audit_workflow.AuditWorkflowTests.test_session_reuses_connection_and_permissions_are_fresh) ... [2026-10-17 13:00:45,389] INFO in observability: api timing path=/api/auth/me status=200 request_ms=4.2 db_connect_ms=2.4 db_execute_ms=1.0
+[2026-10-17 13:00:45,415] INFO in observability: api timing path=/api/auth/me status=200 request_ms=4.4 db_connect_ms=2.5 db_execute_ms=1.0
+ok
+test_summary_omits_analysis_and_full_response_remains_compatible (test_audit_workflow.AuditWorkflowTests.test_summary_omits_analysis_and_full_response_remains_compatible) ... [2026-10-17 13:00:47,559] INFO in observability: api timing path=/api/requirements status=200 request_ms=23.8 db_connect_ms=12.1 db_execute_ms=7.2
+[2026-10-17 13:00:47,576] INFO in observability: api timing path=/api/requirements status=200 request_ms=14.7 db_connect_ms=6.8 db_execute_ms=4.6
+ok
+test_database_urls_have_separate_pools (test_database_pool.DatabasePoolTests.test_database_urls_have_separate_pools) ... ok
+test_exception_reaches_driver_rollback_context (test_database_pool.DatabasePoolTests.test_exception_reaches_driver_rollback_context) ... ok
+test_existing_transaction_context_reaches_psycopg (test_database_pool.DatabasePoolTests.test_existing_transaction_context_reaches_psycopg) ... ok
+test_pool_is_reused_and_connections_are_returned_once (test_database_pool.DatabasePoolTests.test_pool_is_reused_and_connections_are_returned_once) ... ok
+test_pool_shutdown_closes_cached_pools (test_database_pool.DatabasePoolTests.test_pool_shutdown_closes_cached_pools) ... ok
+test_read_mode_restores_autocommit_after_success_and_exception (test_database_pool.DatabasePoolTests.test_read_mode_restores_autocommit_after_success_and_exception) ... ok
+test_released_adapter_cannot_access_a_connection_borrowed_by_another_request (test_database_pool.DatabasePoolTests.test_released_adapter_cannot_access_a_connection_borrowed_by_another_request) ... ok
+test_sqlite_read_mode_does_not_change_driver_state (test_database_pool.DatabasePoolTests.test_sqlite_read_mode_does_not_change_driver_state) ... ok
+test_invalid_credentials_stay_generic (test_database_unavailable.DatabaseUnavailableTests.test_invalid_credentials_stay_generic) ... [2026-10-17 13:00:49,447] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:00:49,728] WARNING in auth_service: login password_verification=false normalized_email=m***@example.com
+[2026-10-17 13:00:49,728] INFO in auth_service: login timing total_ms=281.0 connect_ms=3.5 user_query_ms=0.7 password_ms=231.6 permissions_ms=0.0
+[2026-10-17 13:00:49,729] INFO in observability: api timing path=/api/auth/login status=401 request_ms=282.0 db_connect_ms=3.5 db_execute_ms=14.2
+ok
+test_login_outage_is_not_invalid_credentials_and_leaks_no_details (test_database_unavailable.DatabaseUnavailableTests.test_login_outage_is_not_invalid_credentials_and_leaks_no_details) ... ok
+test_session_and_dashboard_outages_preserve_existing_session (test_database_unavailable.DatabaseUnavailableTests.test_session_and_dashboard_outages_preserve_existing_session) ... [2026-10-17 13:00:53,791] ERROR in app: Database unavailable endpoint=current_user exception_type=PoolTimeout
+[2026-10-17 13:00:53,791] INFO in observability: api timing path=/api/auth/me status=503 request_ms=1.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:53,793] ERROR in app: Database unavailable endpoint=manager_dashboard exception_type=PoolTimeout
+[2026-10-17 13:00:53,793] INFO in observability: api timing path=/api/admin/dashboard status=503 request_ms=0.8 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:53,795] ERROR in app: Database unavailable endpoint=dashboard_summary exception_type=PoolTimeout
+[2026-10-17 13:00:53,795] INFO in observability: api timing path=/api/dashboard status=503 request_ms=1.1 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:00:53,801] INFO in observability: api timing path=/api/auth/me status=200 request_ms=5.1 db_connect_ms=3.0 db_execute_ms=1.1
+ok
+test_01_admin_sqa_invitation (test_invitations.InvitationTests.test_01_admin_sqa_invitation) ... [2026-10-17 13:00:56,092] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=29.5 db_connect_ms=4.1 db_execute_ms=3.8
+ok
+test_02_admin_analyst_invitation (test_invitations.InvitationTests.test_02_admin_analyst_invitation) ... [2026-10-17 13:00:58,956] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=49.6 db_connect_ms=5.2 db_execute_ms=13.9
+ok
+test_03_correct_email_accepts_only_after_registration (test_invitations.InvitationTests.test_03_correct_email_accepts_only_after_registration) ... [2026-10-17 13:01:02,139] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=34.0 db_connect_ms=4.9 db_execute_ms=3.5
+[2026-10-17 13:01:02,164] INFO in observability: api timing path=/api/invitations/validate status=200 request_ms=24.1 db_connect_ms=2.6 db_execute_ms=2.8
+[2026-10-17 13:01:02,187] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=21.1 db_connect_ms=2.4 db_execute_ms=1.6
+[2026-10-17 13:01:02,815] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=340.6 db_connect_ms=3.5 db_execute_ms=10.2
+[2026-10-17 13:01:03,038] INFO in auth_service: login attempt normalized_email=i***@example.com
+[2026-10-17 13:01:03,268] INFO in auth_service: login password_verification=true normalized_email=i***@example.com
+[2026-10-17 13:01:03,291] INFO in auth_service: login timing total_ms=252.3 connect_ms=1.4 user_query_ms=0.4 password_ms=177.9 permissions_ms=0.3
+[2026-10-17 13:01:03,291] INFO in observability: api timing path=/api/auth/login status=200 request_ms=253.3 db_connect_ms=1.3 db_execute_ms=32.9
+ok
+test_04_wrong_email_keeps_pending_and_private (test_invitations.InvitationTests.test_04_wrong_email_keeps_pending_and_private) ... [2026-10-17 13:01:05,757] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=121.3 db_connect_ms=3.3 db_execute_ms=2.7
+[2026-10-17 13:01:05,763] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:05,880] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=121.1 db_connect_ms=2.7 db_execute_ms=1.8
+[2026-10-17 13:01:05,903] INFO in observability: api timing path=/api/invitations/validate status=200 request_ms=19.0 db_connect_ms=1.1 db_execute_ms=1.9
+[2026-10-17 13:01:05,927] INFO in observability: api timing path=/api/invitations/validate status=200 request_ms=22.6 db_connect_ms=2.1 db_execute_ms=2.3
+ok
+test_05_failed_attempt_increments (test_invitations.InvitationTests.test_05_failed_attempt_increments) ... [2026-10-17 13:01:08,034] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=27.4 db_connect_ms=2.8 db_execute_ms=5.3
+[2026-10-17 13:01:08,040] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:08,056] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=21.2 db_connect_ms=2.4 db_execute_ms=2.2
+ok
+test_06_correct_after_wrong_succeeds (test_invitations.InvitationTests.test_06_correct_after_wrong_succeeds) ... [2026-10-17 13:01:10,639] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=29.6 db_connect_ms=3.7 db_execute_ms=3.1
+[2026-10-17 13:01:10,645] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:10,668] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=27.9 db_connect_ms=1.9 db_execute_ms=2.3
+[2026-10-17 13:01:10,696] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=26.9 db_connect_ms=2.2 db_execute_ms=2.2
+[2026-10-17 13:01:11,229] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=529.7 db_connect_ms=3.1 db_execute_ms=3.4
+ok
+test_07_five_failures_lock (test_invitations.InvitationTests.test_07_five_failures_lock) ... [2026-10-17 13:01:14,671] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=496.5 db_connect_ms=12.0 db_execute_ms=29.9
+[2026-10-17 13:01:14,709] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:15,091] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=417.2 db_connect_ms=5.1 db_execute_ms=30.0
+[2026-10-17 13:01:15,264] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:15,709] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=615.8 db_connect_ms=7.6 db_execute_ms=161.3
+[2026-10-17 13:01:15,741] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:16,128] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=415.4 db_connect_ms=9.1 db_execute_ms=19.0
+[2026-10-17 13:01:16,159] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:19,772] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=3640.2 db_connect_ms=7.3 db_execute_ms=19.3
+[2026-10-17 13:01:19,880] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:20,259] INFO in observability: api timing path=/api/invitations/verify-email status=429 request_ms=486.2 db_connect_ms=2.5 db_execute_ms=104.7
+[2026-10-17 13:01:20,495] INFO in observability: api timing path=/api/invitations/verify-email status=429 request_ms=235.3 db_connect_ms=1.7 db_execute_ms=28.7
+ok
+test_08_temporary_lock_recovers_without_changing_expiry (test_invitations.InvitationTests.test_08_temporary_lock_recovers_without_changing_expiry) ... [2026-10-17 13:01:28,995] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=51.4 db_connect_ms=13.9 db_execute_ms=9.8
+[2026-10-17 13:01:29,087] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:29,113] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=110.0 db_connect_ms=1.9 db_execute_ms=81.0
+[2026-10-17 13:01:29,129] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:29,162] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=45.0 db_connect_ms=7.1 db_execute_ms=4.1
+[2026-10-17 13:01:29,170] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:29,192] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=28.5 db_connect_ms=3.4 db_execute_ms=2.7
+[2026-10-17 13:01:29,202] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:29,574] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=380.5 db_connect_ms=4.0 db_execute_ms=3.7
+[2026-10-17 13:01:29,691] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:29,719] INFO in observability: api timing path=/api/invitations/verify-email status=429 request_ms=142.2 db_connect_ms=6.9 db_execute_ms=106.3
+[2026-10-17 13:01:29,871] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=127.8 db_connect_ms=3.6 db_execute_ms=92.1
+[2026-10-17 13:01:30,369] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=491.4 db_connect_ms=8.7 db_execute_ms=102.5
+ok
+test_09_expired_rejected_and_marked (test_invitations.InvitationTests.test_09_expired_rejected_and_marked) ... [2026-10-17 13:01:33,108] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=210.6 db_connect_ms=7.7 db_execute_ms=76.0
+[2026-10-17 13:01:33,313] INFO in observability: api timing path=/api/invitations/validate status=410 request_ms=94.0 db_connect_ms=5.2 db_execute_ms=62.8
+[2026-10-17 13:01:33,750] INFO in observability: api timing path=/api/invitations/verify-email status=410 request_ms=421.9 db_connect_ms=3.1 db_execute_ms=394.2
+ok
+test_10_used_rejected (test_invitations.InvitationTests.test_10_used_rejected) ... [2026-10-17 13:01:36,939] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=86.9 db_connect_ms=6.8 db_execute_ms=52.8
+[2026-10-17 13:01:36,964] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=23.5 db_connect_ms=3.2 db_execute_ms=3.4
+[2026-10-17 13:01:37,493] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=526.9 db_connect_ms=2.0 db_execute_ms=2.2
+[2026-10-17 13:01:37,561] INFO in observability: api timing path=/api/invitations/validate status=410 request_ms=65.5 db_connect_ms=4.6 db_execute_ms=32.4
+[2026-10-17 13:01:37,661] INFO in observability: api timing path=/api/invitations/accept status=410 request_ms=95.3 db_connect_ms=7.2 db_execute_ms=49.1
+ok
+test_11_revoke_after_verification_stops_acceptance (test_invitations.InvitationTests.test_11_revoke_after_verification_stops_acceptance) ... [2026-10-17 13:01:39,292] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=33.4 db_connect_ms=4.7 db_execute_ms=4.0
+[2026-10-17 13:01:39,369] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=75.1 db_connect_ms=6.9 db_execute_ms=41.3
+[2026-10-17 13:01:39,464] INFO in observability: api timing path=/api/admin/invitations/1/revoke status=200 request_ms=90.1 db_connect_ms=11.1 db_execute_ms=44.1
+[2026-10-17 13:01:39,499] INFO in observability: api timing path=/api/invitations/validate status=410 request_ms=32.1 db_connect_ms=5.3 db_execute_ms=4.5
+[2026-10-17 13:01:39,531] INFO in observability: api timing path=/api/invitations/accept status=410 request_ms=29.1 db_connect_ms=3.5 db_execute_ms=2.6
+ok
+test_12_random_token_rejected (test_invitations.InvitationTests.test_12_random_token_rejected) ... [2026-10-17 13:01:40,805] INFO in observability: api timing path=/api/invitations/validate status=400 request_ms=25.0 db_connect_ms=2.1 db_execute_ms=3.9
+[2026-10-17 13:01:40,831] INFO in observability: api timing path=/api/invitations/validate status=400 request_ms=24.8 db_connect_ms=3.3 db_execute_ms=1.7
+ok
+test_13_unauthenticated_admin_api_denied (test_invitations.InvitationTests.test_13_unauthenticated_admin_api_denied) ... [2026-10-17 13:01:43,847] INFO in observability: api timing path=/api/admin/invitations status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:01:43,848] INFO in observability: api timing path=/api/admin/invitations status=401 request_ms=0.2 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_14_sqa_admin_access_forbidden (test_invitations.InvitationTests.test_14_sqa_admin_access_forbidden) ... [2026-10-17 13:01:44,915] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=4.4 db_connect_ms=2.5 db_execute_ms=1.1
+[2026-10-17 13:01:44,920] INFO in observability: api timing path=/api/admin/invitations/1 status=403 request_ms=3.7 db_connect_ms=1.9 db_execute_ms=1.1
+[2026-10-17 13:01:44,924] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=3.3 db_connect_ms=1.5 db_execute_ms=1.0
+[2026-10-17 13:01:44,927] INFO in observability: api timing path=/api/admin/invitations/1/resend status=403 request_ms=3.0 db_connect_ms=1.4 db_execute_ms=1.0
+[2026-10-17 13:01:44,931] INFO in observability: api timing path=/api/admin/invitations/1/revoke status=403 request_ms=3.1 db_connect_ms=1.5 db_execute_ms=1.0
+ok
+test_15_analyst_admin_access_forbidden (test_invitations.InvitationTests.test_15_analyst_admin_access_forbidden) ... [2026-10-17 13:01:46,111] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=4.1 db_connect_ms=2.3 db_execute_ms=1.0
+[2026-10-17 13:01:46,115] INFO in observability: api timing path=/api/admin/invitations/1 status=403 request_ms=3.2 db_connect_ms=1.5 db_execute_ms=1.0
+[2026-10-17 13:01:46,119] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=3.0 db_connect_ms=1.5 db_execute_ms=0.9
+[2026-10-17 13:01:46,123] INFO in observability: api timing path=/api/admin/invitations/1/resend status=403 request_ms=3.7 db_connect_ms=1.8 db_execute_ms=1.1
+[2026-10-17 13:01:46,128] INFO in observability: api timing path=/api/admin/invitations/1/revoke status=403 request_ms=4.2 db_connect_ms=2.1 db_execute_ms=1.3
+ok
+test_16_simultaneous_acceptance_only_one_account (test_invitations.InvitationTests.test_16_simultaneous_acceptance_only_one_account) ... [2026-10-17 13:01:47,270] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=33.2 db_connect_ms=3.0 db_execute_ms=2.6
+[2026-10-17 13:01:47,295] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=23.6 db_connect_ms=2.2 db_execute_ms=2.5
+[2026-10-17 13:01:47,323] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=27.6 db_connect_ms=2.7 db_execute_ms=1.6
+[2026-10-17 13:01:47,527] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=199.6 db_connect_ms=5.2 db_execute_ms=2.4
+[2026-10-17 13:01:47,553] INFO in observability: api timing path=/api/invitations/accept status=410 request_ms=223.6 db_connect_ms=3.5 db_execute_ms=196.5
+ok
+test_17_existing_email_rejected (test_invitations.InvitationTests.test_17_existing_email_rejected) ... [2026-10-17 13:01:53,113] INFO in observability: api timing path=/api/admin/invitations status=409 request_ms=41.2 db_connect_ms=3.5 db_execute_ms=2.4
+ok
+test_18_resend_invalidates_old_link_and_verification (test_invitations.InvitationTests.test_18_resend_invalidates_old_link_and_verification) ... [2026-10-17 13:01:55,091] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=32.6 db_connect_ms=3.2 db_execute_ms=3.6
+[2026-10-17 13:01:55,753] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=661.2 db_connect_ms=1.9 db_execute_ms=1.2
+[2026-10-17 13:01:55,783] INFO in observability: api timing path=/api/admin/invitations/1/resend status=201 request_ms=28.7 db_connect_ms=3.3 db_execute_ms=2.5
+[2026-10-17 13:01:55,808] INFO in observability: api timing path=/api/invitations/validate status=400 request_ms=23.7 db_connect_ms=1.8 db_execute_ms=1.6
+[2026-10-17 13:01:55,834] INFO in observability: api timing path=/api/invitations/accept status=400 request_ms=24.7 db_connect_ms=2.2 db_execute_ms=1.8
+[2026-10-17 13:01:55,871] INFO in observability: api timing path=/api/invitations/accept status=403 request_ms=33.6 db_connect_ms=3.1 db_execute_ms=2.2
+ok
+test_19_new_link_works_resets_failures (test_invitations.InvitationTests.test_19_new_link_works_resets_failures) ... [2026-10-17 13:01:57,976] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=33.9 db_connect_ms=3.2 db_execute_ms=3.1
+[2026-10-17 13:01:57,983] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:01:58,001] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=23.2 db_connect_ms=2.6 db_execute_ms=2.6
+[2026-10-17 13:01:58,259] INFO in observability: api timing path=/api/admin/invitations/1/resend status=201 request_ms=257.3 db_connect_ms=2.7 db_execute_ms=2.8
+[2026-10-17 13:01:58,288] INFO in observability: api timing path=/api/invitations/validate status=200 request_ms=25.3 db_connect_ms=1.0 db_execute_ms=2.0
+[2026-10-17 13:01:58,315] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=25.8 db_connect_ms=2.2 db_execute_ms=2.3
+[2026-10-17 13:01:58,585] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=267.2 db_connect_ms=2.9 db_execute_ms=4.0
+ok
+test_20_delivery_failure_recorded_and_retry_works (test_invitations.InvitationTests.test_20_delivery_failure_recorded_and_retry_works) ... [2026-10-17 13:02:00,420] WARNING in invitations_service: Invitation email delivery failed invitation_id=1 error_type=RuntimeError smtp_code=None
+[2026-10-17 13:02:00,444] INFO in observability: api timing path=/api/admin/invitations status=502 request_ms=31.4 db_connect_ms=3.3 db_execute_ms=3.5
+[2026-10-17 13:02:00,490] INFO in observability: api timing path=/api/admin/invitations/1/resend status=201 request_ms=42.1 db_connect_ms=2.9 db_execute_ms=3.4
+ok
+test_21_exact_24_hours_and_boundary (test_invitations.InvitationTests.test_21_exact_24_hours_and_boundary) ... [2026-10-17 13:02:03,415] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=32.5 db_connect_ms=4.2 db_execute_ms=4.1
+[2026-10-17 13:02:03,450] INFO in observability: api timing path=/api/invitations/validate status=200 request_ms=29.1 db_connect_ms=1.9 db_execute_ms=2.8
+[2026-10-17 13:02:03,502] INFO in observability: api timing path=/api/invitations/validate status=410 request_ms=48.3 db_connect_ms=6.3 db_execute_ms=4.8
+ok
+test_22_role_tampering_rejected (test_invitations.InvitationTests.test_22_role_tampering_rejected) ... [2026-10-17 13:02:04,596] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=36.7 db_connect_ms=2.9 db_execute_ms=2.9
+[2026-10-17 13:02:04,620] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=23.3 db_connect_ms=2.7 db_execute_ms=1.9
+[2026-10-17 13:02:04,656] INFO in observability: api timing path=/api/invitations/accept status=400 request_ms=32.3 db_connect_ms=3.0 db_execute_ms=2.8
+[2026-10-17 13:02:04,894] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=235.7 db_connect_ms=3.6 db_execute_ms=3.8
+ok
+test_23_email_tampering_rejected (test_invitations.InvitationTests.test_23_email_tampering_rejected) ... [2026-10-17 13:02:07,112] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=38.9 db_connect_ms=2.5 db_execute_ms=3.0
+[2026-10-17 13:02:07,137] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=23.6 db_connect_ms=2.7 db_execute_ms=2.6
+[2026-10-17 13:02:07,169] INFO in observability: api timing path=/api/invitations/accept status=400 request_ms=28.0 db_connect_ms=4.3 db_execute_ms=2.9
+[2026-10-17 13:02:07,403] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=231.1 db_connect_ms=4.4 db_execute_ms=3.3
+ok
+test_24_validation_and_csrf (test_invitations.InvitationTests.test_24_validation_and_csrf) ... [2026-10-17 13:02:08,577] INFO in observability: api timing path=/api/admin/invitations status=400 request_ms=31.1 db_connect_ms=4.6 db_execute_ms=3.3
+[2026-10-17 13:02:08,612] INFO in observability: api timing path=/api/admin/invitations status=400 request_ms=34.3 db_connect_ms=5.3 db_execute_ms=4.4
+[2026-10-17 13:02:08,685] INFO in observability: api timing path=/api/admin/invitations status=400 request_ms=70.5 db_connect_ms=7.5 db_execute_ms=37.2
+[2026-10-17 13:02:08,769] INFO in observability: api timing path=/api/admin/invitations status=400 request_ms=81.7 db_connect_ms=5.3 db_execute_ms=39.8
+[2026-10-17 13:02:08,785] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=12.0 db_connect_ms=7.1 db_execute_ms=2.4
+[2026-10-17 13:02:08,841] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=53.6 db_connect_ms=7.1 db_execute_ms=14.0
+[2026-10-17 13:02:08,908] INFO in observability: api timing path=/api/invitations/accept status=403 request_ms=61.0 db_connect_ms=11.3 db_execute_ms=21.5
+[2026-10-17 13:02:08,942] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=30.6 db_connect_ms=5.6 db_execute_ms=3.3
+[2026-10-17 13:02:08,974] INFO in observability: api timing path=/api/invitations/accept status=400 request_ms=29.1 db_connect_ms=3.6 db_execute_ms=2.5
+[2026-10-17 13:02:08,977] INFO in observability: api timing path=/api/auth/register status=403 request_ms=0.6 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_25_duplicate_pending_and_admin_view_privacy (test_invitations.InvitationTests.test_25_duplicate_pending_and_admin_view_privacy) ... [2026-10-17 13:02:13,006] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=26.4 db_connect_ms=3.3 db_execute_ms=2.9
+[2026-10-17 13:02:13,248] INFO in observability: api timing path=/api/admin/invitations status=409 request_ms=241.4 db_connect_ms=3.2 db_execute_ms=2.2
+[2026-10-17 13:02:13,255] INFO in observability: api timing path=/api/admin/invitations/1 status=200 request_ms=5.9 db_connect_ms=3.4 db_execute_ms=1.4
+ok
+test_26_expiry_between_verify_and_accept (test_invitations.InvitationTests.test_26_expiry_between_verify_and_accept) ... [2026-10-17 13:02:15,902] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=35.1 db_connect_ms=3.4 db_execute_ms=5.7
+[2026-10-17 13:02:15,932] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=29.1 db_connect_ms=1.8 db_execute_ms=2.0
+[2026-10-17 13:02:16,003] INFO in observability: api timing path=/api/invitations/accept status=410 request_ms=26.6 db_connect_ms=2.1 db_execute_ms=2.2
+ok
+test_27_smtp_message_and_secure_transport (test_invitations.InvitationTests.test_27_smtp_message_and_secure_transport) ... ok
+test_28_legacy_sqlite_migration_retains_foreign_keys (test_invitations.InvitationTests.test_28_legacy_sqlite_migration_retains_foreign_keys) ... ok
+test_29_existing_session_cleared_on_registration (test_invitations.InvitationTests.test_29_existing_session_cleared_on_registration) ... [2026-10-17 13:02:26,836] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=1713.7 db_connect_ms=7.0 db_execute_ms=34.3
+[2026-10-17 13:02:26,902] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=32.1 db_connect_ms=3.2 db_execute_ms=2.0
+[2026-10-17 13:02:27,268] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=361.6 db_connect_ms=5.0 db_execute_ms=26.8
+[2026-10-17 13:02:27,269] INFO in observability: api timing path=/api/auth/me status=200 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_local_login_refresh_and_logout (test_local_transport.LocalTransportTests.test_local_login_refresh_and_logout) ... [2026-10-17 13:02:29,227] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:02:29,513] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:02:29,826] INFO in auth_service: login timing total_ms=598.4 connect_ms=8.1 user_query_ms=1.0 password_ms=229.3 permissions_ms=0.0
+[2026-10-17 13:02:29,828] INFO in observability: api timing path=/api/auth/login status=200 request_ms=601.9 db_connect_ms=8.0 db_execute_ms=301.4
+[2026-10-17 13:02:29,846] INFO in observability: api timing path=/api/auth/me status=200 request_ms=13.6 db_connect_ms=8.5 db_execute_ms=2.6
+[2026-10-17 13:02:29,850] INFO in observability: api timing path=/api/auth/refresh status=403 request_ms=1.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:02:29,995] INFO in observability: api timing path=/api/auth/refresh status=200 request_ms=140.8 db_connect_ms=4.8 db_execute_ms=110.5
+[2026-10-17 13:02:30,041] INFO in observability: api timing path=/api/auth/logout status=200 request_ms=43.9 db_connect_ms=5.2 db_execute_ms=14.0
+[2026-10-17 13:02:30,046] INFO in observability: api timing path=/api/auth/me status=200 request_ms=0.8 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:02:30,049] INFO in observability: api timing path=/api/health status=403 request_ms=0.6 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_wsgi_stays_https_only (test_local_transport.LocalTransportTests.test_wsgi_stays_https_only) ... [2026-10-17 13:02:31,480] INFO in observability: api timing path=/api/auth/login status=426 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:02:31,481] INFO in observability: api timing path=/api/auth/refresh status=426 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_admin_login_uses_one_connection_and_full_permissions (test_login_performance.LoginConnectionTests.test_admin_login_uses_one_connection_and_full_permissions) ... [2026-10-17 13:02:32,491] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:02:32,768] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:02:33,342] INFO in auth_service: login timing total_ms=850.3 connect_ms=4.9 user_query_ms=1.2 password_ms=225.0 permissions_ms=0.0
+[2026-10-17 13:02:33,343] INFO in observability: api timing path=/api/auth/login status=200 request_ms=852.2 db_connect_ms=4.7 db_execute_ms=558.9
+ok
+test_analyst_login_reuses_connection_and_observes_revoked_permissions (test_login_performance.LoginConnectionTests.test_analyst_login_reuses_connection_and_observes_revoked_permissions) ... [2026-10-17 13:02:35,083] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:02:35,340] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-17 13:02:35,361] INFO in auth_service: login timing total_ms=277.5 connect_ms=4.3 user_query_ms=0.5 password_ms=218.0 permissions_ms=0.3
+[2026-10-17 13:02:35,361] INFO in observability: api timing path=/api/auth/login status=200 request_ms=278.9 db_connect_ms=4.2 db_execute_ms=14.3
+[2026-10-17 13:02:35,389] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:02:35,705] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-17 13:02:35,913] INFO in auth_service: login timing total_ms=523.6 connect_ms=4.9 user_query_ms=0.7 password_ms=273.5 permissions_ms=0.4
+[2026-10-17 13:02:35,916] INFO in observability: api timing path=/api/auth/login status=200 request_ms=527.2 db_connect_ms=4.8 db_execute_ms=133.3
+ok
+test_connection_is_closed_when_permission_lookup_fails (test_login_performance.LoginConnectionTests.test_connection_is_closed_when_permission_lookup_fails) ... [2026-10-17 13:02:37,102] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:02:37,379] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-17 13:02:37,379] INFO in auth_service: login timing total_ms=277.3 connect_ms=0.1 user_query_ms=0.5 password_ms=237.3 permissions_ms=0.0
+[2026-10-17 13:02:37,380] ERROR in auth: API endpoint failed endpoint=login exception_type=RuntimeError
+Traceback (most recent call last):
+  File "C:\Users\ua589\ReqQuality AI\backend\middlewares\auth.py", line 112, in wrapped
+    return view(*args, **kwargs)
+  File "C:\Users\ua589\ReqQuality AI\backend\controllers\auth_controller.py", line 9, in login
+    response = make_response(respond(service.login(request.get_json(silent=True))))
+                                     ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ua589\ReqQuality AI\backend\services\auth_service.py", line 61, in login
+    public_user = _public_user(user, connection=connection)
+  File "C:\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1241, in _execute_mock_call
+    raise effect
+RuntimeError: lookup failed
+[2026-10-17 13:02:37,383] INFO in observability: api timing path=/api/auth/login status=500 request_ms=281.5 db_connect_ms=0.0 db_execute_ms=2.8
+ok
+test_invalid_credentials_do_not_create_session (test_login_performance.LoginConnectionTests.test_invalid_credentials_do_not_create_session) ... [2026-10-17 13:02:38,209] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:02:38,412] WARNING in auth_service: login password_verification=false normalized_email=m***@example.com
+[2026-10-17 13:02:38,412] INFO in auth_service: login timing total_ms=202.4 connect_ms=3.1 user_query_ms=0.6 password_ms=177.1 permissions_ms=0.0
+[2026-10-17 13:02:38,413] INFO in observability: api timing path=/api/auth/login status=401 request_ms=203.3 db_connect_ms=3.0 db_execute_ms=2.9
+[2026-10-17 13:02:38,415] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:02:38,627] WARNING in auth_service: login password_verification=false normalized_email=m***@example.com
+[2026-10-17 13:02:38,628] INFO in auth_service: login timing total_ms=212.9 connect_ms=2.7 user_query_ms=0.4 password_ms=190.7 permissions_ms=0.0
+[2026-10-17 13:02:38,628] INFO in observability: api timing path=/api/auth/login status=401 request_ms=213.6 db_connect_ms=2.6 db_execute_ms=1.8
+ok
+test_failed_initialization_closes_connection_and_retries (test_login_performance.PostgresInitializationTests.test_failed_initialization_closes_connection_and_retries) ... ok
+test_other_worker_schema_lease_is_retryable (test_login_performance.PostgresInitializationTests.test_other_worker_schema_lease_is_retryable) ... ok
+test_persisted_schema_version_skips_migrations_in_new_worker (test_login_performance.PostgresInitializationTests.test_persisted_schema_version_skips_migrations_in_new_worker) ... ok
+test_schema_and_invitation_initialization_run_once_per_database (test_login_performance.PostgresInitializationTests.test_schema_and_invitation_initialization_run_once_per_database) ... ok
+test_warm_postgres_connection_executes_no_schema_sql (test_login_performance.PostgresInitializationTests.test_warm_postgres_connection_executes_no_schema_sql) ... ok
+test_01_admin_sqa_invitation (test_invitations.InvitationTests.test_01_admin_sqa_invitation) ... [2026-10-17 13:02:43,813] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=251.9 db_connect_ms=2.7 db_execute_ms=2.4
+ok
+test_02_admin_analyst_invitation (test_invitations.InvitationTests.test_02_admin_analyst_invitation) ... [2026-10-17 13:02:45,777] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=39.2 db_connect_ms=8.0 db_execute_ms=5.6
+ok
+test_03_correct_email_accepts_only_after_registration (test_invitations.InvitationTests.test_03_correct_email_accepts_only_after_registration) ... [2026-10-17 13:02:47,889] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=46.8 db_connect_ms=3.8 db_execute_ms=3.3
+[2026-10-17 13:02:47,917] INFO in observability: api timing path=/api/invitations/validate status=200 request_ms=26.9 db_connect_ms=2.2 db_execute_ms=3.7
+[2026-10-17 13:02:47,945] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=26.3 db_connect_ms=2.7 db_execute_ms=2.6
+[2026-10-17 13:02:48,211] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=258.9 db_connect_ms=1.4 db_execute_ms=2.8
+[2026-10-17 13:02:48,539] INFO in auth_service: login attempt normalized_email=i***@example.com
+[2026-10-17 13:02:48,727] INFO in auth_service: login password_verification=true normalized_email=i***@example.com
+[2026-10-17 13:02:48,830] INFO in auth_service: login timing total_ms=290.8 connect_ms=1.0 user_query_ms=0.3 password_ms=166.4 permissions_ms=0.3
+[2026-10-17 13:02:48,833] INFO in observability: api timing path=/api/auth/login status=200 request_ms=293.5 db_connect_ms=0.9 db_execute_ms=76.7
+ok
+test_04_wrong_email_keeps_pending_and_private (test_invitations.InvitationTests.test_04_wrong_email_keeps_pending_and_private) ... [2026-10-17 13:02:51,372] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=222.5 db_connect_ms=10.4 db_execute_ms=126.2
+[2026-10-17 13:02:51,418] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:02:51,447] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=70.6 db_connect_ms=7.6 db_execute_ms=33.3
+[2026-10-17 13:02:51,516] INFO in observability: api timing path=/api/invitations/validate status=200 request_ms=57.8 db_connect_ms=2.5 db_execute_ms=29.2
+[2026-10-17 13:02:51,603] INFO in observability: api timing path=/api/invitations/validate status=200 request_ms=83.8 db_connect_ms=7.5 db_execute_ms=46.9
+ok
+test_05_failed_attempt_increments (test_invitations.InvitationTests.test_05_failed_attempt_increments) ... [2026-10-17 13:02:54,105] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=28.3 db_connect_ms=2.8 db_execute_ms=3.0
+[2026-10-17 13:02:54,314] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:02:54,336] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=230.0 db_connect_ms=2.3 db_execute_ms=204.6
+ok
+test_06_correct_after_wrong_succeeds (test_invitations.InvitationTests.test_06_correct_after_wrong_succeeds) ... [2026-10-17 13:02:56,565] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=35.4 db_connect_ms=3.4 db_execute_ms=2.8
+[2026-10-17 13:02:56,571] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:02:56,594] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=27.6 db_connect_ms=2.4 db_execute_ms=2.5
+[2026-10-17 13:02:56,618] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=23.3 db_connect_ms=2.8 db_execute_ms=2.0
+[2026-10-17 13:02:57,321] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=698.4 db_connect_ms=4.1 db_execute_ms=3.5
+ok
+test_07_five_failures_lock (test_invitations.InvitationTests.test_07_five_failures_lock) ... [2026-10-17 13:02:59,546] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=65.3 db_connect_ms=9.6 db_execute_ms=29.1
+[2026-10-17 13:02:59,554] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:02:59,577] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=29.7 db_connect_ms=3.5 db_execute_ms=2.7
+[2026-10-17 13:02:59,584] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:02:59,604] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=25.2 db_connect_ms=3.1 db_execute_ms=2.2
+[2026-10-17 13:02:59,610] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:03:00,057] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=452.0 db_connect_ms=2.7 db_execute_ms=2.1
+[2026-10-17 13:03:00,064] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:03:00,084] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=25.8 db_connect_ms=2.7 db_execute_ms=2.6
+[2026-10-17 13:03:00,090] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:03:00,109] INFO in observability: api timing path=/api/invitations/verify-email status=429 request_ms=24.6 db_connect_ms=2.9 db_execute_ms=1.9
+[2026-10-17 13:03:00,140] INFO in observability: api timing path=/api/invitations/verify-email status=429 request_ms=29.0 db_connect_ms=3.1 db_execute_ms=2.0
+ok
+test_08_temporary_lock_recovers_without_changing_expiry (test_invitations.InvitationTests.test_08_temporary_lock_recovers_without_changing_expiry) ... [2026-10-17 13:03:01,948] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=25.3 db_connect_ms=2.4 db_execute_ms=2.5
+[2026-10-17 13:03:01,953] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:03:01,969] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=18.0 db_connect_ms=0.7 db_execute_ms=1.3
+[2026-10-17 13:03:01,973] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:03:01,993] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=23.7 db_connect_ms=1.7 db_execute_ms=1.2
+[2026-10-17 13:03:01,998] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:03:02,017] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=22.4 db_connect_ms=1.7 db_execute_ms=1.4
+[2026-10-17 13:03:02,024] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:03:02,045] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=27.8 db_connect_ms=1.5 db_execute_ms=4.8
+[2026-10-17 13:03:02,051] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:03:02,072] INFO in observability: api timing path=/api/invitations/verify-email status=429 request_ms=25.7 db_connect_ms=2.3 db_execute_ms=1.9
+[2026-10-17 13:03:02,101] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=23.6 db_connect_ms=0.9 db_execute_ms=1.5
+[2026-10-17 13:03:03,543] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=1439.9 db_connect_ms=2.3 db_execute_ms=33.5
+ok
+test_09_expired_rejected_and_marked (test_invitations.InvitationTests.test_09_expired_rejected_and_marked) ... [2026-10-17 13:03:07,075] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=68.8 db_connect_ms=11.1 db_execute_ms=26.5
+[2026-10-17 13:03:07,426] INFO in observability: api timing path=/api/invitations/validate status=410 request_ms=28.8 db_connect_ms=1.8 db_execute_ms=1.5
+[2026-10-17 13:03:07,455] INFO in observability: api timing path=/api/invitations/verify-email status=410 request_ms=24.6 db_connect_ms=1.3 db_execute_ms=3.0
+ok
+test_10_used_rejected (test_invitations.InvitationTests.test_10_used_rejected) ... [2026-10-17 13:03:10,039] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=65.6 db_connect_ms=13.5 db_execute_ms=21.6
+[2026-10-17 13:03:10,102] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=59.3 db_connect_ms=8.3 db_execute_ms=26.7
+[2026-10-17 13:03:10,420] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=309.8 db_connect_ms=7.1 db_execute_ms=29.7
+[2026-10-17 13:03:10,444] INFO in observability: api timing path=/api/invitations/validate status=410 request_ms=22.4 db_connect_ms=1.9 db_execute_ms=2.6
+[2026-10-17 13:03:10,468] INFO in observability: api timing path=/api/invitations/accept status=410 request_ms=23.1 db_connect_ms=1.8 db_execute_ms=1.4
+ok
+test_11_revoke_after_verification_stops_acceptance (test_invitations.InvitationTests.test_11_revoke_after_verification_stops_acceptance) ... [2026-10-17 13:03:12,738] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=28.9 db_connect_ms=3.4 db_execute_ms=3.0
+[2026-10-17 13:03:12,765] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=26.1 db_connect_ms=2.5 db_execute_ms=2.2
+[2026-10-17 13:03:12,797] INFO in observability: api timing path=/api/admin/invitations/1/revoke status=200 request_ms=30.4 db_connect_ms=3.4 db_execute_ms=3.1
+[2026-10-17 13:03:12,827] INFO in observability: api timing path=/api/invitations/validate status=410 request_ms=29.8 db_connect_ms=1.8 db_execute_ms=1.6
+[2026-10-17 13:03:12,853] INFO in observability: api timing path=/api/invitations/accept status=410 request_ms=23.1 db_connect_ms=2.5 db_execute_ms=1.8
+ok
+test_12_random_token_rejected (test_invitations.InvitationTests.test_12_random_token_rejected) ... [2026-10-17 13:03:14,988] INFO in observability: api timing path=/api/invitations/validate status=400 request_ms=22.9 db_connect_ms=2.0 db_execute_ms=1.8
+[2026-10-17 13:03:15,011] INFO in observability: api timing path=/api/invitations/validate status=400 request_ms=21.6 db_connect_ms=2.2 db_execute_ms=1.4
+ok
+test_13_unauthenticated_admin_api_denied (test_invitations.InvitationTests.test_13_unauthenticated_admin_api_denied) ... [2026-10-17 13:03:17,154] INFO in observability: api timing path=/api/admin/invitations status=401 request_ms=0.4 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:03:17,155] INFO in observability: api timing path=/api/admin/invitations status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_14_sqa_admin_access_forbidden (test_invitations.InvitationTests.test_14_sqa_admin_access_forbidden) ... [2026-10-17 13:03:19,727] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=8.5 db_connect_ms=4.7 db_execute_ms=2.4
+[2026-10-17 13:03:19,735] INFO in observability: api timing path=/api/admin/invitations/1 status=403 request_ms=6.6 db_connect_ms=3.2 db_execute_ms=2.1
+[2026-10-17 13:03:19,741] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=5.9 db_connect_ms=3.0 db_execute_ms=1.7
+[2026-10-17 13:03:19,748] INFO in observability: api timing path=/api/admin/invitations/1/resend status=403 request_ms=5.3 db_connect_ms=2.6 db_execute_ms=1.7
+[2026-10-17 13:03:19,755] INFO in observability: api timing path=/api/admin/invitations/1/revoke status=403 request_ms=5.8 db_connect_ms=2.6 db_execute_ms=2.1
+ok
+test_15_analyst_admin_access_forbidden (test_invitations.InvitationTests.test_15_analyst_admin_access_forbidden) ... [2026-10-17 13:03:21,600] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=10.5 db_connect_ms=5.7 db_execute_ms=3.2
+[2026-10-17 13:03:21,607] INFO in observability: api timing path=/api/admin/invitations/1 status=403 request_ms=6.7 db_connect_ms=3.4 db_execute_ms=2.1
+[2026-10-17 13:03:21,615] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=6.6 db_connect_ms=3.2 db_execute_ms=2.1
+[2026-10-17 13:03:21,623] INFO in observability: api timing path=/api/admin/invitations/1/resend status=403 request_ms=6.4 db_connect_ms=3.3 db_execute_ms=2.0
+[2026-10-17 13:03:21,629] INFO in observability: api timing path=/api/admin/invitations/1/revoke status=403 request_ms=5.1 db_connect_ms=2.5 db_execute_ms=1.7
+ok
+test_16_simultaneous_acceptance_only_one_account (test_invitations.InvitationTests.test_16_simultaneous_acceptance_only_one_account) ... [2026-10-17 13:03:23,956] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=36.5 db_connect_ms=3.4 db_execute_ms=3.0
+[2026-10-17 13:03:23,985] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=28.0 db_connect_ms=2.6 db_execute_ms=1.5
+[2026-10-17 13:03:24,015] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=28.2 db_connect_ms=2.8 db_execute_ms=2.3
+[2026-10-17 13:03:24,774] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=755.4 db_connect_ms=5.4 db_execute_ms=3.0
+[2026-10-17 13:03:24,865] INFO in observability: api timing path=/api/invitations/accept status=410 request_ms=843.9 db_connect_ms=3.5 db_execute_ms=811.5
+ok
+test_17_existing_email_rejected (test_invitations.InvitationTests.test_17_existing_email_rejected) ... [2026-10-17 13:03:26,885] INFO in observability: api timing path=/api/admin/invitations status=409 request_ms=24.8 db_connect_ms=2.6 db_execute_ms=1.9
+ok
+test_18_resend_invalidates_old_link_and_verification (test_invitations.InvitationTests.test_18_resend_invalidates_old_link_and_verification) ... [2026-10-17 13:03:28,768] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=28.9 db_connect_ms=3.9 db_execute_ms=3.1
+[2026-10-17 13:03:28,794] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=25.5 db_connect_ms=2.5 db_execute_ms=2.7
+[2026-10-17 13:03:28,834] INFO in observability: api timing path=/api/admin/invitations/1/resend status=201 request_ms=37.5 db_connect_ms=4.6 db_execute_ms=4.4
+[2026-10-17 13:03:28,897] INFO in observability: api timing path=/api/invitations/validate status=400 request_ms=61.1 db_connect_ms=5.4 db_execute_ms=29.7
+[2026-10-17 13:03:28,960] INFO in observability: api timing path=/api/invitations/accept status=400 request_ms=55.6 db_connect_ms=7.6 db_execute_ms=20.8
+[2026-10-17 13:03:29,015] INFO in observability: api timing path=/api/invitations/accept status=403 request_ms=48.6 db_connect_ms=8.0 db_execute_ms=6.1
+ok
+test_19_new_link_works_resets_failures (test_invitations.InvitationTests.test_19_new_link_works_resets_failures) ... [2026-10-17 13:03:30,232] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=30.5 db_connect_ms=3.2 db_execute_ms=2.7
+[2026-10-17 13:03:30,241] INFO in invitations_service: Invitation verification mismatch invitation_id=1
+[2026-10-17 13:03:30,263] INFO in observability: api timing path=/api/invitations/verify-email status=400 request_ms=30.6 db_connect_ms=2.0 db_execute_ms=6.3
+[2026-10-17 13:03:30,298] INFO in observability: api timing path=/api/admin/invitations/1/resend status=201 request_ms=33.0 db_connect_ms=4.2 db_execute_ms=4.3
+[2026-10-17 13:03:30,330] INFO in observability: api timing path=/api/invitations/validate status=200 request_ms=27.6 db_connect_ms=1.3 db_execute_ms=2.7
+[2026-10-17 13:03:30,365] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=33.2 db_connect_ms=3.0 db_execute_ms=2.5
+[2026-10-17 13:03:30,688] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=317.1 db_connect_ms=5.8 db_execute_ms=5.2
+ok
+test_20_delivery_failure_recorded_and_retry_works (test_invitations.InvitationTests.test_20_delivery_failure_recorded_and_retry_works) ... [2026-10-17 13:03:31,759] WARNING in invitations_service: Invitation email delivery failed invitation_id=1 error_type=RuntimeError smtp_code=None
+[2026-10-17 13:03:31,781] INFO in observability: api timing path=/api/admin/invitations status=502 request_ms=27.7 db_connect_ms=2.7 db_execute_ms=2.4
+[2026-10-17 13:03:31,812] INFO in observability: api timing path=/api/admin/invitations/1/resend status=201 request_ms=28.0 db_connect_ms=1.4 db_execute_ms=2.0
+ok
+test_21_exact_24_hours_and_boundary (test_invitations.InvitationTests.test_21_exact_24_hours_and_boundary) ... [2026-10-17 13:03:35,850] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=39.3 db_connect_ms=6.1 db_execute_ms=5.4
+[2026-10-17 13:03:35,898] INFO in observability: api timing path=/api/invitations/validate status=200 request_ms=39.1 db_connect_ms=2.9 db_execute_ms=5.6
+[2026-10-17 13:03:35,926] INFO in observability: api timing path=/api/invitations/validate status=410 request_ms=26.5 db_connect_ms=3.1 db_execute_ms=2.6
+ok
+test_22_role_tampering_rejected (test_invitations.InvitationTests.test_22_role_tampering_rejected) ... [2026-10-17 13:03:37,115] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=34.3 db_connect_ms=3.1 db_execute_ms=3.0
+[2026-10-17 13:03:37,143] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=27.2 db_connect_ms=2.4 db_execute_ms=2.0
+[2026-10-17 13:03:37,175] INFO in observability: api timing path=/api/invitations/accept status=400 request_ms=28.7 db_connect_ms=2.8 db_execute_ms=1.9
+[2026-10-17 13:03:37,447] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=269.5 db_connect_ms=3.9 db_execute_ms=3.3
+ok
+test_23_email_tampering_rejected (test_invitations.InvitationTests.test_23_email_tampering_rejected) ... [2026-10-17 13:03:40,159] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=50.4 db_connect_ms=4.3 db_execute_ms=19.3
+[2026-10-17 13:03:40,200] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=39.3 db_connect_ms=4.4 db_execute_ms=3.3
+[2026-10-17 13:03:40,241] INFO in observability: api timing path=/api/invitations/accept status=400 request_ms=36.3 db_connect_ms=5.4 db_execute_ms=4.6
+[2026-10-17 13:03:40,459] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=215.1 db_connect_ms=3.7 db_execute_ms=4.2
+ok
+test_24_validation_and_csrf (test_invitations.InvitationTests.test_24_validation_and_csrf) ... [2026-10-17 13:03:43,214] INFO in observability: api timing path=/api/admin/invitations status=400 request_ms=28.2 db_connect_ms=3.0 db_execute_ms=2.0
+[2026-10-17 13:03:43,241] INFO in observability: api timing path=/api/admin/invitations status=400 request_ms=26.2 db_connect_ms=3.5 db_execute_ms=3.3
+[2026-10-17 13:03:43,266] INFO in observability: api timing path=/api/admin/invitations status=400 request_ms=23.7 db_connect_ms=3.4 db_execute_ms=2.4
+[2026-10-17 13:03:43,295] INFO in observability: api timing path=/api/admin/invitations status=400 request_ms=27.3 db_connect_ms=4.2 db_execute_ms=3.4
+[2026-10-17 13:03:43,302] INFO in observability: api timing path=/api/admin/invitations status=403 request_ms=6.1 db_connect_ms=3.7 db_execute_ms=1.1
+[2026-10-17 13:03:43,355] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=50.8 db_connect_ms=3.3 db_execute_ms=9.9
+[2026-10-17 13:03:43,396] INFO in observability: api timing path=/api/invitations/accept status=403 request_ms=35.8 db_connect_ms=5.0 db_execute_ms=3.2
+[2026-10-17 13:03:43,425] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=28.5 db_connect_ms=3.5 db_execute_ms=3.0
+[2026-10-17 13:03:43,454] INFO in observability: api timing path=/api/invitations/accept status=400 request_ms=25.6 db_connect_ms=2.9 db_execute_ms=2.2
+[2026-10-17 13:03:43,455] INFO in observability: api timing path=/api/auth/register status=403 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_25_duplicate_pending_and_admin_view_privacy (test_invitations.InvitationTests.test_25_duplicate_pending_and_admin_view_privacy) ... [2026-10-17 13:03:45,503] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=42.4 db_connect_ms=4.8 db_execute_ms=12.6
+[2026-10-17 13:03:45,532] INFO in observability: api timing path=/api/admin/invitations status=409 request_ms=28.2 db_connect_ms=3.8 db_execute_ms=3.3
+[2026-10-17 13:03:45,540] INFO in observability: api timing path=/api/admin/invitations/1 status=200 request_ms=7.2 db_connect_ms=4.3 db_execute_ms=1.7
+ok
+test_26_expiry_between_verify_and_accept (test_invitations.InvitationTests.test_26_expiry_between_verify_and_accept) ... [2026-10-17 13:03:47,438] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=36.4 db_connect_ms=3.5 db_execute_ms=3.0
+[2026-10-17 13:03:47,480] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=37.9 db_connect_ms=7.7 db_execute_ms=5.1
+[2026-10-17 13:03:47,555] INFO in observability: api timing path=/api/invitations/accept status=410 request_ms=39.1 db_connect_ms=4.8 db_execute_ms=3.5
+ok
+test_27_smtp_message_and_secure_transport (test_invitations.InvitationTests.test_27_smtp_message_and_secure_transport) ... ok
+test_28_legacy_sqlite_migration_retains_foreign_keys (test_invitations.InvitationTests.test_28_legacy_sqlite_migration_retains_foreign_keys) ... ok
+test_29_existing_session_cleared_on_registration (test_invitations.InvitationTests.test_29_existing_session_cleared_on_registration) ... [2026-10-17 13:03:54,100] INFO in observability: api timing path=/api/admin/invitations status=201 request_ms=30.9 db_connect_ms=3.1 db_execute_ms=3.1
+[2026-10-17 13:03:54,144] INFO in observability: api timing path=/api/invitations/verify-email status=200 request_ms=20.8 db_connect_ms=2.9 db_execute_ms=2.3
+[2026-10-17 13:03:55,282] INFO in observability: api timing path=/api/invitations/accept status=201 request_ms=1135.6 db_connect_ms=2.3 db_execute_ms=2.3
+[2026-10-17 13:03:55,283] INFO in observability: api timing path=/api/auth/me status=200 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_expired_link (test_password_reset.PasswordResetTests.test_expired_link) ... [2026-10-17 13:03:58,175] INFO in observability: api timing path=/api/auth/forgot-password status=200 request_ms=347.9 db_connect_ms=8.0 db_execute_ms=29.4
+[2026-10-17 13:03:58,411] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=212.6 db_connect_ms=2.3 db_execute_ms=9.5
+ok
+test_reset_lifecycle (test_password_reset.PasswordResetTests.test_reset_lifecycle) ... [2026-10-17 13:04:00,136] INFO in observability: api timing path=/api/auth/forgot-password status=200 request_ms=54.4 db_connect_ms=2.0 db_execute_ms=19.8
+[2026-10-17 13:04:00,164] INFO in observability: api timing path=/api/auth/forgot-password status=200 request_ms=27.0 db_connect_ms=3.3 db_execute_ms=2.8
+[2026-10-17 13:04:00,196] INFO in observability: api timing path=/api/auth/forgot-password status=200 request_ms=30.0 db_connect_ms=3.3 db_execute_ms=3.8
+[2026-10-17 13:04:00,197] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:04:00,394] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-17 13:04:00,416] INFO in auth_service: login timing total_ms=218.8 connect_ms=4.0 user_query_ms=0.4 password_ms=171.9 permissions_ms=0.3
+[2026-10-17 13:04:00,417] INFO in observability: api timing path=/api/auth/login status=200 request_ms=219.7 db_connect_ms=4.0 db_execute_ms=4.0
+[2026-10-17 13:04:00,418] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:04:00,638] INFO in observability: api timing path=/api/auth/reset-password status=200 request_ms=219.7 db_connect_ms=2.2 db_execute_ms=3.3
+[2026-10-17 13:04:00,642] INFO in observability: api timing path=/api/auth/me status=200 request_ms=3.1 db_connect_ms=1.7 db_execute_ms=0.7
+[2026-10-17 13:04:00,844] INFO in observability: api timing path=/api/auth/reset-password status=400 request_ms=201.2 db_connect_ms=0.8 db_execute_ms=2.5
+[2026-10-17 13:04:00,845] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:04:01,044] WARNING in auth_service: login password_verification=false normalized_email=a***@example.com
+[2026-10-17 13:04:01,044] INFO in auth_service: login timing total_ms=199.3 connect_ms=2.0 user_query_ms=0.4 password_ms=170.8 permissions_ms=0.0
+[2026-10-17 13:04:01,045] INFO in observability: api timing path=/api/auth/login status=401 request_ms=200.1 db_connect_ms=2.0 db_execute_ms=1.7
+[2026-10-17 13:04:01,046] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 13:04:03,882] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-17 13:04:03,908] INFO in auth_service: login timing total_ms=2862.3 connect_ms=2.5 user_query_ms=0.5 password_ms=166.1 permissions_ms=0.3
+[2026-10-17 13:04:03,909] INFO in observability: api timing path=/api/auth/login status=200 request_ms=2863.1 db_connect_ms=2.4 db_execute_ms=2644.5
+ok
+test_analysis_cannot_be_relabelled_for_different_text (test_reliability.ReliabilityTests.test_analysis_cannot_be_relabelled_for_different_text) ... [2026-10-17 13:04:04,953] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=72.7 db_connect_ms=12.5 db_execute_ms=11.7
+[2026-10-17 13:04:05,019] INFO in observability: api timing path=/api/requirements status=201 request_ms=62.4 db_connect_ms=13.1 db_execute_ms=8.6
+[2026-10-17 13:04:06,083] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=1061.1 db_connect_ms=977.3 db_execute_ms=19.4
+[2026-10-17 13:04:06,093] INFO in observability: api timing path=/api/requirements/1/analysis status=409 request_ms=8.7 db_connect_ms=4.6 db_execute_ms=2.4
+ok
+test_browser_cannot_forge_ai_provenance_or_confirmed_facts (test_reliability.ReliabilityTests.test_browser_cannot_forge_ai_provenance_or_confirmed_facts) ... [2026-10-17 13:04:07,602] INFO in observability: api timing path=/api/requirements status=400 request_ms=20.8 db_connect_ms=11.3 db_execute_ms=5.3
+ok
+test_concurrent_material_edits_reject_stale_writer (test_reliability.ReliabilityTests.test_concurrent_material_edits_reject_stale_writer) ... [2026-10-17 13:04:08,760] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=65.4 db_connect_ms=10.4 db_execute_ms=9.6
+[2026-10-17 13:04:08,792] INFO in observability: api timing path=/api/requirements status=201 request_ms=30.7 db_connect_ms=4.4 db_execute_ms=4.4
+[2026-10-17 13:04:08,874] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=32.1 db_connect_ms=4.8 db_execute_ms=4.9
+[2026-10-17 13:04:08,883] INFO in observability: api timing path=/api/requirements/1 status=409 request_ms=42.0 db_connect_ms=5.7 db_execute_ms=34.4
+[2026-10-17 13:04:08,890] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=6.0 db_connect_ms=3.1 db_execute_ms=1.8
+ok
+test_concurrent_save_retry_creates_one_record (test_reliability.ReliabilityTests.test_concurrent_save_retry_creates_one_record) ... [2026-10-17 13:04:10,854] INFO in observability: api timing path=/api/requirements status=201 request_ms=32.3 db_connect_ms=6.3 db_execute_ms=3.6
+[2026-10-17 13:04:10,857] INFO in observability: api timing path=/api/requirements status=201 request_ms=33.8 db_connect_ms=4.8 db_execute_ms=27.3
+ok
+test_expired_worker_cannot_overwrite_newer_analysis (test_reliability.ReliabilityTests.test_expired_worker_cannot_overwrite_newer_analysis) ... ok
+test_noop_save_preserves_review_history (test_reliability.ReliabilityTests.test_noop_save_preserves_review_history) ... [2026-10-17 13:04:14,194] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=58.5 db_connect_ms=5.1 db_execute_ms=3.9
+[2026-10-17 13:04:14,229] INFO in observability: api timing path=/api/requirements status=201 request_ms=34.3 db_connect_ms=6.1 db_execute_ms=5.1
+[2026-10-17 13:04:14,241] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=10.7 db_connect_ms=5.6 db_execute_ms=3.1
+ok
+test_overlapping_analysis_does_not_start_second_provider_call (test_reliability.ReliabilityTests.test_overlapping_analysis_does_not_start_second_provider_call) ... ok
+test_saved_clarifications_reach_ai_and_are_bound_to_acceptance (test_reliability.ReliabilityTests.test_saved_clarifications_reach_ai_and_are_bound_to_acceptance) ... [2026-10-17 13:04:18,031] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=85.1 db_connect_ms=18.6 db_execute_ms=17.1
+[2026-10-17 13:04:18,069] INFO in observability: api timing path=/api/requirements status=201 request_ms=35.6 db_connect_ms=7.1 db_execute_ms=4.8
+[2026-10-17 13:04:18,101] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=30.7 db_connect_ms=6.3 db_execute_ms=4.4
+[2026-10-17 13:04:18,162] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=59.6 db_connect_ms=5.8 db_execute_ms=4.8
+[2026-10-17 13:04:18,198] INFO in observability: api timing path=/api/requirements/1/analysis status=200 request_ms=35.0 db_connect_ms=4.1 db_execute_ms=4.3
+ok
+test_signed_results_are_user_input_and_content_bound (test_reliability.ReliabilityTests.test_signed_results_are_user_input_and_content_bound) ... [2026-10-17 13:04:19,063] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=71.4 db_connect_ms=12.6 db_execute_ms=11.8
+[2026-10-17 13:04:19,081] INFO in observability: api timing path=/api/requirements status=400 request_ms=15.5 db_connect_ms=9.7 db_execute_ms=3.3
+[2026-10-17 13:04:19,092] INFO in observability: api timing path=/api/requirements status=400 request_ms=9.2 db_connect_ms=4.7 db_execute_ms=2.5
+[2026-10-17 13:04:19,102] INFO in observability: api timing path=/api/requirements status=400 request_ms=7.8 db_connect_ms=3.6 db_execute_ms=2.4
+[2026-10-17 13:04:19,113] INFO in observability: api timing path=/api/requirements status=400 request_ms=8.9 db_connect_ms=3.7 db_execute_ms=2.3
+[2026-10-17 13:04:19,185] INFO in observability: api timing path=/api/requirements status=400 request_ms=8.0 db_connect_ms=4.3 db_execute_ms=2.0
+ok
+test_unchanged_ai_criteria_do_not_become_confirmed_during_text_edit (test_reliability.ReliabilityTests.test_unchanged_ai_criteria_do_not_become_confirmed_during_text_edit) ... [2026-10-17 13:04:20,934] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=53.3 db_connect_ms=5.5 db_execute_ms=4.1
+[2026-10-17 13:04:20,966] INFO in observability: api timing path=/api/requirements status=201 request_ms=30.8 db_connect_ms=4.5 db_execute_ms=4.4
+[2026-10-17 13:04:20,995] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=28.5 db_connect_ms=3.7 db_execute_ms=3.2
+ok
+test_unknown_analysis_fields_and_oversized_scenarios_are_rejected (test_reliability.ReliabilityTests.test_unknown_analysis_fields_and_oversized_scenarios_are_rejected) ... ok
+test_concurrent_refresh_cannot_issue_two_active_successors (test_token_auth.TokenAuthenticationTests.test_concurrent_refresh_cannot_issue_two_active_successors) ... [2026-10-17 13:04:22,821] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:23,036] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:23,058] INFO in auth_service: login timing total_ms=236.6 connect_ms=2.7 user_query_ms=0.4 password_ms=190.0 permissions_ms=0.0
+[2026-10-17 13:04:23,059] INFO in observability: api timing path=/api/auth/login status=200 request_ms=237.7 db_connect_ms=2.7 db_execute_ms=4.4
+[2026-10-17 13:04:23,086] INFO in observability: api timing path=/api/auth/refresh status=200 request_ms=23.9 db_connect_ms=2.3 db_execute_ms=1.7
+[2026-10-17 13:04:23,110] INFO in observability: api timing path=/api/auth/refresh status=401 request_ms=49.2 db_connect_ms=3.0 db_execute_ms=28.6
+ok
+test_csrf_bootstrap_and_logout_protection (test_token_auth.TokenAuthenticationTests.test_csrf_bootstrap_and_logout_protection) ... [2026-10-17 13:04:23,807] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:23,999] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:24,023] INFO in auth_service: login timing total_ms=215.7 connect_ms=4.4 user_query_ms=0.4 password_ms=164.0 permissions_ms=0.0
+[2026-10-17 13:04:24,024] INFO in observability: api timing path=/api/auth/login status=200 request_ms=216.8 db_connect_ms=4.4 db_execute_ms=5.4
+[2026-10-17 13:04:24,025] INFO in observability: api timing path=/api/auth/csrf status=200 request_ms=0.5 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:04:24,027] INFO in observability: api timing path=/api/auth/logout status=403 request_ms=0.5 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:04:24,035] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=7.5 db_connect_ms=3.5 db_execute_ms=2.6
+[2026-10-17 13:04:24,068] INFO in observability: api timing path=/api/auth/logout status=200 request_ms=31.6 db_connect_ms=1.3 db_execute_ms=2.6
+ok
+test_expired_access_can_still_log_out_using_refresh_cookie (test_token_auth.TokenAuthenticationTests.test_expired_access_can_still_log_out_using_refresh_cookie) ... [2026-10-17 13:04:24,798] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:25,003] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:25,020] INFO in auth_service: login timing total_ms=221.6 connect_ms=4.1 user_query_ms=0.5 password_ms=174.8 permissions_ms=0.0
+[2026-10-17 13:04:25,021] INFO in observability: api timing path=/api/auth/login status=200 request_ms=222.8 db_connect_ms=4.0 db_execute_ms=5.2
+[2026-10-17 13:04:27,607] INFO in observability: api timing path=/api/auth/logout status=200 request_ms=2585.1 db_connect_ms=2.0 db_execute_ms=241.6
+ok
+test_expired_refresh_is_rejected (test_token_auth.TokenAuthenticationTests.test_expired_refresh_is_rejected) ... [2026-10-17 13:04:28,426] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:28,614] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:28,638] INFO in auth_service: login timing total_ms=211.9 connect_ms=2.5 user_query_ms=0.3 password_ms=168.8 permissions_ms=0.0
+[2026-10-17 13:04:28,639] INFO in observability: api timing path=/api/auth/login status=200 request_ms=213.1 db_connect_ms=2.5 db_execute_ms=3.7
+[2026-10-17 13:04:28,697] INFO in observability: api timing path=/api/auth/refresh status=401 request_ms=21.6 db_connect_ms=2.3 db_execute_ms=1.7
+ok
+test_failed_refresh_write_rolls_back_without_setting_replacement_cookies (test_token_auth.TokenAuthenticationTests.test_failed_refresh_write_rolls_back_without_setting_replacement_cookies) ... [2026-10-17 13:04:29,237] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:29,410] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:29,431] INFO in auth_service: login timing total_ms=193.6 connect_ms=2.2 user_query_ms=0.4 password_ms=148.4 permissions_ms=0.0
+[2026-10-17 13:04:29,431] INFO in observability: api timing path=/api/auth/login status=200 request_ms=194.4 db_connect_ms=2.2 db_execute_ms=2.8
+[2026-10-17 13:04:29,435] ERROR in auth: API endpoint failed endpoint=refresh exception_type=RuntimeError
+Traceback (most recent call last):
+  File "C:\Users\ua589\ReqQuality AI\backend\middlewares\auth.py", line 112, in wrapped
+    return view(*args, **kwargs)
+  File "C:\Users\ua589\ReqQuality AI\backend\controllers\auth_controller.py", line 25, in refresh
+    return respond(service.refresh())
+                   ~~~~~~~~~~~~~~~^^
+  File "C:\Users\ua589\ReqQuality AI\backend\services\auth_service.py", line 97, in refresh
+    return refresh_tokens()
+  File "C:\Users\ua589\ReqQuality AI\backend\services\token_service.py", line 151, in refresh_tokens
+    csrf, replacement = issue_tokens(user, connection, row['family_id'], row['expires_at'])
+                        ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1241, in _execute_mock_call
+    raise effect
+RuntimeError: simulated write failure
+[2026-10-17 13:04:29,437] INFO in observability: api timing path=/api/auth/refresh status=500 request_ms=4.5 db_connect_ms=1.8 db_execute_ms=0.5
+[2026-10-17 13:04:29,445] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=7.3 db_connect_ms=1.9 db_execute_ms=2.0
+ok
+test_login_issues_secure_httponly_cookies_and_only_refresh_hash_is_persisted (test_token_auth.TokenAuthenticationTests.test_login_issues_secure_httponly_cookies_and_only_refresh_hash_is_persisted) ... [2026-10-17 13:04:30,146] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:30,359] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:30,382] INFO in auth_service: login timing total_ms=236.4 connect_ms=7.8 user_query_ms=0.4 password_ms=172.9 permissions_ms=0.0
+[2026-10-17 13:04:30,383] INFO in observability: api timing path=/api/auth/login status=200 request_ms=237.8 db_connect_ms=7.7 db_execute_ms=7.3
+ok
+test_logout_revokes_copied_access_and_refresh_tokens (test_token_auth.TokenAuthenticationTests.test_logout_revokes_copied_access_and_refresh_tokens) ... [2026-10-17 13:04:32,532] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:32,774] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:32,795] INFO in auth_service: login timing total_ms=263.3 connect_ms=6.1 user_query_ms=0.6 password_ms=210.8 permissions_ms=0.0
+[2026-10-17 13:04:32,796] INFO in observability: api timing path=/api/auth/login status=200 request_ms=264.9 db_connect_ms=6.0 db_execute_ms=7.1
+[2026-10-17 13:04:32,821] INFO in observability: api timing path=/api/auth/logout status=200 request_ms=23.3 db_connect_ms=2.2 db_execute_ms=1.4
+[2026-10-17 13:04:32,825] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=3.2 db_connect_ms=1.8 db_execute_ms=0.6
+[2026-10-17 13:04:32,826] INFO in observability: api timing path=/api/auth/refresh status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_password_change_revokes_all_refresh_credentials (test_token_auth.TokenAuthenticationTests.test_password_change_revokes_all_refresh_credentials) ... [2026-10-17 13:04:33,548] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:33,769] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:33,793] INFO in auth_service: login timing total_ms=244.8 connect_ms=3.2 user_query_ms=0.4 password_ms=191.9 permissions_ms=0.0
+[2026-10-17 13:04:33,794] INFO in observability: api timing path=/api/auth/login status=200 request_ms=246.0 db_connect_ms=3.1 db_execute_ms=5.3
+[2026-10-17 13:04:34,129] INFO in observability: api timing path=/api/auth/change-password status=200 request_ms=333.7 db_connect_ms=3.1 db_execute_ms=2.7
+ok
+test_plain_http_login_is_rejected (test_token_auth.TokenAuthenticationTests.test_plain_http_login_is_rejected) ... [2026-10-17 13:04:34,827] INFO in observability: api timing path=/api/auth/login status=426 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_refresh_needs_csrf_and_rejects_an_access_token_in_refresh_cookie (test_token_auth.TokenAuthenticationTests.test_refresh_needs_csrf_and_rejects_an_access_token_in_refresh_cookie) ... [2026-10-17 13:04:37,094] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:37,367] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:37,389] INFO in auth_service: login timing total_ms=294.7 connect_ms=2.5 user_query_ms=0.4 password_ms=240.0 permissions_ms=0.0
+[2026-10-17 13:04:37,390] INFO in observability: api timing path=/api/auth/login status=200 request_ms=295.8 db_connect_ms=2.5 db_execute_ms=4.4
+[2026-10-17 13:04:37,391] INFO in observability: api timing path=/api/auth/refresh status=403 request_ms=0.2 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:04:37,392] INFO in observability: api timing path=/api/auth/refresh status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_refresh_replay_revokes_the_entire_family (test_token_auth.TokenAuthenticationTests.test_refresh_replay_revokes_the_entire_family) ... [2026-10-17 13:04:38,068] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:38,243] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:38,265] INFO in auth_service: login timing total_ms=196.9 connect_ms=2.5 user_query_ms=0.3 password_ms=153.3 permissions_ms=0.0
+[2026-10-17 13:04:38,265] INFO in observability: api timing path=/api/auth/login status=200 request_ms=197.8 db_connect_ms=2.5 db_execute_ms=4.1
+[2026-10-17 13:04:38,288] INFO in observability: api timing path=/api/auth/refresh status=200 request_ms=22.0 db_connect_ms=2.0 db_execute_ms=1.6
+[2026-10-17 13:04:38,310] INFO in observability: api timing path=/api/auth/refresh status=401 request_ms=20.8 db_connect_ms=1.7 db_execute_ms=1.6
+[2026-10-17 13:04:39,218] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=907.0 db_connect_ms=901.7 db_execute_ms=3.0
+ok
+test_refresh_rotates_both_cookies_and_keeps_original_24_hour_deadline (test_token_auth.TokenAuthenticationTests.test_refresh_rotates_both_cookies_and_keeps_original_24_hour_deadline) ... [2026-10-17 13:04:39,957] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:40,209] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:40,234] INFO in auth_service: login timing total_ms=276.0 connect_ms=3.6 user_query_ms=0.5 password_ms=220.9 permissions_ms=0.0
+[2026-10-17 13:04:40,234] INFO in observability: api timing path=/api/auth/login status=200 request_ms=277.3 db_connect_ms=3.6 db_execute_ms=4.4
+[2026-10-17 13:04:40,239] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=0.4 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-17 13:04:40,243] INFO in observability: api timing path=/api/auth/csrf status=200 request_ms=2.8 db_connect_ms=1.2 db_execute_ms=0.8
+[2026-10-17 13:04:40,266] INFO in observability: api timing path=/api/auth/refresh status=200 request_ms=21.9 db_connect_ms=1.0 db_execute_ms=1.7
+[2026-10-17 13:04:40,273] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=6.8 db_connect_ms=3.3 db_execute_ms=2.2
+ok
+test_session_cookie_cannot_authenticate (test_token_auth.TokenAuthenticationTests.test_session_cookie_cannot_authenticate) ... [2026-10-17 13:04:41,548] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+test_tampered_access_token_is_rejected (test_token_auth.TokenAuthenticationTests.test_tampered_access_token_is_rejected) ... [2026-10-17 13:04:42,216] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 13:04:42,431] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 13:04:42,450] INFO in auth_service: login timing total_ms=233.4 connect_ms=4.4 user_query_ms=0.5 password_ms=186.9 permissions_ms=0.0
+[2026-10-17 13:04:42,450] INFO in observability: api timing path=/api/auth/login status=200 request_ms=234.3 db_connect_ms=4.3 db_execute_ms=5.3
+[2026-10-17 13:04:42,452] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+ok
+
+----------------------------------------------------------------------
+Ran 148 tests in 322.461s
+
+OK

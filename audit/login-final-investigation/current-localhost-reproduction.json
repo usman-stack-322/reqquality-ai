@@ -1,0 +1,10 @@
+{
+  "status": 503,
+  "elapsed_ms": 10049.07,
+  "server_timing": "db_connect;dur=10003.8, request;dur=10007.8",
+  "response": {
+    "code": "database_unavailable",
+    "error": "The database is temporarily unavailable. Please try again later."
+  },
+  "credentials": "synthetic diagnostic input; not an actual account login"
+}

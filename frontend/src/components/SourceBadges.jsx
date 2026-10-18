@@ -2,7 +2,7 @@ import React from 'react';
 
 const SOURCE_LABELS = {
   original: 'Original',
-  rule_based: 'Rule-based',
+  rule_based: 'Historical analysis',
   ai_suggestion: 'AI Suggestion',
   ai_assumption: 'Assumption',
   confirmed: 'Confirmed',
@@ -10,8 +10,8 @@ const SOURCE_LABELS = {
 
 export default function SourceBadges({ source = 'original', needsConfirmation = false, confirmed = false }) {
   const badges = [[source, SOURCE_LABELS[source] || 'Original']];
-  if (confirmed && source !== 'confirmed') badges.push(['confirmed', 'Confirmed']);
-  if (needsConfirmation && !confirmed) badges.push(['needs-confirmation', 'Needs Confirmation']);
+  if (confirmed && !needsConfirmation && source !== 'confirmed') badges.push(['confirmed', 'Confirmed']);
+  if (needsConfirmation) badges.push(['needs-confirmation', 'Needs Confirmation']);
 
   return (
     <span className="source-badges">

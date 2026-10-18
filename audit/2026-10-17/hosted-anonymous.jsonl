@@ -1,0 +1,12 @@
+{"host": "https://www.reqqualityai.site", "path": "/api/auth/me", "sample": 1, "status": 200, "ms": 3374.9, "server_timing": "request;dur=0.5", "bytes": 50, "cache": "no-store"}
+{"host": "https://www.reqqualityai.site", "path": "/api/auth/me", "sample": 2, "status": 200, "ms": 608.0, "server_timing": "request;dur=0.3", "bytes": 50, "cache": "no-store"}
+{"host": "https://www.reqqualityai.site", "path": "/api/auth/me", "sample": 3, "status": 200, "ms": 574.7, "server_timing": "request;dur=0.2", "bytes": 50, "cache": "no-store"}
+{"host": "https://www.reqqualityai.site", "path": "/api/health", "sample": 1, "status": 200, "ms": 553.5, "server_timing": "request;dur=0.2", "bytes": 57, "cache": "no-store"}
+{"host": "https://www.reqqualityai.site", "path": "/api/health", "sample": 2, "status": 200, "ms": 602.1, "server_timing": "request;dur=0.2", "bytes": 57, "cache": "no-store"}
+{"host": "https://www.reqqualityai.site", "path": "/api/health", "sample": 3, "status": 200, "ms": 600.3, "server_timing": "request;dur=0.2", "bytes": 57, "cache": "no-store"}
+{"host": "https://reqquality-api.vercel.app", "path": "/api/auth/me", "sample": 1, "status": 200, "ms": 587.6, "server_timing": "request;dur=0.3", "bytes": 50, "cache": "no-store"}
+{"host": "https://reqquality-api.vercel.app", "path": "/api/auth/me", "sample": 2, "status": 200, "ms": 526.7, "server_timing": "request;dur=0.4", "bytes": 50, "cache": "no-store"}
+{"host": "https://reqquality-api.vercel.app", "path": "/api/auth/me", "sample": 3, "status": 200, "ms": 535.4, "server_timing": "request;dur=0.2", "bytes": 50, "cache": "no-store"}
+{"host": "https://reqquality-api.vercel.app", "path": "/api/health", "sample": 1, "status": 200, "ms": 506.2, "server_timing": "request;dur=0.2", "bytes": 57, "cache": "no-store"}
+{"host": "https://reqquality-api.vercel.app", "path": "/api/health", "sample": 2, "status": 200, "ms": 527.0, "server_timing": "request;dur=0.2", "bytes": 57, "cache": "no-store"}
+{"host": "https://reqquality-api.vercel.app", "path": "/api/health", "sample": 3, "status": 200, "ms": 507.0, "server_timing": "request;dur=0.2", "bytes": 57, "cache": "no-store"}

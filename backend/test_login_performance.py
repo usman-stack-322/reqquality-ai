@@ -101,6 +101,23 @@ class PostgresInitializationTests(unittest.TestCase):
         self.assertEqual(self.invitations.call_count, 2)
         self.assertEqual(app._POSTGRES_SCHEMA_URL, 'postgresql://test-only')
 
+    def test_persisted_schema_version_skips_migrations_in_new_worker(self):
+        self.connection.execute.return_value.fetchone.side_effect = [
+            {'name':'reqquality_schema'}, {'version':database_service._SCHEMA_VERSION}]
+        database_service.get_connection()
+        self.schema.assert_not_called()
+        self.management.assert_not_called()
+        self.invitations.assert_not_called()
+        self.assertEqual(app._POSTGRES_SCHEMA_URL, app.DATABASE_URL)
+
+    def test_other_worker_schema_lease_is_retryable(self):
+        from psycopg_pool import PoolTimeout
+        self.connection.execute.return_value.fetchone.side_effect = [{'name':None}, {0:False}]
+        with self.assertRaises(PoolTimeout):
+            database_service.get_connection()
+        self.assertIsNone(app._POSTGRES_SCHEMA_URL)
+        self.schema.assert_not_called()
+
     def test_warm_postgres_connection_executes_no_schema_sql(self):
         app._POSTGRES_SCHEMA_URL = app.DATABASE_URL
         database_service.get_connection()

@@ -1,0 +1,12 @@
+[
+  {
+    "port": 443,
+    "connected": true,
+    "ms": 242.93
+  },
+  {
+    "port": 5432,
+    "exception_type": "TimeoutError",
+    "ms": 9047.96
+  }
+]

@@ -1,3 +1,7 @@
+from threading import Lock
+_SQLITE_READY = set()
+_SQLITE_LOCK = Lock()
+
 from database import connect_database, initialize_postgresql_schema
 from admin_dashboard import initialize_management_schema
 
@@ -37,37 +41,91 @@ def _initialize_database(connection):
         connection.execute("UPDATE requirement_assumptions SET needs_confirmation = 0 WHERE requirement_id IN (SELECT id FROM requirements WHERE review_status = 'Approved')")
     connection.commit()
 
+_SCHEMA_VERSION = 20261017
+_SCHEMA_LOCK_ID = 7265717175616
+
+
+def _schema_current(connection):
+    with connection.autocommit_reads():
+        table = connection.execute("SELECT to_regclass('reqquality_schema') AS name").fetchone()
+        if not table or not isinstance(table['name'], str):
+            return False
+        row = connection.execute('SELECT version FROM reqquality_schema WHERE id=1').fetchone()
+        return bool(row and row['version'] == _SCHEMA_VERSION)
+
+
+def _initialize_production_schema(connection):
+    from invitations import initialize_invitations
+    from services.token_service import initialize_token_schema
+    from services.rate_limit_service import initialize_rate_limit_schema
+    from services.workflow_service import initialize_workflow_schema
+    if _schema_current(connection):
+        return
+    # Session lock spans the existing initializers' commits and serializes workers.
+    with connection.autocommit_reads():
+        acquired = connection.execute('SELECT pg_try_advisory_lock(?)', (_SCHEMA_LOCK_ID,)).fetchone()[0]
+        if not acquired:
+            from psycopg_pool import PoolTimeout
+            raise PoolTimeout('Schema initialization is in progress; retry this request.')
+    try:
+        if _schema_current(connection):
+            return
+        initialize_postgresql_schema(connection)
+        initialize_management_schema(connection)
+        initialize_invitations(connection)
+        initialize_token_schema(connection)
+        initialize_rate_limit_schema(connection)
+        initialize_workflow_schema(connection)
+        with connection:
+            connection.execute('CREATE TABLE IF NOT EXISTS reqquality_schema (id INTEGER PRIMARY KEY, version INTEGER NOT NULL)')
+            connection.execute('INSERT INTO reqquality_schema(id,version) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET version=excluded.version', (_SCHEMA_VERSION,))
+    finally:
+        if connection._connection.info.transaction_status.name != 'IDLE':
+            connection._connection.rollback()
+        with connection.autocommit_reads():
+            connection.execute('SELECT pg_advisory_unlock(?)', (_SCHEMA_LOCK_ID,))
+
+
 def _get_connection():
     import app as config
+    from flask import g, has_request_context
     from invitations import initialize_invitations, migrate_sqlite_roles
     from services.token_service import initialize_token_schema
     from services.rate_limit_service import initialize_rate_limit_schema
 
+    if has_request_context():
+        g.database_stage = 'pool_checkout' if config.DATABASE_URL else 'sqlite_connect'
     connection = connect_database(config.DATABASE_URL, config.DATABASE)
     # Initialization is part of db_connect; avoid double-counting its schema SQL.
     connection._instrument = False
     try:
+        if has_request_context():
+            g.database_stage = 'schema_check'
         if connection.dialect == 'postgres':
             # All schema work belongs to initialization, never the warm request path.
             # Publish the marker only after every migration succeeds.
             if config._POSTGRES_SCHEMA_URL != config.DATABASE_URL:
                 with config._POSTGRES_SCHEMA_LOCK:
                     if config._POSTGRES_SCHEMA_URL != config.DATABASE_URL:
-                        initialize_postgresql_schema(connection)
-                        initialize_management_schema(connection)
-                        initialize_invitations(connection)
-                        initialize_token_schema(connection)
-                        initialize_rate_limit_schema(connection)
+                        _initialize_production_schema(connection)
                         config._POSTGRES_SCHEMA_URL = config.DATABASE_URL
         else:
-            migrate_sqlite_roles(connection)
             connection.execute('PRAGMA foreign_keys = ON')
-            _initialize_database(connection)
-            initialize_management_schema(connection)
-            initialize_invitations(connection)
-            initialize_token_schema(connection)
-            initialize_rate_limit_schema(connection)
+            key = (str(config.DATABASE.resolve()), config.DATABASE.stat().st_ino)
+            with _SQLITE_LOCK:
+                if key not in _SQLITE_READY:
+                    migrate_sqlite_roles(connection)
+                    _initialize_database(connection)
+                    initialize_management_schema(connection)
+                    initialize_invitations(connection)
+                    initialize_token_schema(connection)
+                    initialize_rate_limit_schema(connection)
+                    from services.workflow_service import initialize_workflow_schema
+                    initialize_workflow_schema(connection)
+                    _SQLITE_READY.add(key)
         connection._instrument = True
+        if has_request_context():
+            g.database_stage = 'connected'
         return connection
     except Exception:
         connection.close()

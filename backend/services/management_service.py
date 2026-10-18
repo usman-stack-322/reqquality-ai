@@ -4,9 +4,9 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone, timedelta
 from flask import g, session
 from werkzeug.security import check_password_hash, generate_password_hash
-REVIEW_STATUSES = ('Pending', 'In Review', 'Approved', 'Needs Revision')
+REVIEW_STATUSES = ('Draft', 'Ready for Review', 'Pending', 'In Review', 'Approved', 'Needs Revision')
 RISK_LEVELS = ('Low', 'Medium', 'High', 'Critical')
-OPEN_STATUSES = ('Pending', 'In Review', 'Needs Revision')
+OPEN_STATUSES = ('Draft', 'Ready for Review', 'Pending', 'In Review', 'Needs Revision')
 QUALITY_KEYS = ('ambiguity', 'missing_information', 'testability', 'conflicts', 'missing_criteria', 'missing_tests', 'high_risk', 'refinement', 'attention', 'analyzed', 'traceability_gaps', 'reviewed', 'traceable', 'has_criteria', 'has_tests')
 
 def utc_now():
@@ -106,7 +106,7 @@ def load_requirements(connection, overdue_days):
         flags = {'ambiguity': has('ambiguity_issues'), 'missing_information': has('missing_information'), 'testability': has('testability_issues'), 'conflicts': has('conflict_issues') or has('inconsistency_issues'), 'missing_criteria': row['criteria_count'] == 0, 'missing_tests': row['scenario_count'] == 0, 'has_criteria': row['criteria_count'] > 0, 'has_tests': row['scenario_count'] > 0, 'high_risk': row['risk_level'] in ('High', 'Critical'), 'analyzed': row['risk_score'] is not None or bool(analysis), 'reviewed': bool(row['reviewed_at']), 'traceable': row['criteria_count'] > 0 and row['scenario_count'] > 0}
         flags['traceability_gaps'] = not flags['traceable']
         flags['refinement'] = row['review_status'] == 'Needs Revision' or any((flags[key] for key in ('ambiguity', 'missing_information', 'testability', 'conflicts', 'high_risk')))
-        row['overdue'] = bool(created and created <= cutoff and (row['review_status'] in ('Pending', 'In Review')))
+        row['overdue'] = bool(created and created <= cutoff and (row['review_status'] in ('Pending', 'Ready for Review', 'In Review')))
         reasons = []
         if flags['high_risk']:
             reasons.append(f"{row['risk_level']} risk")
@@ -138,7 +138,7 @@ def filter_requirements(rows, filters):
         if risk in RISK_LEVELS and row['risk_level'] != risk:
             return False
         review = filters['review']
-        if review == 'pending-reviews' and row['review_status'] not in ('Pending', 'In Review'):
+        if review == 'pending-reviews' and row['review_status'] not in ('Pending', 'Ready for Review', 'In Review'):
             return False
         if review in REVIEW_STATUSES and row['review_status'] != review:
             return False
@@ -168,7 +168,7 @@ def build_dashboard(connection, filters):
     review_counts = Counter((row['review_status'] for row in rows))
     risk_counts = Counter((row['risk_level'] or 'Unscored' for row in rows))
     percent = lambda value: round(100 * value / total, 1) if total else 0
-    team = [dict(row) for row in connection.execute('SELECT id,name,email,role,is_active,created_at FROM users ORDER BY name,id')]
+    team = [dict(row) for row in connection.execute('SELECT id,name,email,role,is_active,project_access,created_at FROM users ORDER BY name,id')]
     workload = []
     for member in team:
         assigned = [row for row in rows if row['assigned_reviewer_user_id'] == member['id']]
@@ -197,7 +197,7 @@ def build_dashboard(connection, filters):
         scores = [row['risk_score'] for row in cohort if row['risk_score'] is not None]
         trends.append({'month': month, 'count': len(cohort), 'average_risk': round(sum(scores) / len(scores), 1) if scores else None, 'approved': sum((row['review_status'] == 'Approved' for row in cohort))})
     attention = sorted((row for row in rows if row['quality_flags']['attention']), key=lambda row: (0 if row['risk_level'] == 'Critical' else 1 if row['risk_level'] == 'High' else 2, not row['overdue'], row['created_at'] or '', row['id']))
-    pending = sorted((row for row in rows if row['review_status'] in ('Pending', 'In Review')), key=lambda row: (row['assigned_reviewer_user_id'] is not None, row['created_at'] or '', row['id']))
+    pending = sorted((row for row in rows if row['review_status'] in ('Pending', 'Ready for Review', 'In Review')), key=lambda row: (row['assigned_reviewer_user_id'] is not None, row['created_at'] or '', row['id']))
     return {'organization': settings, 'project': {'id': 'current', 'name': 'ReqQuality AI'}, 'summary': {'total': total, 'analyzed': count('analyzed'), 'pending_reviews': len(pending), 'approved': review_counts['Approved'], 'high_risk': count('high_risk'), 'needs_revision': review_counts['Needs Revision'], 'unassigned': sum((row['assigned_reviewer_user_id'] is None for row in pending)), 'overdue': sum((row['overdue'] for row in rows))}, 'review_distribution': [{'label': 'Not Reviewed' if key == 'Pending' else key, 'value': key, 'count': review_counts[key], 'percent': percent(review_counts[key])} for key in REVIEW_STATUSES], 'risk_distribution': [{'label': key, 'value': key, 'count': risk_counts[key], 'percent': percent(risk_counts[key])} for key in RISK_LEVELS], 'unscored': sum((row['risk_level'] not in RISK_LEVELS for row in rows)), 'quality': {key: count(key) for key in QUALITY_KEYS}, 'conflicts_available': any((row['conflict_assessed'] for row in rows)), 'traceability': {'with_criteria': total - count('missing_criteria'), 'with_tests': total - count('missing_tests'), 'reviewed': count('reviewed'), 'fully_traceable': count('traceable'), 'missing_links': count('traceability_gaps'), 'coverage': percent(count('traceable'))}, 'attention': attention[:8], 'attention_total': len(attention), 'pending_reviews': pending[:8], 'team': team, 'team_summary': {'total': len(team), 'analysts': sum((row['role'] == 'Analyst' for row in team)), 'engineers': len(workload), 'active': sum((row['status'] == 'Active' for row in team))}, 'invitations': {status: invitation_counts[status] for status in ('pending', 'accepted', 'expired', 'revoked')}, 'invited_members': invited, 'reviewer_workload': workload, 'activity': activity, 'trends': trends, 'scope_note': 'Requirement filters apply to quality, review, traceability, trends and workload. Team, invitations and activity are organization-wide.'}
 from types import SimpleNamespace
 from services.responses import response_payload
@@ -267,7 +267,7 @@ def create_services(app, get_connection, roles_required, csrf_required, login_re
             from services.token_service import revoke_user_tokens
             revoke_user_tokens(connection, user_id)
             if role != 'SQA Engineer' or not active:
-                connection.execute("UPDATE requirements SET assigned_reviewer_user_id=NULL,updated_at=? WHERE assigned_reviewer_user_id=? AND review_status IN ('Pending','In Review','Needs Revision')", (timestamp(), user_id))
+                connection.execute("UPDATE requirements SET assigned_reviewer_user_id=NULL,updated_at=? WHERE assigned_reviewer_user_id=? AND review_status IN ('Draft','Ready for Review','Pending','In Review','Needs Revision')", (timestamp(), user_id))
             record_activity(connection, g.current_user, 'member_updated', 'user', user_id, f"Updated {member['name']}: {role}, {('Active' if active else 'Disabled')}; open assignments cleared when ineligible")
         return response_payload(message='Team member updated. Existing sessions were invalidated.')
 

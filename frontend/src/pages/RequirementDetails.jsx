@@ -2,16 +2,20 @@ import { apiFetch as fetch } from '../api.js';
 import PdfExportButton from '../components/PdfExportButton';
 import React, { useEffect, useState } from 'react';
 import SourceBadges from '../components/SourceBadges';
+import WorkflowEditor from '../components/WorkflowEditor';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 
-const REVIEW_STATUSES = ['Pending', 'In Review', 'Approved', 'Needs Revision'];
+const REVIEW_STATUSES = ['In Review', 'Approved', 'Needs Revision'];
 const SCENARIO_CATEGORIES = ['Positive', 'Negative', 'Boundary', 'Edge-case'];
 const ANALYSIS_GROUPS = [
   ['Ambiguity', 'ambiguity_issues', 'rule_based'],
+  ['Conflicts', 'conflict_issues', 'ai_suggestion'],
   ['Missing information', 'missing_information', 'rule_based'],
   ['Testability', 'testability_issues', 'rule_based'],
   ['Assumptions', 'assumptions', 'ai_assumption'],
   ['Possible edge cases', 'edge_cases', 'rule_based'],
+  ['Risk explanation', 'risk_reasons', 'ai_suggestion'],
+  ['Priority explanation', 'priority_reasons', 'ai_suggestion'],
 ];
 
 function AnalysisItems({ items, fallbackSource, confirmed }) {
@@ -56,7 +60,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
         if (!response.ok) throw new Error(data.error || 'Unable to load requirement details.');
         if (controller.signal.aborted) return;
         setRequirement(data.requirement);
-        setReviewStatus(data.requirement.review_status);
+        setReviewStatus(['Pending', 'Ready for Review'].includes(data.requirement.review_status) ? 'In Review' : data.requirement.review_status);
         setReviewerNotes(data.requirement.reviewer_notes || '');
       } catch (loadError) {
         if (controller.signal.aborted) return;
@@ -83,12 +87,12 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
         method: 'PATCH',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-        body: JSON.stringify({ review_status: reviewStatus, reviewer_notes: reviewerNotes }),
+        body: JSON.stringify({ review_status: reviewStatus, reviewer_notes: reviewerNotes, revision: requirement.revision }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to save the SQA review.');
       setRequirement(data.requirement);
-      setReviewStatus(data.requirement.review_status);
+      setReviewStatus(['Pending', 'Ready for Review'].includes(data.requirement.review_status) ? 'In Review' : data.requirement.review_status);
       setReviewerNotes(data.requirement.reviewer_notes || '');
       setMessage('SQA review saved.');
     } catch (saveError) {
@@ -101,7 +105,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
   if (isLoading) return <LoadingSkeleton label="Loading requirement" />;
   if (error && !requirement) return <p className="error" role="alert">{error} <a href={managerView ? '#admin/requirements' : '#dashboard'}>Return to requirements</a></p>;
   if (!requirement) return null;
-  const canReview = user?.role !== 'admin' && user?.permissions?.includes('review_requirements');
+  const canReview = user?.role === 'SQA Engineer' && user.id !== requirement.created_by_user_id && user?.permissions?.includes('review_requirements') && ['Pending', 'Ready for Review', 'In Review'].includes(requirement.review_status);
   const reviewedAt = requirement.reviewed_at
     ? new Date(requirement.reviewed_at).toLocaleString()
     : 'Not reviewed yet';
@@ -139,11 +143,13 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
         </div>
       </section>
 
+      <WorkflowEditor key={`${requirement.id}-${requirement.revision}`} requirement={requirement} user={user} onUpdate={setRequirement} />
+      {savedAnalysis.stale && <p role="status">The requirement was edited after this analysis. These findings describe an earlier revision.</p>}
       {hasSavedAnalysis && (
         <section className="detail-section saved-analysis-section" aria-labelledby="saved-analysis-title">
           <div className="detail-section-heading">
-            <h2 id="saved-analysis-title">Saved Hybrid Analysis</h2>
-            <span>{savedAnalysis.analysis_mode === 'hybrid' ? 'Rules + Gemini' : 'Rule-based'}</span>
+            <h2 id="saved-analysis-title">Saved analysis</h2>
+            <span>{savedAnalysis.analysis_mode === 'ai_only' ? `AI analysis (v${Number.isInteger(savedAnalysis.analysis_version) ? savedAnalysis.analysis_version : 2})` : 'Historical analysis'}</span>
           </div>
           <div className="analysis-grid">
             {savedAnalysis.improved_requirement && (
@@ -160,6 +166,9 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
                 {savedAnalysis.labeled_analysis?.improved_requirement?.introduced_values?.length > 0 && (
                   <p className="introduced-value-list">AI-introduced values: {savedAnalysis.labeled_analysis.improved_requirement.introduced_values.join(', ')}</p>
                 )}
+              </article>
+            )}
+            {savedAnalysis.type_explanation && <article className="card analysis-card"><h3>Suggested type: {savedAnalysis.suggested_requirement_type}</h3><p>{savedAnalysis.type_explanation}</p></article>}
             {ANALYSIS_GROUPS.map(([heading, field, fallbackSource]) => (
               <article className="card analysis-card" key={field}>
                 <h3>{heading}</h3>
@@ -170,8 +179,6 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
                 />
               </article>
             ))}
-              </article>
-            )}
           </div>
         </section>
       )}
@@ -216,6 +223,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
 
       <section className="detail-section" aria-labelledby="quality-risk-title">
         <div className="detail-section-heading"><h2 id="quality-risk-title">Risk / Priority</h2><span>{requirement.risk_score === null ? 'Unscored' : `${requirement.risk_score}/100`}</span></div>
+        <ul>{[...(savedAnalysis.risk_reasons || []), ...(savedAnalysis.priority_reasons || [])].map((text,i) => <li key={i}>{text}</li>)}</ul>
         <p>Requirement-quality risk: {requirement.risk_level || 'Not analyzed'}. Suggested priority: {requirement.suggested_priority || 'Not analyzed'}. These indicate review attention, not proven software defects.</p>
       </section>
 
@@ -237,6 +245,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
                     <SourceBadges source={scenario.source} needsConfirmation={scenario.needs_confirmation} confirmed={requirement.review_status === 'Approved'} />
                     {scenario.assumption_reasons.length > 0 && <p className="confirmation-note">Depends on AI assumptions: {scenario.assumption_reasons.join(' ')}</p>}
                     {scenario.introduced_values.length > 0 && <p className="introduced-value-list">AI-introduced values: {scenario.introduced_values.join(', ')}</p>}
+                    <p>Linked criteria: {scenario.criterion_codes?.join(', ') || 'No links recorded'}</p>
                     <p><strong>Preconditions</strong></p>
                     <ul>{scenario.preconditions.map((item, index) => <li key={`${scenario.id}-pre-${index}`}>{item}</li>)}</ul>
                     <p><strong>Test steps</strong></p>
@@ -254,9 +263,11 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
 
       <section className="detail-section" aria-labelledby="record-traceability-title">
         <div className="detail-section-heading"><h2 id="record-traceability-title">Traceability</h2><span>REQ-{requirement.id}</span></div>
+        <p>Criteria without linked scenarios: {requirement.coverage_gaps?.join(', ') || 'None'}. Unlinked scenarios: {requirement.unlinked_scenarios?.join(', ') || 'None'}. Invalid links: {requirement.invalid_criterion_links?.join(', ') || 'None'}.</p>
         <p>{requirement.acceptance_criteria.length} acceptance criteria and {requirement.test_scenarios.length} generated scenarios linked to this requirement. {requirement.acceptance_criteria.length && requirement.test_scenarios.length ? 'Both artifact links are present.' : 'One or more artifact links are missing.'}</p>
       </section>
 
+      <section className="detail-section"><h2>Change and review history</h2><ol>{requirement.history?.map(event => <li key={event.id}>{event.action.replaceAll('_', ' ')} ? {event.actor_name || `User ${event.actor_id}`} ? {new Date(event.created_at).toLocaleString()}</li>)}</ol></section>
       <section className="detail-section sqa-review" aria-labelledby="sqa-review-title">
         <div className="detail-section-heading">
           <h2 id="sqa-review-title">SQA Review</h2>

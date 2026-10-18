@@ -1,3 +1,5 @@
+> Historical reference. See the [2026-10-17 implementation and verification report](IMPLEMENTATION_REPORT.md) for current analysis, permissions, lifecycle and performance evidence.
+
 # ReqQuality AI audit - 2026-10-10
 
 Changes are local and have not been deployed. Existing production data, accounts,

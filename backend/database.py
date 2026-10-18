@@ -12,6 +12,7 @@ from middlewares.observability import record_timing
 
 import psycopg
 from psycopg_pool import ConnectionPool, PoolTimeout
+from services.database_diagnostics import DiagnosticConnection, LOGGER
 
 # Connectivity failures are service outages, not failed credential checks.
 DATABASE_UNAVAILABLE_ERRORS = (psycopg.OperationalError, PoolTimeout)
@@ -125,12 +126,16 @@ def _get_postgres_pool(database_url):
         if pool is None or pool.closed:
             pool = ConnectionPool(
                 conninfo=database_url,
-                kwargs={'row_factory': _postgres_row_factory, 'connect_timeout': 10},
-                min_size=1,
+                connection_class=DiagnosticConnection,
+                kwargs={'row_factory': _postgres_row_factory, 'connect_timeout': 3},
+                # No eager connection or five-minute background retry chain. A new
+                # request can try again after a failed attempt; no SQLite fallback.
+                min_size=0,
                 max_size=int(os.getenv('DB_POOL_MAX_SIZE', '5')),
                 timeout=float(os.getenv('DB_POOL_TIMEOUT', '10')),
                 max_idle=60,
                 max_lifetime=1800,
+                reconnect_timeout=0,
                 open=True,
             )
             _POSTGRES_POOLS[key] = pool
@@ -164,7 +169,13 @@ def connect_database(database_url, sqlite_path):
         if normalized_url.startswith("postgresql+psycopg://"):
             normalized_url = "postgresql://" + normalized_url[len("postgresql+psycopg://"):]
         pool = _get_postgres_pool(normalized_url)
-        connection = pool.getconn()
+        try:
+            connection = pool.getconn()
+        except PoolTimeout:
+            stats = pool.get_stats()
+            LOGGER.error('database stage=pool_checkout pid=%s stats=%s', os.getpid(),
+                         {key: stats.get(key) for key in ('connections_num', 'connections_errors', 'pool_size', 'pool_available', 'requests_waiting')})
+            raise
         return DatabaseConnection(connection, "postgres", pool=pool)
 
     database_path = Path(sqlite_path)

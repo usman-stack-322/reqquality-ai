@@ -1,9 +1,9 @@
 import { apiFetch as fetch } from '../api.js';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SourceBadges from '../components/SourceBadges';
 
-function LabeledItems({ items, defaultSource = 'rule_based' }) {
-  if (!items.length) return <p className="analysis-clear">No issues detected by the current rules.</p>;
+function LabeledItems({ items, defaultSource = 'ai_suggestion' }) {
+  if (!items.length) return <p className="analysis-clear">No findings returned in this category.</p>;
   return (
     <ul>
       {items.map((entry, index) => {
@@ -25,6 +25,9 @@ function LabeledItems({ items, defaultSource = 'rule_based' }) {
 }
 
 export default function RequirementInput({ csrfToken }) {
+  const busy = useRef(false);
+  const submission = useRef(null);
+  const [accepted, setAccepted] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState('Functional');
@@ -60,7 +63,11 @@ export default function RequirementInput({ csrfToken }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-
+    if (busy.current) return;
+    if (analysis && !accepted) { setErrorMessage('Review and accept the analysis before saving it.'); return; }
+    busy.current = true;
+    const body = JSON.stringify({title, description, requirement_type:type, priority, analysis});
+    if (submission.current?.body !== body) submission.current = {body, key:globalThis.crypto.randomUUID()};
     setIsSaving(true);
     setSuccessMessage('');
     setErrorMessage('');
@@ -68,14 +75,8 @@ export default function RequirementInput({ csrfToken }) {
       const response = await fetch('/api/requirements', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-        body: JSON.stringify({
-          title,
-          description,
-          requirement_type: type,
-          priority,
-          analysis,
-        }),
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken, 'Idempotency-Key': submission.current.key },
+        body,
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to save requirement.');
@@ -91,16 +92,20 @@ export default function RequirementInput({ csrfToken }) {
     } catch (error) {
       setErrorMessage(error.message || 'Unable to reach the requirements API.');
     } finally {
+      busy.current = false;
       setIsSaving(false);
     }
   }
 
   async function handleAnalyze() {
+    if (busy.current) return;
     if (!title.trim() || !description.trim()) {
       setAnalysisError('Enter a requirement title and description before analysis.');
       setAnalysis(null);
       return;
     }
+    busy.current = true;
+    setAccepted(false);
     setIsAnalyzing(true);
     setAnalysis(null);
     setAnalysisError('');
@@ -123,6 +128,7 @@ export default function RequirementInput({ csrfToken }) {
     } catch (error) {
       setAnalysisError(error.message || 'Unable to reach the analysis API.');
     } finally {
+      busy.current = false;
       setIsAnalyzing(false);
     }
   }
@@ -229,7 +235,7 @@ export default function RequirementInput({ csrfToken }) {
               {isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}
             </button>
             </div>
-            {isAnalyzing && <p className="form-loading-status" role="status"><span className="loading-dot" aria-hidden="true" />Analyzing against the rules and available AI model...</p>}
+            {isAnalyzing && <p className="form-loading-status" role="status"><span className="loading-dot" aria-hidden="true" />Analyzing with Gemini. Your text stays here if you need to retry...</p>}
             {isSaving && <p className="form-loading-status" role="status"><span className="loading-dot" aria-hidden="true" />Saving requirement and traceability data...</p>}
             {successMessage && <p className="notice notice-success" role="status">{successMessage}</p>}
             {errorMessage && <p className="notice notice-error" role="alert">{errorMessage}</p>}
@@ -242,15 +248,18 @@ export default function RequirementInput({ csrfToken }) {
         <section className="analysis-results" aria-labelledby="analysis-results-title">
           <div className="analysis-results-heading">
             <p className="eyebrow">
-              {analysis.analysis_mode === 'hybrid' ? 'HYBRID REVIEW' : 'RULE-BASED REVIEW'}
+              AI REVIEW
             </p>
             <h2 id="analysis-results-title">Requirement analysis</h2>
             <p>Suggestions require human review. Risk indicates requirement-quality concerns, not proven defects. Generated scenarios have not been executed.</p>
             <p className="analysis-status">
-              {analysis.analysis_mode === 'hybrid' ? 'Rules + Gemini' : 'Rule-based only'}
+              Gemini semantic analysis
               {analysis.llm_status && ` | Gemini: ${analysis.llm_status.replaceAll('_', ' ')}`}
             </p>
           </div>
+          <label><input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)} /> I have reviewed these unconfirmed suggestions and accept saving them for review.</label>
+          <p>Suggested type: {analysis.suggested_requirement_type}. {analysis.type_explanation}</p>
+          <ul>{analysis.priority_reasons?.map(reason => <li key={reason}>{reason}</li>)}</ul>
           <article className="card original-requirement-card">
             <div className="analysis-item-heading">
               <h3>Original stakeholder requirement</h3>
@@ -264,7 +273,7 @@ export default function RequirementInput({ csrfToken }) {
               <div className="analysis-item-heading">
                 <h3>Suggested improved requirement</h3>
                 <SourceBadges
-                  source={analysis.labeled_analysis?.improved_requirement?.source || (analysis.analysis_mode === 'hybrid' ? 'ai_suggestion' : 'rule_based')}
+                  source={analysis.labeled_analysis?.improved_requirement?.source || 'ai_suggestion'}
                   needsConfirmation={analysis.labeled_analysis?.improved_requirement?.needs_confirmation}
                 />
               </div>
@@ -282,12 +291,13 @@ export default function RequirementInput({ csrfToken }) {
               )}
             </article>
             {[
-              ['Ambiguity', 'ambiguity_issues', analysis.ambiguity_issues || [], 'rule_based'],
-              ['Missing information', 'missing_information', analysis.missing_information || [], 'rule_based'],
-              ['Testability', 'testability_issues', analysis.testability_issues || [], 'rule_based'],
+              ['Ambiguity', 'ambiguity_issues', analysis.ambiguity_issues || [], 'ai_suggestion'],
+              ['Conflicts', 'conflict_issues', analysis.conflict_issues || [], 'ai_suggestion'],
+              ['Missing information', 'missing_information', analysis.missing_information || [], 'ai_suggestion'],
+              ['Testability', 'testability_issues', analysis.testability_issues || [], 'ai_suggestion'],
               ['Assumptions', 'assumptions', analysis.assumptions || [], 'ai_assumption'],
-              ['Possible edge cases', 'edge_cases', analysis.edge_cases || [], 'rule_based'],
-              ['Acceptance criteria', 'acceptance_criteria', analysis.acceptance_criteria || [], 'rule_based'],
+              ['Possible edge cases', 'edge_cases', analysis.edge_cases || [], 'ai_suggestion'],
+              ['Acceptance criteria', 'acceptance_criteria', analysis.acceptance_criteria || [], 'ai_suggestion'],
             ].map(([heading, field, fallbackItems, fallbackSource]) => {
               const items = analysis.labeled_analysis?.[field] || fallbackItems;
               return (
@@ -301,7 +311,7 @@ export default function RequirementInput({ csrfToken }) {
           <article className={`card risk-summary risk-${analysis.risk_level?.toLowerCase() || 'low'}`}>
             <div className="risk-summary-heading">
               <h3>Quality risk</h3>
-              <span className="risk-score">{analysis.risk_score}/100</span>
+              <span className="risk-score">AI assessment</span>
             </div>
             <div className="risk-summary-details">
               <p><strong>Risk level</strong><span>{analysis.risk_level}</span></p>
@@ -313,7 +323,7 @@ export default function RequirementInput({ csrfToken }) {
           <section className="test-scenarios" aria-labelledby="test-scenarios-title">
             <div className="test-scenarios-heading">
               <h3 id="test-scenarios-title">Generated Test Scenarios</h3>
-              <span>{analysis.test_scenario_source === 'gemini' ? 'Gemini generated' : 'Deterministic fallback'}</span>
+              <span>Gemini generated</span>
             </div>
             <div className="scenario-groups">
               {[
@@ -334,7 +344,7 @@ export default function RequirementInput({ csrfToken }) {
                           <h5>{scenario.title}</h5>
                           <span>{scenario.id}</span>
                         </div>
-                        <SourceBadges source={scenario.source || 'rule_based'} needsConfirmation={scenario.needs_confirmation} />
+                        <SourceBadges source={scenario.source || 'ai_suggestion'} needsConfirmation={scenario.needs_confirmation} />
                         {scenario.assumption_reasons?.length > 0 && (
                           <p className="confirmation-note">Depends on unconfirmed AI assumptions: {scenario.assumption_reasons.join(' ')}</p>
                         )}
@@ -373,7 +383,7 @@ export default function RequirementInput({ csrfToken }) {
             {requirements.map((requirement) => (
               <article className="card saved-requirement-card" key={requirement.id}>
                 <div className="saved-requirement-title-row">
-                  <h3>{requirement.title}</h3>
+                  <h3><a href={`#requirement/${requirement.id}`}>{requirement.title}</a></h3>
                   <span className={`priority-label priority-${(requirement.user_priority || requirement.priority).toLowerCase()}`}>
                     {requirement.user_priority || requirement.priority}
                   </span>

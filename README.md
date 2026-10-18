@@ -7,6 +7,8 @@ Admin-managed invitations assign Analyst and SQA Engineer roles.
 See the [2026-10-10 audit report](AUDIT_REPORT.md) for measured improvements,
 validation results and remaining limits. [Cookie authentication](backend/TOKEN_AUTH.md)
 documents local HTTP and production HTTPS setup, expiry, CSRF and rate limits.
+See the [reliability follow-up](RELIABILITY_REPORT.md) for current verification,
+AI benchmark findings, measured performance, and remaining production blockers.
 The existing Admin now opens the QA Manager workspace; see
 [dashboard setup, metrics and API documentation](QA_MANAGER_DASHBOARD.md).
 
@@ -51,11 +53,15 @@ The API runs at http://127.0.0.1:5000. Visit
 http://127.0.0.1:5000/api/health to check it. The commands use the virtual
 environment directly, so activation is unnecessary.
 
-To enable Gemini analysis, create a `.env` file in the project root (next to
-this README) using `.env.example` as a template. Set `GEMINI_API_KEY` and
-`GEMINI_MODEL` in that file. `.env` is ignored by Git. Without these settings,
-requirement analysis continues with the rule-based analyzer only. Restart Flask
-after changing the environment file.
+To enable AI analysis, configure `GEMINI_API_KEY` and `GEMINI_MODEL` in
+`backend/.env` (loaded first) or the root `.env`. Verify the configured model with
+`backend/.venv/Scripts/python.exe backend/verify_gemini.py`; account availability
+must be checked rather than inferred from a model name. Restart Flask after changes.
+Analysis requires Gemini. Missing configuration, quota/rate limits, timeout and
+invalid output return an explicit retryable failure; saving drafts and authentication
+work independently. One semantic call produces the complete analysis and linked
+scenarios. `GEMINI_TIMEOUT_MS` defaults to 20,000 (bounded to 1,000?25,000), with
+one SDK attempt and a 30-second browser deadline.
 
 For authentication, set separate persistent `REQQUALITY_SECRET_KEY` and
 `JWT_SECRET_KEY` values of at least 32 bytes in the same `.env` file.
@@ -84,6 +90,10 @@ After the first setup, rerun only the backend's `python.exe app.py` command
 and the frontend's `npm run dev` command from their respective folders.
 Stop either server with Ctrl+C.
 
+If localhost login reports that the database is temporarily unavailable, see
+[the specific login diagnosis](LOCAL_LOGIN_FAILURE.md). Do not reset passwords or
+silently switch databases when the connection fails before authentication.
+
 ## Initial features
 
 - Home page with a brief introduction.
@@ -103,8 +113,8 @@ Tests use temporary databases and mocked AI/email; they do not create production
 - `GET /api/auth/me`: returns the authenticated user's public profile and CSRF token.
 - `GET /api/dashboard`: returns requirement, review, risk, type, scenario,
   traceability, recent activity, and high-attention statistics for the dashboard.
-- `GET /api/requirements`: returns all saved requirements.
-- `POST /api/requirements`: accepts JSON with `title`, `description`,
+- `GET /api/requirements`: returns a page of authorized saved requirements.
+- `POST /api/requirements`: supports a user/payload-bound `Idempotency-Key` header for safe save retries; accepts JSON with `title`, `description`,
     `requirement_type`, and `priority`; optional `analysis` saves risk summary,
     acceptance criteria, and generated test scenarios with the requirement.
 - `GET /api/requirements/<id>`: returns one requirement with acceptance criteria
@@ -118,21 +128,50 @@ Tests use temporary databases and mocked AI/email; they do not create production
 - `PATCH /api/requirements/<id>/review`: atomically updates review status and
     reviewer notes. `PATCH /api/requirements/<id>/review-status` and
     `PATCH /api/requirements/<id>/reviewer-notes` update either field separately.
-- `POST /api/analyze-requirement`: returns rule-based analysis and adds Gemini
-    findings when Gemini is configured and available. The response also includes
-    requirement-linked scenarios in positive, negative, boundary, and edge-case
-    categories. Gemini generates scenarios when configured; deterministic
-    scenarios fill missing categories or provide full fallback when unavailable.
+- `POST /api/analyze-requirement`: AI-only ambiguity, missing-information questions,
+  testability, suggested type with explanation, refinement, acceptance criteria,
+  qualitative risk/priority with explanations, and criteria-linked test scenarios.
+  Generated content remains unconfirmed until human review. New analysis has
+  `analysis_mode=ai_only`, `analysis_version=2`, and model provenance. Historical
+  saved content remains available and is labelled Historical analysis. Existing
+  numeric risk scores are retained; new AI results do not fabricate numeric scores.
+- `PATCH /api/requirements/<id>`: Analyst material edits, criteria and clarification
+  answers. Requires the latest integer `revision`. Material edits return to Draft,
+  clear stale risk/priority assessments and scenario-to-criterion links, and preserve
+  the prior requirement and artifacts in history. Unchanged saves retain status.
+- `POST /api/requirements/<id>/submit`: Analyst submits Draft or Needs Revision
+  (and historical Pending) to Ready for Review. Saved acceptance criteria required.
+- `PATCH /api/requirements/<id>/analysis`: Analyst explicitly accepts a complete
+  reviewed AI result and its artifacts for the matching saved text and revision.
+- `PATCH /api/requirements/<id>/scenarios/<scenario-id>`: SQE revises a scenario and
+  its `criterion_codes` while reviewing. Links must belong to this requirement.
+- `GET /api/requirements/<id>/history/<history-id>`: authorized historical snapshot.
+- `PATCH /api/admin/users/<id>/project-access`: Admin grants/revokes access to the
+  existing current project with `{"enabled": true|false}`. Team Management exposes
+  this action. Account activation and role permissions remain separate.
 
-Requirement analysis also returns a deterministic quality risk score from 0 to
-100. Ambiguity, missing information, and testability each scale to 100 after
-four issues; edge cases scale to 100 after five. These factor scores are weighted
-at 25%, 25%, 20%, and 15%. Requirement type contributes 10% (Functional 40,
-Non-Functional 80, Business 60), and selected priority contributes 5% (Low 0,
-Medium 50, High 100). The weighted total is rounded to the nearest integer.
-Scores 0-29 are Low, 30-59 Medium, 60-79 High, and 80-100 Critical. Suggested
-priority is Low for Low risk, Medium for Medium risk, and High for High or
-Critical risk.
+Review lifecycle: **Draft ? Ready for Review ? In Review ? Approved / Needs Revision**.
+Needs Revision must be resubmitted by an Analyst. Historical Pending records remain
+reviewable. All edit, submit, scenario, analysis-acceptance and review writes require
+the latest `revision`; stale writes return 409. Only the SQE role with review permission
+can decide reviews, and a requirement's author cannot review it even after a role
+change. Approval does not automatically confirm AI assumptions or missing facts.
+
+This repository has one project, `current` (ReqQuality AI). Existing users retain their
+current-project access by default. Admin controls access; unknown `project_id` values
+are rejected rather than mapped to the current project. Revocation blocks requirement
+reads/writes, analysis, dashboard, PDF and CSV exports on the backend. No independent
+multi-project tenancy model is claimed. Admin/Manager organization management retains
+its existing scope. Analysts may collaborate on requirements within the shared project.
+
+`GET /api/requirements` is paginated (`page`, `page_size`, default 50, maximum 100),
+returning `requirements`, `total`, `page`, `page_size`. `view=summary` excludes analysis
+bodies. Queue filters are `status`, `risk`, `priority` (user priority), and `type`.
+Dashboard attention lists are bounded to 20. PDF/CSV exports still cover the project.
+Detailed traceability identifies criteria with no scenarios, unlinked scenarios and
+invalid links; existence of two artifact sets alone does not establish criteria coverage.
+
+Before deploying, read [implementation, performance evidence and rollout steps](IMPLEMENTATION_REPORT.md).
 
 SQLite is included with Python. The API creates
 `backend/instance/reqquality.db` and its `requirements` table automatically.
@@ -146,7 +185,7 @@ Authentication adds a `users` table with password hashes and roles. Requirements
 gain nullable `created_by_user_id`, `reviewed_by_user_id`, and `reviewed_at` fields
 so existing records remain intact. Passwords use Werkzeug's scrypt hash and user
 responses never include password hashes. Analysts can analyze and create
-requirements; only SQA Engineers can change review status or notes. Authenticated
+requirements; only SQA Engineers can record review decisions or notes. Authenticated
 write requests require a CSRF token.
 
 ## PostgreSQL Production Setup
@@ -192,5 +231,9 @@ to use `GET /api/health`.
 ## Frontend build
 
 From `frontend`, run `npm run build` to create `dist/`. The API proxy is only
-configured for the development server; production hosting is not set up yet.
+configured for the development server; the existing production frontend rewrites `/api` to the Vercel Flask API.
 Flask's debug server is also intended for local development only.
+
+## Isolated local database
+
+For this workstation, `backend/.env.local` selects `backend/instance/local-development.db` when running `python app.py`. Cloud configuration in `backend/.env` remains separate; WSGI imports do not load `.env.local`. Local login details are in `backend/instance/local-login.txt` (ignored by Git). Start the backend and frontend with the commands above. The local account is separate from your cloud account. `backend/setup_local.py` initializes the local schema and account without resetting an existing account.

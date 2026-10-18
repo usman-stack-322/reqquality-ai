@@ -1,0 +1,127 @@
+{
+  "environment": "local Flask test client, temporary SQLite, live configured Gemini",
+  "analysis_ms": 3676.95,
+  "analysis_http": 200,
+  "analysis": {
+    "acceptance_criteria": [
+      "When 200 simultaneous authenticated users execute shipment-status API requests during a 30-minute load test, 95% of those responses must complete within 2 seconds."
+    ],
+    "ambiguity_issues": [],
+    "analysis_input": {
+      "clarifications": "",
+      "description": "Under 200 simultaneous authenticated users, 95% of shipment-status API responses must complete within 2 seconds during a 30-minute load test.",
+      "priority": "Medium",
+      "requirement_type": "Non-Functional",
+      "title": "Synthetic shipment latency"
+    },
+    "analysis_mode": "ai_only",
+    "analysis_receipt": "ffd9838d822441987dc3d42cbf32b097c21e12ba762d60deed03a08225f52c07",
+    "analysis_version": 3,
+    "assumptions": [],
+    "conflict_issues": [],
+    "edge_cases": [
+      "Load test ending exactly at 30 minutes with ongoing requests",
+      "Request rate fluctuations within the 200 simultaneous authenticated users threshold"
+    ],
+    "improved_requirement": "Under 200 simultaneous authenticated users, 95% of shipment-status API responses must complete within 2 seconds during a 30-minute load test.",
+    "labeled_analysis": {
+      "acceptance_criteria": [
+        {
+          "introduced_values": [],
+          "needs_confirmation": true,
+          "source": "ai_suggestion",
+          "text": "When 200 simultaneous authenticated users execute shipment-status API requests during a 30-minute load test, 95% of those responses must complete within 2 seconds."
+        }
+      ],
+      "ambiguity_issues": [],
+      "assumptions": [],
+      "conflict_issues": [],
+      "edge_cases": [
+        {
+          "introduced_values": [
+            "30 minutes"
+          ],
+          "needs_confirmation": true,
+          "source": "ai_suggestion",
+          "text": "Load test ending exactly at 30 minutes with ongoing requests"
+        },
+        {
+          "introduced_values": [],
+          "needs_confirmation": true,
+          "source": "ai_suggestion",
+          "text": "Request rate fluctuations within the 200 simultaneous authenticated users threshold"
+        }
+      ],
+      "improved_requirement": {
+        "introduced_values": [],
+        "needs_confirmation": true,
+        "source": "ai_suggestion",
+        "text": "Under 200 simultaneous authenticated users, 95% of shipment-status API responses must complete within 2 seconds during a 30-minute load test."
+      },
+      "missing_information": [],
+      "priority_reasons": [
+        {
+          "introduced_values": [],
+          "needs_confirmation": true,
+          "source": "ai_suggestion",
+          "text": "Priority is medium as stated in the input data, but the specific business rationale requires stakeholder confirmation."
+        }
+      ],
+      "risk_reasons": [
+        {
+          "introduced_values": [],
+          "needs_confirmation": true,
+          "source": "ai_suggestion",
+          "text": "Uncertainty in test environment parity with production may impact latency metrics, conditionally affecting performance reliability if hardware resources differ."
+        }
+      ],
+      "testability_issues": []
+    },
+    "llm_status": "success",
+    "missing_information": [],
+    "model": "gemini-3.5-flash-lite",
+    "priority_reasons": [
+      "Priority is medium as stated in the input data, but the specific business rationale requires stakeholder confirmation."
+    ],
+    "risk_level": "Medium",
+    "risk_reasons": [
+      "Uncertainty in test environment parity with production may impact latency metrics, conditionally affecting performance reliability if hardware resources differ."
+    ],
+    "risk_score": null,
+    "status": "completed",
+    "suggested_priority": "Medium",
+    "suggested_requirement_type": "Non-Functional",
+    "test_scenario_source": "gemini",
+    "test_scenarios": [
+      {
+        "assumption_reasons": [],
+        "category": "Positive",
+        "criterion_codes": [
+          "AC-001"
+        ],
+        "expected_result": "95% of shipment-status API responses complete within 2 seconds",
+        "id": "SC-001",
+        "introduced_values": [],
+        "linked_requirement": "Synthetic shipment latency",
+        "needs_confirmation": true,
+        "preconditions": [
+          "System is configured for the load test",
+          "200 simultaneous authenticated users are established"
+        ],
+        "source": "ai_suggestion",
+        "test_steps": [
+          "Initiate a 30-minute load test with 200 simultaneous authenticated users requesting shipment-status API responses",
+          "Measure response times for all shipment-status API responses"
+        ],
+        "title": "Shipment status API latency within threshold under load"
+      }
+    ],
+    "testability_issues": [],
+    "type_explanation": "The requirement specifies system performance and latency thresholds under specific load conditions, which defines a non-functional characteristic."
+  },
+  "save_http": 201,
+  "reopen": "passed",
+  "stored_rows": 1,
+  "linked_scenarios": 1,
+  "report_bytes": 4943
+}

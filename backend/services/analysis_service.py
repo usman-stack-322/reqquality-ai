@@ -1,5 +1,5 @@
-from analyzers.hybrid_analyzer import analyze_hybrid
-from app import REQUIREMENT_TYPES, PRIORITIES, analyze_hybrid
+from analyzers.ai_analyzer import analyze_ai
+from app import REQUIREMENT_TYPES, PRIORITIES
 from services.responses import response_payload
 
 def analyze_requirement_endpoint(payload):
@@ -22,4 +22,10 @@ def analyze_requirement_endpoint(payload):
     error = validate_requirement_text(title, description)
     if error:
         return response_payload(error=error), 400
-    return response_payload(analyze_hybrid(title, description, requirement_type, priority))
+    if not isinstance(data.get('clarifications', ''), str) or len(data.get('clarifications', '')) > 20000:
+        return response_payload(error='Clarification answers must be text of at most 20,000 characters.'), 400
+    from services.analysis_requests import run_analysis
+    from services.analysis_receipts import analysis_input, sign_analysis
+    inputs = analysis_input(data)
+    result = run_analysis(inputs, lambda: sign_analysis(analyze_ai(**inputs), inputs))
+    return response_payload(result), (200 if result.get('status') == 'completed' else 503)

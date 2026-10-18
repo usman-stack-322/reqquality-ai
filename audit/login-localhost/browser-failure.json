@@ -1,0 +1,21 @@
+{
+  "environment": "real configured PostgreSQL backend, Vite dev proxy, Chrome",
+  "outcome": "database outage reproduced; not authenticated",
+  "elapsed_ms": 10108.38,
+  "login_requests": 1,
+  "resources": [
+    {
+      "path": "/api/auth/me",
+      "ms": 21.5,
+      "bytes": 50
+    },
+    {
+      "path": "/api/auth/login",
+      "ms": 10018.59999999404,
+      "bytes": 107
+    }
+  ],
+  "ai_requests": 0,
+  "email_preserved": true,
+  "console_exceptions": 0
+}

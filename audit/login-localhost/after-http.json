@@ -1,0 +1,24 @@
+[
+  {
+    "path": "/api/auth/login",
+    "port": 5173,
+    "ms": 10172.14,
+    "status": 503,
+    "body": {
+      "code": "database_unavailable",
+      "error": "The database is temporarily unavailable. Please try again later."
+    },
+    "server_timing": "db_connect;dur=10010.0, request;dur=10084.6"
+  },
+  {
+    "path": "/api/auth/login",
+    "port": 5000,
+    "ms": 370842.51,
+    "status": 503,
+    "body": {
+      "code": "database_unavailable",
+      "error": "The database is temporarily unavailable. Please try again later."
+    },
+    "server_timing": "db_connect;dur=370818.1, request;dur=370821.3"
+  }
+]

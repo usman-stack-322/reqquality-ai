@@ -10,6 +10,8 @@ from services.rate_limit_service import check_rate_limit
 
 # Unknown/disabled users receive the same costly password check as existing users.
 _DUMMY_PASSWORD_HASH = generate_password_hash(secrets.token_urlsafe(32), method='scrypt')
+LOGIN_USER_QUERY = ('SELECT id, name, email, password_hash, role, created_at, is_active, auth_version, project_access '
+                    'FROM users WHERE lower(email) = ?')
 
 def register():
     return (response_payload(error='Account creation requires an invitation from your administrator.'), 403)
@@ -34,8 +36,11 @@ def login(payload):
     timings = {'connect': 0.0, 'user_query': 0.0, 'password': 0.0, 'permissions': 0.0}
     try:
         stage = perf_counter()
-        connection = get_connection()
-        timings['connect'] = (perf_counter() - stage) * 1000
+        try:
+            connection = get_connection()
+        finally:
+            # Failed acquisition used to misleadingly log connect_ms=0.
+            timings['connect'] = (perf_counter() - stage) * 1000
         stage = perf_counter()
         with connection:
             limited = check_rate_limit(connection, 'login', normalized_email)
@@ -45,8 +50,7 @@ def login(payload):
         with connection.autocommit_reads():
             stage = perf_counter()
             user = connection.execute(
-                'SELECT id, name, email, password_hash, role, created_at, is_active, auth_version '
-                'FROM users WHERE lower(email) = ?', (normalized_email,),
+                LOGIN_USER_QUERY, (normalized_email,),
             ).fetchone()
             timings['user_query'] = (perf_counter() - stage) * 1000
             stage = perf_counter()

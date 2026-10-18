@@ -31,8 +31,15 @@ from threading import Lock
 
 from dotenv import load_dotenv
 
+# Local overrides apply only to the loopback development entry point.
+# Load before shared configuration so explicit empty DATABASE_URL stays empty.
+if __name__ == '__main__':
+    load_dotenv(Path(__file__).parent / '.env.local')
+
+_DATABASE_URL_INHERITED = 'DATABASE_URL' in os.environ
 load_dotenv(Path(__file__).parent / '.env')
 
+_DATABASE_URL_FROM_BACKEND_ENV = not _DATABASE_URL_INHERITED and 'DATABASE_URL' in os.environ
 load_dotenv(Path(__file__).parent.parent / '.env')
 
 from flask import Flask, g, jsonify, request, send_file, session
@@ -41,11 +48,10 @@ from flask_cors import CORS
 
 from werkzeug.security import check_password_hash
 
-from analyzers.hybrid_analyzer import analyze_hybrid
+
 
 from database import DATABASE_ERRORS, DATABASE_UNAVAILABLE_ERRORS, connect_database, initialize_postgresql_schema
 
-from reporting import build_project_summary_pdf, build_requirement_pdf
 
 from admin_dashboard import initialize_management_schema, record_activity, register_management_routes
 
@@ -65,7 +71,9 @@ app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
 
 def database_unavailable(error):
     # Do not log exception text: drivers may include credentials/connection info.
-    app.logger.error('Database unavailable endpoint=%s exception_type=%s', request.endpoint, type(error).__name__)
+    from services.database_diagnostics import exception_details
+    app.logger.error('Database unavailable endpoint=%s stage=%s pid=%s diagnostic=%s',
+                     request.endpoint, getattr(g, 'database_stage', 'unknown'), os.getpid(), exception_details(error))
     response = jsonify(error='The database is temporarily unavailable. Please try again later.', code='database_unavailable')
     response.status_code = 503
     response.headers['Retry-After'] = '30'
@@ -73,6 +81,11 @@ def database_unavailable(error):
 
 for database_error in DATABASE_UNAVAILABLE_ERRORS:
     app.register_error_handler(database_error, database_unavailable)
+
+from werkzeug.exceptions import HTTPException
+@app.errorhandler(HTTPException)
+def api_http_error(error):
+    return jsonify(error=error.description), error.code
 
 @app.errorhandler(413)
 def request_too_large(error):
@@ -115,7 +128,9 @@ LOGGER = app.logger
 
 LOGGER.setLevel(logging.INFO)
 
-DATABASE = Path(__file__).parent / 'instance' / 'reqquality.db'
+DATABASE = Path(os.getenv('SQLITE_DATABASE_PATH') or Path(__file__).parent / 'instance' / 'reqquality.db')
+if not DATABASE.is_absolute():
+    DATABASE = Path(__file__).parent / DATABASE
 
 _POSTGRES_SCHEMA_URL = None
 
@@ -125,7 +140,7 @@ REQUIREMENT_TYPES = {'Functional', 'Non-Functional', 'Business'}
 
 PRIORITIES = {'High', 'Medium', 'Low'}
 
-REVIEW_STATUSES = {'Pending', 'In Review', 'Approved', 'Needs Revision'}
+REVIEW_STATUSES = {'Draft', 'Ready for Review', 'Pending', 'In Review', 'Approved', 'Needs Revision'}
 
 RISK_LEVELS = {'Low', 'Medium', 'High', 'Critical'}
 
@@ -162,5 +177,12 @@ register_password_reset_routes(app, get_connection)
 register_invitation_routes(app, get_connection, roles_required, csrf_required)
 register_management_routes(app, get_connection, roles_required, csrf_required, login_required)
 
+from services.workflow_service import project_access_guard
+app.before_request(project_access_guard)
+
+
 if __name__ == "__main__":
+    app.logger.info('Local runtime pid=%s cwd=%s database_backend=%s database_config_source=%s',
+                    os.getpid(), Path.cwd(), 'postgres' if DATABASE_URL else 'sqlite',
+                    'process environment' if _DATABASE_URL_INHERITED else 'backend/.env' if _DATABASE_URL_FROM_BACKEND_ENV else 'root .env/default')
     app.run(debug=False, host="127.0.0.1", port=5000)

@@ -1,0 +1,15 @@
+{
+  "missing_login_schema": {
+    "users": [
+      "project_access"
+    ]
+  },
+  "schema_marker_present": false,
+  "account_found": true,
+  "account_status": {
+    "role": "admin",
+    "is_active": 1,
+    "password_hash_present": true
+  },
+  "ms": 1631.8
+}

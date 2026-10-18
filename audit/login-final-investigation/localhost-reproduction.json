@@ -1,0 +1,11 @@
+{
+  "path": "/api/auth/login",
+  "via": "actual Vite proxy",
+  "status": 503,
+  "ms": 10061.57,
+  "body": {
+    "code": "database_unavailable",
+    "error": "The database is temporarily unavailable. Please try again later."
+  },
+  "server_timing": "db_connect;dur=10003.1, request;dur=10007.5"
+}

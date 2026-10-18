@@ -1,0 +1,13 @@
+{
+  "transport": "HTTPS diagnostic only; application still uses psycopg/TCP",
+  "http_status": 200,
+  "elapsed_ms": 1662.2,
+  "facts": [
+    {
+      "ok": 1,
+      "account_active": true,
+      "project_access_present": false,
+      "schema_marker_present": false
+    }
+  ]
+}

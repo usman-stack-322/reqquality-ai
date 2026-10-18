@@ -1,0 +1,5 @@
+{"stage": "environment", "database_configured": true, "source": "backend/.env", "conflicting_files": false, "secrets_long_enough": true, "pool_wait_seconds": "10"}
+{"stage": "configuration", "parsed": true, "port": 5432, "sslmode": "require", "pooled_endpoint": true, "driver_connect_timeout_seconds": 10}
+{"stage": "dns", "resolved": true, "address_count": 3}
+{"stage": "tcp_tls", "results": [{"address_index": 0, "result": "TimeoutError", "elapsed_ms": 3112}, {"address_index": 1, "result": "TimeoutError", "elapsed_ms": 3015}, {"address_index": 2, "result": "TimeoutError", "elapsed_ms": 3014}]}
+{"stage": "read_only_query", "successful": false, "exception_type": "ConnectionTimeout", "timeout": true, "credential_rejected": false, "elapsed_ms": 9042}

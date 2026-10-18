@@ -1,0 +1,12 @@
+[
+  {
+    "stage": "direct_endpoint_dns_control",
+    "address_count": 3,
+    "same_as_pooled": true
+  },
+  {
+    "stage": "direct_endpoint_tcp_control",
+    "exception_type": "TimeoutError",
+    "ms": 3022.97
+  }
+]

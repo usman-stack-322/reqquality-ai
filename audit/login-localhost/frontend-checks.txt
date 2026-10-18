@@ -1,0 +1,3 @@
+Command: npm.cmd test in frontend
+16 tests passed, 0 failed; duration 394.7495 ms.
+No frontend source changes or production build in this login-only task.

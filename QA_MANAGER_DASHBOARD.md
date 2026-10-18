@@ -1,3 +1,5 @@
+> Historical reference. See the [2026-10-17 implementation and verification report](IMPLEMENTATION_REPORT.md) for current analysis, permissions, lifecycle and performance evidence.
+
 # QA Manager dashboard
 
 The existing `admin` role now opens the QA Manager workspace at `/#admin` after

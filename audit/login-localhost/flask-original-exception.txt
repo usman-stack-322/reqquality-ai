@@ -1,0 +1,20 @@
+[2026-10-17 14:59:25,312] INFO in auth_service: login attempt normalized_email=d***@example.invalid
+database stage=driver_connect pid=3708 elapsed_ms=9164.1 diagnostic={'exception_type': 'ConnectionTimeout', 'sqlstate': None, 'frames': ['database_diagnostics.py:24:connect', 'connection.py:134:connect']}
+database pool event=connect_failed exception_type=ConnectionTimeout
+database stage=pool_checkout pid=3708 stats={'connections_num': 2, 'connections_errors': 1, 'pool_size': 1, 'pool_available': 0, 'requests_waiting': 1}
+[2026-10-17 14:59:35,329] INFO in auth_service: login timing total_ms=10015.1 connect_ms=0.0 user_query_ms=0.0 password_ms=0.0 permissions_ms=0.0
+[2026-10-17 14:59:35,336] ERROR in app: Database unavailable endpoint=login stage=pool_checkout pid=3708 diagnostic={'exception_type': 'PoolTimeout', 'sqlstate': None, 'frames': ['app.py:917:full_dispatch_request', 'app.py:902:dispatch_request', 'auth.py:112:wrapped', 'auth_controller.py:9:login', 'auth_service.py:39:login', 'app.py:154:get_connection', 'database_service.py:140:get_connection', 'd
+database_service.py:98:_get_connection', 'database.py:173:connect_database', 'poo
+ol.py:218:getconn']}
+[2026-10-17 14:59:35,338] INFO in observability: api timing path=/api/auth/login
+n status=503 request_ms=10026.0 db_connect_ms=10011.9 db_execute_ms=0.0
+127.0.0.1 - - [17/Oct/2026 14:59:35] "POST /api/auth/login HTTP/1.1" 503 -      
+[2026-10-17 14:59:35,361] INFO in observability: api timing path=/api/auth/me st
+tatus=200 request_ms=0.6 db_connect_ms=0.0 db_execute_ms=0.0
+127.0.0.1 - - [17/Oct/2026 14:59:35] "GET /api/auth/me HTTP/1.1" 200 -
+database stage=driver_connect pid=3708 elapsed_ms=9026.6 diagnostic={'exception_
+_type': 'ConnectionTimeout', 'sqlstate': None, 'frames': ['database_diagnostics.p
+py:24:connect', 'connection.py:134:connect']}
+database pool event=connect_failed exception_type=ConnectionTimeout
+database pool event=reconnect_exhausted exception_type=none
+

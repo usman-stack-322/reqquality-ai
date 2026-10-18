@@ -16,3 +16,10 @@ backend/local-server.*.log
 frontend/local-server.*.log
 backend/local-transport-tests.log
 backend/local-login*.log
+
+# Generated local browser verification profile and temporary benchmark copies
+audit/**/chrome-profile/
+.workflow-baseline-*/
+
+# Local development configuration
+.env.local

@@ -1,0 +1,6 @@
+2026-10-17 local Windows
+Commands: npm.cmd test; npm.cmd run build (frontend directory)
+16 tests passed, 0 failed. Duration 425.1323 ms.
+Vite 6.4.3 production build: 43 modules; passed in 2.22 s.
+Main JS: dist/assets/index-Db_VZBIg.js, 247.31 kB / 76.74 kB gzip.
+The initial restricted esbuild run could not read parent paths; the identical checks passed with the required filesystem access.

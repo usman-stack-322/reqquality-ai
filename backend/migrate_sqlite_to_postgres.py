@@ -19,7 +19,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 TABLE_COLUMNS = {
     "users": (
-        "id", "name", "email", "password_hash", "role", "created_at", "is_active", "auth_version",
+        "id", "name", "email", "password_hash", "role", "created_at", "is_active", "auth_version", "project_access",
     ),
     "user_invitations": (
         "id", "name", "email", "role", "token_hash", "status", "failed_attempts",
@@ -31,7 +31,7 @@ TABLE_COLUMNS = {
         "id", "title", "description", "requirement_type", "priority", "created_at",
         "user_priority", "suggested_priority", "risk_score", "risk_level", "review_status",
         "reviewer_notes", "updated_at", "source", "needs_confirmation", "created_by_user_id",
-        "reviewed_by_user_id", "reviewed_at", "analysis_summary", "assigned_reviewer_user_id",
+        "reviewed_by_user_id", "reviewed_at", "analysis_summary", "assigned_reviewer_user_id", "revision",
     ),
     "requirement_acceptance_criteria": (
         "id", "requirement_id", "criterion_code", "description", "source",
@@ -40,7 +40,7 @@ TABLE_COLUMNS = {
     "test_scenarios": (
         "id", "requirement_id", "scenario_code", "category", "title", "preconditions",
         "test_steps", "expected_result", "source", "needs_confirmation", "introduced_values",
-        "assumption_reasons",
+        "assumption_reasons", "criterion_codes",
     ),
     "requirement_assumptions": (
         "id", "requirement_id", "assumption_code", "description", "source",
@@ -48,6 +48,7 @@ TABLE_COLUMNS = {
     ),
     "activity_events": ("id", "actor_id", "actor_name", "action", "entity_type", "entity_id", "summary", "created_at"),
     "organization_settings": ("id", "name", "overdue_days"),
+    "requirement_history": ("id", "requirement_id", "actor_id", "action", "created_at", "snapshot"),
 }
 
 
@@ -72,14 +73,16 @@ def migrate(sqlite_path, postgres_url):
         initialize_invitations(destination)
         settings_existed = destination.execute("SELECT to_regclass('organization_settings') AS name").fetchone()['name'] is not None
         initialize_management_schema(destination)
+        from services.workflow_service import initialize_workflow_schema
+        initialize_workflow_schema(destination)
         counts = {}
         with destination:
             for table, columns in TABLE_COLUMNS.items():
-                if table in ("user_invitations", "activity_events", "organization_settings") and not source.execute("SELECT name FROM sqlite_master WHERE name = ?", (table,)).fetchone():
+                if table in ("user_invitations", "activity_events", "organization_settings", "requirement_history") and not source.execute("SELECT name FROM sqlite_master WHERE name = ?", (table,)).fetchone():
                     continue
                 available = {row['name'] for row in source.execute(f'PRAGMA table_info({table})')}
                 # Older source databases legitimately lack the new management columns.
-                optional = {'is_active', 'auth_version', 'assigned_reviewer_user_id'}
+                optional = {'is_active', 'auth_version', 'assigned_reviewer_user_id', 'project_access', 'revision', 'criterion_codes'}
                 columns = tuple(column for column in columns if column in available or column not in optional)
                 column_list = ", ".join(columns)
                 source_rows = source.execute(

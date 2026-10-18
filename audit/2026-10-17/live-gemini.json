@@ -1,0 +1,1 @@
+{"date":"2026-10-17","environment":"local Windows, configured account, direct Gemini SDK","list_models":{"configured_model":"gemini-3.5-flash-lite","supports_generate_content":true},"synthetic_analysis":{"status":"completed","duration_ms":6495.0,"criteria_count":2,"scenario_count":2},"production_database_modified":false}

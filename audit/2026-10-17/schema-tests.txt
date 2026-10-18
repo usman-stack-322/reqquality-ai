@@ -1,0 +1,65 @@
+backend/.venv/Scripts/python.exe : [2026-10-17 11:36:01,280] INFO in auth_service: login attempt 
+normalized_email=m***@example.com
+At line:25 char:1
++ backend/.venv/Scripts/python.exe -m unittest discover -s backend -p t ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([2026-10-17 11:...***@example.com:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2026-10-17 11:36:01,657] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-17 11:36:01,679] INFO in auth_service: login timing total_ms=399.0 connect_ms=5.7 user_query_ms=0.7 
+password_ms=348.4 permissions_ms=0.0
+[2026-10-17 11:36:01,681] INFO in observability: api timing path=/api/auth/login status=200 request_ms=401.8 
+db_connect_ms=5.5 db_execute_ms=8.5
+[2026-10-17 11:36:02,253] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 11:36:02,591] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-17 11:36:02,614] INFO in auth_service: login timing total_ms=360.6 connect_ms=4.3 user_query_ms=0.7 
+password_ms=310.2 permissions_ms=0.8
+[2026-10-17 11:36:02,615] INFO in observability: api timing path=/api/auth/login status=200 request_ms=362.3 
+db_connect_ms=4.1 db_execute_ms=7.6
+[2026-10-17 11:36:02,641] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 11:36:03,000] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-17 11:36:03,022] INFO in auth_service: login timing total_ms=380.4 connect_ms=3.2 user_query_ms=0.5 
+password_ms=332.3 permissions_ms=0.7
+[2026-10-17 11:36:03,023] INFO in observability: api timing path=/api/auth/login status=200 request_ms=382.2 
+db_connect_ms=3.1 db_execute_ms=6.3
+[2026-10-17 11:36:03,582] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-17 11:36:03,937] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-17 11:36:03,938] INFO in auth_service: login timing total_ms=355.0 connect_ms=0.1 user_query_ms=0.5 
+password_ms=330.7 permissions_ms=0.0
+[2026-10-17 11:36:03,938] ERROR in auth: API endpoint failed endpoint=login exception_type=RuntimeError
+Traceback (most recent call last):
+  File "C:\Users\ua589\ReqQuality AI\backend\middlewares\auth.py", line 112, in wrapped
+    return view(*args, **kwargs)
+  File "C:\Users\ua589\ReqQuality AI\backend\controllers\auth_controller.py", line 9, in login
+    response = make_response(respond(service.login(request.get_json(silent=True))))
+                                     ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ua589\ReqQuality AI\backend\services\auth_service.py", line 61, in login
+    public_user = _public_user(user, connection=connection)
+  File "C:\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1241, in _execute_mock_call
+    raise effect
+RuntimeError: lookup failed
+[2026-10-17 11:36:03,944] INFO in observability: api timing path=/api/auth/login status=500 request_ms=361.7 
+db_connect_ms=0.0 db_execute_ms=4.7
+[2026-10-17 11:36:04,575] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 11:36:04,900] WARNING in auth_service: login password_verification=false normalized_email=m***@example.com
+[2026-10-17 11:36:04,901] INFO in auth_service: login timing total_ms=326.2 connect_ms=5.5 user_query_ms=0.7 
+password_ms=298.3 permissions_ms=0.0
+[2026-10-17 11:36:04,902] INFO in observability: api timing path=/api/auth/login status=401 request_ms=328.0 
+db_connect_ms=5.4 db_execute_ms=4.3
+[2026-10-17 11:36:04,906] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-17 11:36:05,200] WARNING in auth_service: login password_verification=false normalized_email=m***@example.com
+[2026-10-17 11:36:05,201] INFO in auth_service: login timing total_ms=294.5 connect_ms=5.9 user_query_ms=0.4 
+password_ms=267.1 permissions_ms=0.0
+[2026-10-17 11:36:05,202] INFO in observability: api timing path=/api/auth/login status=401 request_ms=295.8 
+db_connect_ms=5.9 db_execute_ms=3.6
+----------------------------------------------------------------------
+Ran 9 tests in 4.830s
+
+OK

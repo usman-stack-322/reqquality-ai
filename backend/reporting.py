@@ -31,7 +31,7 @@ MUTED = colors.HexColor("#6B706C")
 
 SOURCE_LABELS = {
     "original": "Original",
-    "rule_based": "Rule-based",
+    "rule_based": "Historical analysis",
     "ai_suggestion": "AI Suggestion",
     "ai_assumption": "AI Assumption",
     "confirmed": "Confirmed",
@@ -95,7 +95,7 @@ def _content_paragraph(item, review_status, style, default_source=None):
 
     labels = []
     if source:
-        labels.append(SOURCE_LABELS.get(source, "Rule-based"))
+        labels.append(SOURCE_LABELS.get(source, "Historical analysis"))
     if needs_confirmation:
         labels.append("Needs Confirmation")
     elif source == "confirmed" or review_status == "Approved":
@@ -210,11 +210,19 @@ def build_requirement_pdf(requirement):
         ("Risk Level", _paragraph(requirement.get("risk_level") or "Not assessed", styles["body"])),
     ], styles))
 
+    _section(story, "Analysis provenance", styles)
+    version = analysis.get('analysis_version', 2)
+    story.append(_paragraph(f"AI analysis (v{version if type(version) is int else 2})" if analysis.get("analysis_mode") == "ai_only" else "Historical analysis", styles["body"]))
+    if analysis.get('stale'):
+        story.append(_paragraph('Analysis describes an earlier revision.', styles['body']))
+    for reason in analysis.get('risk_reasons', []) + analysis.get('priority_reasons', []):
+        story.append(_paragraph(reason, styles['body']))
     _section(story, "Original Requirement", styles)
     story.append(_paragraph(requirement.get("description", ""), styles["body"]))
 
     for title, key, default_source in (
         ("Ambiguity Findings", "ambiguity_issues", "rule_based"),
+        ("Conflicting Statements", "conflict_issues", "ai_suggestion"),
         ("Missing Information", "missing_information", "rule_based"),
         ("Testability Findings", "testability_issues", "rule_based"),
         ("Assumptions", "assumptions", "ai_assumption"),
@@ -264,6 +272,7 @@ def build_requirement_pdf(requirement):
                 review_status,
                 styles["small"],
             ))
+        story.append(_paragraph("Linked criteria: " + ", ".join(scenario.get("criterion_codes", [])), styles["body"]))
         story.append(_paragraph("Preconditions", styles["label"]))
         story.extend(_item_list(scenario.get("preconditions", []), review_status, styles))
         story.append(_paragraph("Test Steps", styles["label"]))
@@ -317,7 +326,7 @@ def build_project_summary_pdf(summary):
     _section(story, "Review Status Distribution", styles)
     story.append(_key_value_table([
         (status, _paragraph(summary["review_counts"].get(status, 0), styles["body"]))
-        for status in ("Approved", "Pending", "In Review", "Needs Revision")
+        for status in ("Draft", "Ready for Review", "Pending", "In Review", "Approved", "Needs Revision")
     ], styles))
 
     _section(story, "Risk Distribution", styles)

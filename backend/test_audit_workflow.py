@@ -26,16 +26,17 @@ class AuditWorkflowTests(unittest.TestCase):
         self.payload = {'title': 'Sign in', 'description': 'A registered user can sign in using valid credentials.',
                         'requirement_type': 'Functional', 'priority': 'Medium'}
 
-    def test_requirement_to_review_and_exports_with_ai_network_failure(self):
-        with patch('analyzers.hybrid_analyzer.analyze_with_llm', side_effect=TimeoutError), patch('analyzers.test_scenario_generator._generate_with_gemini', return_value=[]):
+    def test_requirement_to_review_and_exports_with_ai_success(self):
+        from test_ai_workflow import valid_analysis
+        with patch('analyzers.ai_analyzer.analyze_with_llm', return_value={'status':'success','analysis':valid_analysis()}):
             response = self.analyst.post('/api/analyze-requirement', json=self.payload, headers=self.headers)
         self.assertEqual(response.status_code, 200, response.json)
         analysis = response.json
-        self.assertEqual(analysis['analysis_mode'], 'rule_based_only')
-        self.assertEqual(analysis['llm_status'], 'api_error')
+        self.assertEqual(analysis['analysis_mode'], 'ai_only')
+        self.assertEqual(analysis['llm_status'], 'success')
         self.assertTrue(analysis['improved_requirement'])
         self.assertTrue(analysis['acceptance_criteria'])
-        self.assertEqual({s['category'] for s in analysis['test_scenarios']}, {'Positive', 'Negative', 'Boundary', 'Edge-case'})
+        self.assertTrue(analysis['test_scenarios'])
         saved = self.analyst.post('/api/requirements', json={**self.payload, 'analysis': analysis}, headers=self.headers)
         self.assertEqual(saved.status_code, 201, saved.json)
         rid = saved.json['requirement']['id']
@@ -44,9 +45,18 @@ class AuditWorkflowTests(unittest.TestCase):
         self.assertEqual(record['analysis_summary']['improved_requirement'], analysis['improved_requirement'])
         self.assertTrue(record['test_scenarios'])
         self.assertTrue(record['acceptance_criteria'])
-        for status in ['In Review', 'Needs Revision', 'Approved']:
-            reviewed = self.engineer.patch(f'/api/requirements/{rid}/review', json={'review_status': status, 'reviewer_notes': 'Human review recorded.'}, headers=self.headers)
+        revision = record['revision']
+        submitted = self.analyst.post(f'/api/requirements/{rid}/submit',json={'revision':revision},headers=self.headers)
+        self.assertEqual(submitted.status_code,200,submitted.json)
+        revision = submitted.json['requirement']['revision']
+        for status in ['In Review', 'Needs Revision', 'In Review', 'Approved']:
+            if status == 'In Review' and revision > 3:
+                submitted = self.analyst.post(f'/api/requirements/{rid}/submit',json={'revision':revision},headers=self.headers)
+                self.assertEqual(submitted.status_code,200,submitted.json)
+                revision = submitted.json['requirement']['revision']
+            reviewed = self.engineer.patch(f'/api/requirements/{rid}/review', json={'revision':revision,'review_status': status, 'reviewer_notes': 'Human review recorded.'}, headers=self.headers)
             self.assertEqual(reviewed.status_code, 200, reviewed.json)
+            revision = reviewed.json['requirement']['revision']
             self.assertEqual(reviewed.json['requirement']['reviewed_by_user_id'], 3)
         self.assertEqual(self.analyst.get('/api/dashboard').json['approved_count'], 1)
         self.assertEqual(self.admin.get('/api/admin/dashboard').json['summary']['approved'], 1)

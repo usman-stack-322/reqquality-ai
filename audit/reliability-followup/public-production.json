@@ -1,0 +1,62 @@
+[
+  {
+    "path": "/api/auth/me",
+    "sample": 1,
+    "status": 200,
+    "ms": 3255.32,
+    "bytes": 50,
+    "server_timing": "request;dur=0.4",
+    "cache": "no-store",
+    "vercel_cache": "MISS"
+  },
+  {
+    "path": "/api/auth/me",
+    "sample": 2,
+    "status": 200,
+    "ms": 742.18,
+    "bytes": 50,
+    "server_timing": "request;dur=0.3",
+    "cache": "no-store",
+    "vercel_cache": "MISS"
+  },
+  {
+    "path": "/api/auth/me",
+    "sample": 3,
+    "status": 200,
+    "ms": 503.62,
+    "bytes": 50,
+    "server_timing": "request;dur=0.2",
+    "cache": "no-store",
+    "vercel_cache": "MISS"
+  },
+  {
+    "path": "/api/dashboard",
+    "sample": 1,
+    "status": 401,
+    "ms": 441.3,
+    "bytes": 64,
+    "server_timing": "request;dur=0.2",
+    "cache": "no-store",
+    "vercel_cache": "MISS"
+  },
+  {
+    "path": "/api/dashboard",
+    "sample": 2,
+    "status": 401,
+    "ms": 459.22,
+    "bytes": 64,
+    "server_timing": "request;dur=0.3",
+    "cache": "no-store",
+    "vercel_cache": "MISS"
+  },
+  {
+    "path": "/api/dashboard",
+    "sample": 3,
+    "status": 401,
+    "ms": 444.38,
+    "bytes": 64,
+    "server_timing": "request;dur=0.2",
+    "cache": "no-store",
+    "vercel_cache": "MISS"
+  }
+]

@@ -66,7 +66,10 @@ function AppContent() {
   const [loginNotice, setLoginNotice] = useState('');
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [logoutError, setLogoutError] = useState('');
-  const canCreate = user?.role !== 'admin' && user?.permissions?.includes('create_requirements');
+  const [sessionError, setSessionError] = useState('');
+  const [sessionAttempt, setSessionAttempt] = useState(0);
+  const logoutLock = useRef(false);
+  const canCreate = user?.project_access !== false && user?.role !== 'admin' && user?.permissions?.includes('create_requirements');
   const sessionRequest = useRef(null);
   const authRevision = useRef(0);
 
@@ -93,17 +96,20 @@ function AppContent() {
           setCsrfToken(data.csrf_token || '');
         }
       } catch {
-        if (active && revision === authRevision.current) setUser(null);
+        if (active && revision === authRevision.current) {
+          setUser(null);
+          setSessionError('Unable to restore your session. Check your connection and retry.');
+        }
       } finally {
         if (active && revision === authRevision.current) setIsCheckingSession(false);
       }
     }
     loadSession();
     return () => { active = false; };
-  }, []);
+  }, [sessionAttempt]);
 
   useEffect(() => {
-    if (isCheckingSession) return;
+    if (isCheckingSession || sessionError) return;
     if (['accept-invitation', 'forgot-password', 'reset-password'].includes(page)) return;
     if (!user && !['home', 'login', 'register'].includes(page)) {
       window.location.hash = 'login';
@@ -112,9 +118,11 @@ function AppContent() {
     } else if (user && !canCreate && page === 'requirements') {
       window.location.hash = 'dashboard';
     }
-  }, [isCheckingSession, page, user, canCreate]);
+  }, [isCheckingSession, sessionError, page, user, canCreate]);
 
   async function handleLogout() {
+    if (logoutLock.current) return;
+    logoutLock.current = true;
     setLogoutError('');
     try {
       const response = await fetch('/api/auth/logout', {
@@ -130,8 +138,14 @@ function AppContent() {
       window.location.hash = 'login';
     } catch (error) {
       setLogoutError(error.message || 'Unable to reach the authentication API.');
+    } finally {
+      logoutLock.current = false;
     }
   }
+
+  if (sessionError) return <div className="app-shell"><main className="card"><h1>Session unavailable</h1><p role="alert">{sessionError}</p><button type="button" onClick={() => {
+    sessionRequest.current = null; setSessionError(''); setIsCheckingSession(true); setSessionAttempt(v => v + 1);
+  }}>Retry session</button><button type="button" onClick={() => { setSessionError(''); window.location.hash = 'login'; }}>Sign in</button></main></div>;
 
   const publicPage = ['home', 'login', 'register', 'accept-invitation', 'forgot-password', 'reset-password'].includes(page);
   if ((isCheckingSession && !publicPage) || (user && ['home', 'login', 'register'].includes(page))) {

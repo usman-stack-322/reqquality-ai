@@ -1,0 +1,11 @@
+{
+  "runtime": "final network-enabled documented servers",
+  "path": "/api/auth/login",
+  "status": 503,
+  "ms": 10091.28,
+  "body": {
+    "code": "database_unavailable",
+    "error": "The database is temporarily unavailable. Please try again later."
+  },
+  "server_timing": "db_connect;dur=10007.4, request;dur=10028.4"
+}
