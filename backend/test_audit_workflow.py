@@ -126,8 +126,20 @@ class AuditWorkflowTests(unittest.TestCase):
         short = self.analyst.get('/api/requirements?view=summary')
         self.assertIn('analysis_summary', full.json['requirements'][0])
         self.assertNotIn('analysis_summary', short.json['requirements'][0])
+        self.assertNotIn('description', short.json['requirements'][0])
+        self.assertIn('description', full.json['requirements'][0])
         self.assertEqual(short.json['requirements'][0]['id'], full.json['requirements'][0]['id'])
         self.assertLess(len(short.data), len(full.data)/10)
+
+    def test_dashboard_rows_omit_requirement_bodies(self):
+        self.fixture.requirement(risk_level='High', description='private long requirement body ' * 100)
+        response = self.analyst.get('/api/dashboard')
+        self.assertEqual(response.status_code, 200)
+        for key in ('recent_requirements', 'high_attention_requirements'):
+            self.assertTrue(response.json[key])
+            for row in response.json[key]:
+                self.assertNotIn('description', row)
+                self.assertNotIn('analysis_summary', row)
 
     def test_session_reuses_connection_and_permissions_are_fresh(self):
         with patch('services.requirement_helpers.get_connection', side_effect=AssertionError('Duplicate session connection')):

@@ -5,6 +5,7 @@ import time
 from flask import g
 from app import get_connection
 from analyzers.llm_analyzer import ANALYSIS_VERSION
+from analyzers.llm_analyzer import generation_configuration
 
 
 def _now():
@@ -12,7 +13,7 @@ def _now():
 
 
 def run_analysis(data, generate):
-    key = hashlib.sha256(json.dumps({'version': ANALYSIS_VERSION, 'input': data}, sort_keys=True).encode()).hexdigest()
+    key = hashlib.sha256(json.dumps({'version': ANALYSIS_VERSION, 'configuration': generation_configuration(), 'input': data}, sort_keys=True).encode()).hexdigest()
     uid, now = g.current_user['id'], _now()
     c = get_connection()
     try:

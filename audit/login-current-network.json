@@ -1,0 +1,92 @@
+[
+  {
+    "stage": "runtime",
+    "executable": "C:\\Users\\ua589\\ReqQuality AI\\backend\\.venv\\Scripts\\python.exe",
+    "cwd": "C:\\Users\\ua589\\ReqQuality AI\\backend",
+    "app_module": "C:\\Users\\ua589\\ReqQuality AI\\backend\\app.py",
+    "database_backend": "postgres",
+    "config_source": "backend/.env",
+    "matches_backend_env": true,
+    "inherited_database_url_present": false
+  },
+  {
+    "stage": "configuration",
+    "success": true,
+    "provider": "Neon",
+    "pooled": true,
+    "port": 5432,
+    "sslmode": "require"
+  },
+  {
+    "stage": "dns",
+    "success": true,
+    "addresses": 3,
+    "elapsed_ms": 6.62
+  },
+  {
+    "stage": "tcp_tls",
+    "success": true,
+    "results": [
+      {
+        "address_index": 0,
+        "tcp": true,
+        "tcp_ms": 126.41,
+        "tls": true,
+        "tls_version": "TLSv1.3"
+      },
+      {
+        "address_index": 1,
+        "tcp": true,
+        "tcp_ms": 117.61,
+        "tls": true,
+        "tls_version": "TLSv1.3"
+      },
+      {
+        "address_index": 2,
+        "tcp": true,
+        "tcp_ms": 100.4,
+        "tls": true,
+        "tls_version": "TLSv1.3"
+      }
+    ]
+  },
+  {
+    "stage": "postgres_connect_authentication",
+    "success": true,
+    "elapsed_ms": 1723.44
+  },
+  {
+    "stage": "select_1",
+    "success": true,
+    "elapsed_ms": 112.39,
+    "details": {
+      "result": [
+        1,
+        "on"
+      ]
+    }
+  },
+  {
+    "stage": "required_schema",
+    "success": true,
+    "elapsed_ms": 414.75,
+    "details": {
+      "missing": {},
+      "schema_version": 20261017,
+      "expected_schema_version": 20261017,
+      "initialization_pending": false,
+      "no_migrations_run": true
+    }
+  },
+  {
+    "stage": "login_user_lookup",
+    "success": true,
+    "elapsed_ms": 112.69,
+    "details": {
+      "found": false,
+      "active": null,
+      "password_hash_present": null,
+      "password_not_tested": true
+    }
+  }
+]

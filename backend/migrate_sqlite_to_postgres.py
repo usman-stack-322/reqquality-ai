@@ -31,7 +31,7 @@ TABLE_COLUMNS = {
         "id", "title", "description", "requirement_type", "priority", "created_at",
         "user_priority", "suggested_priority", "risk_score", "risk_level", "review_status",
         "reviewer_notes", "updated_at", "source", "needs_confirmation", "created_by_user_id",
-        "reviewed_by_user_id", "reviewed_at", "analysis_summary", "assigned_reviewer_user_id", "revision",
+        "reviewed_by_user_id", "reviewed_at", "analysis_summary", "assigned_reviewer_user_id", "revision", "project_id", "content_revision", "reviewed_content_revision", "criteria_review_required",
     ),
     "requirement_acceptance_criteria": (
         "id", "requirement_id", "criterion_code", "description", "source",
@@ -40,7 +40,7 @@ TABLE_COLUMNS = {
     "test_scenarios": (
         "id", "requirement_id", "scenario_code", "category", "title", "preconditions",
         "test_steps", "expected_result", "source", "needs_confirmation", "introduced_values",
-        "assumption_reasons", "criterion_codes",
+        "assumption_reasons", "criterion_codes", "project_id", "requirement_revision", "case_revision", "test_data", "test_type", "priority", "review_status", "review_notes", "clarification_notes", "archived", "created_by_user_id",
     ),
     "requirement_assumptions": (
         "id", "requirement_id", "assumption_code", "description", "source",
@@ -50,6 +50,16 @@ TABLE_COLUMNS = {
     "organization_settings": ("id", "name", "overdue_days"),
     "requirement_history": ("id", "requirement_id", "actor_id", "action", "created_at", "snapshot"),
 }
+TABLE_COLUMNS = {"projects": ("id", "name", "context", "revision"), **TABLE_COLUMNS,
+                 "requirement_analysis_drafts": ("id", "requirement_id", "project_id", "requirement_revision", "user_id", "input_hash", "result", "created_at")}
+TABLE_COLUMNS.update({
+    "test_case_versions": ("id","scenario_id","case_revision","project_id","requirement_revision","actor_id","recorded_at","snapshot"),
+    "test_executions": ("id","scenario_id","case_version_id","project_id","requirement_revision","status","actual_result","blocked_reason","tester_id","tester_name","executed_at","environment","build","notes","evidence_reference","request_key","input_hash"),
+    "bugs": ("id","project_id","requirement_id","scenario_id","failed_execution_id","title","preconditions","steps_to_reproduce","expected_result","actual_result","severity","priority","environment","build","evidence_reference","status","reporter_id","reporter_name","created_at","updated_at","revision","last_retest_execution_id","resolution_reason","request_key","input_hash"),
+    "requirement_versions": ("id","requirement_id","project_id","content_revision","actor_id","recorded_at","origin","snapshot"),
+    "requirement_reviews": ("id","requirement_id","project_id","content_revision","status","reviewer_id","reviewer_name","notes","reviewed_at","snapshot"),
+    "bug_history": ("id","bug_id","action","from_status","to_status","actor_id","actor_name","recorded_at","note","retest_execution_id","snapshot"),
+})
 
 
 def migrate(sqlite_path, postgres_url):
@@ -75,14 +85,25 @@ def migrate(sqlite_path, postgres_url):
         initialize_management_schema(destination)
         from services.workflow_service import initialize_workflow_schema
         initialize_workflow_schema(destination)
+        projects_existed = destination.execute("SELECT to_regclass('projects') AS name").fetchone()['name'] is not None
+        from services.project_service import initialize_project_schema
+        initialize_project_schema(destination)
+        from services.case_service import initialize_test_case_schema, ensure_version
+        initialize_test_case_schema(destination)
+        from services.bug_service import initialize_bug_schema
+        initialize_bug_schema(destination)
+        from services.integrated_service import initialize_integrated_schema, remember_version
+        initialize_integrated_schema(destination)
         counts = {}
         with destination:
             for table, columns in TABLE_COLUMNS.items():
-                if table in ("user_invitations", "activity_events", "organization_settings", "requirement_history") and not source.execute("SELECT name FROM sqlite_master WHERE name = ?", (table,)).fetchone():
+                if table in ("requirement_versions", "requirement_reviews", "bugs", "bug_history", "test_case_versions", "test_executions", "projects", "requirement_analysis_drafts", "user_invitations", "activity_events", "organization_settings", "requirement_history") and not source.execute("SELECT name FROM sqlite_master WHERE name = ?", (table,)).fetchone():
                     continue
                 available = {row['name'] for row in source.execute(f'PRAGMA table_info({table})')}
                 # Older source databases legitimately lack the new management columns.
-                optional = {'is_active', 'auth_version', 'assigned_reviewer_user_id', 'project_access', 'revision', 'criterion_codes'}
+                optional = {'is_active', 'auth_version', 'assigned_reviewer_user_id', 'project_access', 'revision', 'criterion_codes', 'project_id', 'content_revision', 'reviewed_content_revision', 'criteria_review_required'}
+                if table=='test_scenarios':
+                    optional.update(('requirement_revision','case_revision','test_data','test_type','priority','review_status','review_notes','clarification_notes','archived','created_by_user_id'))
                 columns = tuple(column for column in columns if column in available or column not in optional)
                 column_list = ", ".join(columns)
                 source_rows = source.execute(
@@ -90,6 +111,8 @@ def migrate(sqlite_path, postgres_url):
                 ).fetchall()
                 if table == 'organization_settings' and not settings_existed and source_rows:
                     destination.execute('DELETE FROM organization_settings WHERE id=1')
+                if table == 'projects' and not projects_existed and source_rows:
+                    destination.execute("DELETE FROM projects WHERE id='current'")
                 migrated = 0
                 already_present = 0
                 placeholders = ", ".join("?" for _ in columns)
@@ -115,6 +138,8 @@ def migrate(sqlite_path, postgres_url):
                     cursor = destination.execute(insert_statement, values)
                     if cursor.rowcount:
                         migrated += 1
+                        if table=='requirements' and 'content_revision' not in columns:
+                            destination.execute('UPDATE requirements SET content_revision=revision WHERE id=?',(row['id'],))
                     else:
                         already_present += 1
                 counts[table] = {
@@ -123,8 +148,18 @@ def migrate(sqlite_path, postgres_url):
                     "already_present": already_present,
                 }
 
+            destination.execute('UPDATE test_scenarios SET requirement_revision=(SELECT content_revision FROM requirements WHERE id=test_scenarios.requirement_id) WHERE requirement_revision IS NULL')
+            destination.execute("UPDATE test_scenarios SET priority=COALESCE((SELECT user_priority FROM requirements WHERE id=test_scenarios.requirement_id),'Medium') WHERE priority IS NULL")
+            for case in destination.execute('SELECT * FROM test_scenarios').fetchall():
+                ensure_version(destination,case)
+
+            for row in destination.execute('SELECT * FROM requirements').fetchall():
+                value=dict(row)
+                value['acceptance_criteria']=[dict(v) for v in destination.execute('SELECT * FROM requirement_acceptance_criteria WHERE requirement_id=?',(row['id'],))]
+                remember_version(destination,value,origin='first observed during import')
+
             for table in TABLE_COLUMNS:
-                if table == 'organization_settings':
+                if table in ('organization_settings', 'projects'):
                     continue
                 destination.execute(
                     "SELECT setval(pg_get_serial_sequence(?, 'id')::regclass, "

@@ -1,0 +1,34 @@
+[
+  {
+    "case": "clear",
+    "request_ms": 10299.52,
+    "status": 409,
+    "provider": "REAL",
+    "application_database": "disposable SQLite",
+    "original_unchanged": true,
+    "error_code": "stale_analysis",
+    "saved_success_rows": 0
+  },
+  {
+    "case": "security",
+    "request_ms": 8061.88,
+    "status": 409,
+    "provider": "REAL",
+    "application_database": "disposable SQLite",
+    "original_unchanged": true,
+    "error_code": "stale_analysis",
+    "saved_success_rows": 0
+  },
+  {
+    "case": "performance_missing",
+    "request_ms": 15901.74,
+    "status": 200,
+    "provider": "REAL",
+    "application_database": "disposable SQLite",
+    "original_unchanged": true,
+    "persisted_draft": true,
+    "case_count": 1,
+    "clarification_flagged_cases": 1,
+    "unresolved_pass_rejected": 409
+  }
+]

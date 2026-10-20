@@ -33,14 +33,18 @@ from dotenv import load_dotenv
 
 # Local overrides apply only to the loopback development entry point.
 # Load before shared configuration so explicit empty DATABASE_URL stays empty.
+_DATABASE_URL_INHERITED = 'DATABASE_URL' in os.environ
 if __name__ == '__main__':
     load_dotenv(Path(__file__).parent / '.env.local')
 
-_DATABASE_URL_INHERITED = 'DATABASE_URL' in os.environ
+_DATABASE_URL_FROM_LOCAL_ENV = not _DATABASE_URL_INHERITED and 'DATABASE_URL' in os.environ
 load_dotenv(Path(__file__).parent / '.env')
 
-_DATABASE_URL_FROM_BACKEND_ENV = not _DATABASE_URL_INHERITED and 'DATABASE_URL' in os.environ
+_DATABASE_URL_FROM_BACKEND_ENV = not (_DATABASE_URL_INHERITED or _DATABASE_URL_FROM_LOCAL_ENV) and 'DATABASE_URL' in os.environ
 load_dotenv(Path(__file__).parent.parent / '.env')
+DATABASE_CONFIG_SOURCE = ('process environment' if _DATABASE_URL_INHERITED else
+                          'backend/.env.local' if _DATABASE_URL_FROM_LOCAL_ENV else
+                          'backend/.env' if _DATABASE_URL_FROM_BACKEND_ENV else 'root .env/default')
 
 from flask import Flask, g, jsonify, request, send_file, session
 
@@ -172,6 +176,12 @@ from routes.reports_routes import register_routes as register_reports_routes
 register_reports_routes(app)
 from routes.analysis_routes import register_routes as register_analysis_routes
 register_analysis_routes(app)
+from routes.project_routes import register_routes as register_project_routes
+register_project_routes(app)
+from routes.case_routes import register_routes as register_test_case_routes
+register_test_case_routes(app)
+from routes.bug_routes import register_routes as register_bug_routes
+register_bug_routes(app)
 
 register_password_reset_routes(app, get_connection)
 register_invitation_routes(app, get_connection, roles_required, csrf_required)
@@ -184,5 +194,5 @@ app.before_request(project_access_guard)
 if __name__ == "__main__":
     app.logger.info('Local runtime pid=%s cwd=%s database_backend=%s database_config_source=%s',
                     os.getpid(), Path.cwd(), 'postgres' if DATABASE_URL else 'sqlite',
-                    'process environment' if _DATABASE_URL_INHERITED else 'backend/.env' if _DATABASE_URL_FROM_BACKEND_ENV else 'root .env/default')
+                    DATABASE_CONFIG_SOURCE)
     app.run(debug=False, host="127.0.0.1", port=5000)

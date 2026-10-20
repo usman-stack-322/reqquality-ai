@@ -96,6 +96,18 @@ class LoginDiagnosisTests(unittest.TestCase):
             self.assertEqual(UnavailableConnection.calls, calls)
             self.assertNotIn('private connection info', str(captured.output))
 
+    def test_repeated_failed_checkouts_do_not_permanently_fill_waiter_queue(self):
+        class UnavailableConnection(psycopg.Connection):
+            @classmethod
+            def connect(cls, *_args, **_kwargs):
+                raise psycopg.OperationalError('private connection info')
+
+        with patch.object(database, 'DiagnosticConnection', UnavailableConnection), patch.dict('os.environ', DB_POOL_TIMEOUT='0.02'), self.assertLogs(level='WARNING'):
+            for _ in range(22):
+                with self.assertRaises(PoolTimeout):
+                    database.connect_database('postgresql://queue-test-only', 'must-not-be-created.db')
+                self.assertEqual(database._POSTGRES_POOLS, {})
+
 
 if __name__ == '__main__':
     unittest.main()

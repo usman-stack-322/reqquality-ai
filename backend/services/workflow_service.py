@@ -28,7 +28,7 @@ def initialize_workflow_schema(c):
 
 def project_access_guard():
     # This application's sole project is "current". Unknown projects never alias it.
-    paths = ('/api/requirements', '/api/dashboard', '/api/reports/', '/api/exports/', '/api/analyze-requirement')
+    paths = ('/api/requirements', '/api/dashboard', '/api/reports/', '/api/exports/', '/api/analyze-requirement', '/api/project', '/api/executions', '/api/bugs')
     if not request.path.startswith(paths) or request.method == 'OPTIONS':
         return
     from middlewares.auth import _get_current_user
@@ -45,6 +45,9 @@ def snapshot(c, rid, action, record=None):
     from services.requirement_helpers import _get_requirement_detail
     record = dict(record) if record is not None else _get_requirement_detail(c, rid, include_history=False)
     record.pop('history', None)
+    record.pop('analysis_draft', None)
+    from services.integrated_service import remember_version
+    remember_version(c,record,g.current_user['id'])
     c.execute('INSERT INTO requirement_history(requirement_id,actor_id,action,created_at,snapshot) VALUES(?,?,?,?,?)',
               (rid, g.current_user['id'], action, _utc_timestamp(), json.dumps(record)))
     record_activity(c, g.current_user, action, 'requirement', rid, f'REQ-{rid}: {action}')
@@ -103,9 +106,12 @@ def change_requirement(rid, data, submit=False):
                     and answers == current['analysis_summary'].get('clarifications','')):
                     return {'requirement': _get_requirement_detail(c, rid)}
                 snapshot(c, rid, 'before_material_edit', current)
+                from services.case_service import ensure_version
+                for case in c.execute('SELECT * FROM test_scenarios WHERE requirement_id=? AND archived=0',(rid,)).fetchall():
+                    ensure_version(c,case)
                 summary = dict(current['analysis_summary'])
                 summary.update(clarifications=answers, stale=True)
-                c.execute("UPDATE requirements SET title=?,description=?,requirement_type=?,priority=?,user_priority=?,review_status='Draft',revision=revision+1,updated_at=?,source='original',needs_confirmation=0,risk_score=NULL,risk_level=NULL,suggested_priority=NULL,analysis_summary=? WHERE id=?",
+                c.execute("UPDATE requirements SET title=?,description=?,requirement_type=?,priority=?,user_priority=?,review_status='Draft',revision=revision+1,content_revision=content_revision+1,updated_at=?,source='original',needs_confirmation=0,criteria_review_required=1,reviewed_content_revision=NULL,reviewed_by_user_id=NULL,reviewed_at=NULL,reviewer_notes='',risk_score=NULL,risk_level=NULL,suggested_priority=NULL,analysis_summary=? WHERE id=?",
                           (title.strip(), description.strip(), data['requirement_type'],data['priority'],data['priority'],_utc_timestamp(),json.dumps(summary),rid))
                 # Preserve provenance and codes of unchanged criteria, including reordering.
                 old = list(current['acceptance_criteria'])
@@ -124,7 +130,8 @@ def change_requirement(rid, data, submit=False):
                         code = f'AC-{next_code:03d}'
                         reserved.add(code)
                         records.append((rid, code, text, 'original', 0, '[]'))
-                c.execute("UPDATE test_scenarios SET criterion_codes='[]',needs_confirmation=1 WHERE requirement_id=?", (rid,))
+                # Links remain attached to their original requirement version.
+                # Current coverage excludes stale cases until an Engineer rebases them.
                 c.execute('DELETE FROM requirement_acceptance_criteria WHERE requirement_id=?', (rid,))
                 c.executemany('INSERT INTO requirement_acceptance_criteria(requirement_id,criterion_code,description,source,needs_confirmation,introduced_values) VALUES(?,?,?,?,?,?)', records)
             updated = _get_requirement_detail(c, rid)
@@ -137,36 +144,9 @@ def change_requirement(rid, data, submit=False):
 
 
 def revise_scenario(rid, sid, data):
-    from app import get_connection
-    from services.requirement_helpers import _get_requirement_detail
-    from validators.requirement_validator import _validate_analysis_payload
-    if not isinstance(data, dict):
-        abort(400)
-    error = _validate_analysis_payload({'test_scenarios': [{**data, 'id': data.get('scenario_code', 'SC-001')}]})
-    if error:
-        abort(400, description=error)
-    c = get_connection()
-    try:
-        with c:
-            row = locked_requirement(c, rid, data)
-            if row['created_by_user_id'] == g.current_user['id']:
-                abort(403, description='Authors cannot review their own requirement.')
-            if row['review_status'] not in ('Ready for Review','In Review','Pending'):
-                abort(409, description='Start a submitted review before revising scenarios.')
-            codes = data.get('criterion_codes')
-            valid = {r[0] for r in c.execute('SELECT criterion_code FROM requirement_acceptance_criteria WHERE requirement_id=?',(rid,))}
-            if not isinstance(codes, list) or any(not isinstance(v,str) or v not in valid for v in codes):
-                abort(400, description='Link only acceptance criteria belonging to this requirement.')
-            if not c.execute('SELECT 1 FROM test_scenarios WHERE id=? AND requirement_id=?', (sid,rid)).fetchone():
-                abort(404)
-            snapshot(c,rid,'before_scenario_edit')
-            c.execute("UPDATE test_scenarios SET category=?,title=?,preconditions=?,test_steps=?,expected_result=?,criterion_codes=?,source='original',needs_confirmation=0 WHERE id=? AND requirement_id=?",
-                      (data['category'],data['title'],json.dumps(data.get('preconditions',[])),json.dumps(data.get('test_steps',[])),data['expected_result'],json.dumps(codes),sid,rid))
-            c.execute("UPDATE requirements SET revision=revision+1,review_status='In Review',updated_at=? WHERE id=?",(_utc_timestamp(),rid))
-            snapshot(c,rid,'scenario_revised')
-            return {'requirement':_get_requirement_detail(c,rid)}
-    finally:
-        c.close()
+    from services.case_service import write_case
+    return write_case(rid, sid, data, legacy=True)
+
 
 
 def save_analysis(rid, data):
@@ -184,25 +164,36 @@ def save_analysis(rid, data):
         with c:
             row = locked_requirement(c, rid, data)
             # Bind acceptance to the text that was analyzed, not subsequent edits.
-            from services.analysis_receipts import verify_analysis
+            from services.analysis_receipts import verify_analysis, bound_input, edited_draft
+            from services.project_service import lock_project
             current = _get_requirement_detail(c, rid, include_history=False)
             inputs = dict(title=row['title'], description=row['description'], requirement_type=row['requirement_type'], priority=row['user_priority'] or row['priority'], clarifications=current['analysis_summary'].get('clarifications', ''))
-            if data.get('title') != row['title'] or data.get('description') != row['description'] or not verify_analysis(analysis, inputs):
+            project = lock_project(c)
+            if data.get('title') != row['title'] or data.get('description') != row['description'] or not verify_analysis(analysis, bound_input(c, inputs, row, project)):
                 abort(409, description='Save text edits, then analyze the saved revision.')
+            analysis = edited_draft(analysis, data.get('analysis_edits'))
             snapshot(c,rid,'before_analysis_acceptance', current)
             summary = {key:value for key,value in analysis.items() if key not in ('test_scenarios','acceptance_criteria')}
             old = current['analysis_summary']
             summary['clarifications'] = old.get('clarifications','')
-            for table in ('requirement_acceptance_criteria','test_scenarios','requirement_assumptions'):
+            summary['accepted_at_revision'] = row['revision'] + 1
+            from services.case_service import archive_cases, register_generated_cases
+            archive_cases(c,rid)
+            for table in ('requirement_acceptance_criteria','requirement_assumptions'):
                 c.execute(f'DELETE FROM {table} WHERE requirement_id=?',(rid,))
-            c.executemany("INSERT INTO requirement_acceptance_criteria(requirement_id,criterion_code,description,source,needs_confirmation) VALUES(?,?,?,'ai_suggestion',1)",
-                          [(rid,f'AC-{i:03d}',v) for i,v in enumerate(analysis['acceptance_criteria'],1)])
-            c.executemany("INSERT INTO test_scenarios(requirement_id,scenario_code,category,title,preconditions,test_steps,expected_result,criterion_codes,source,needs_confirmation) VALUES(?,?,?,?,?,?,?,?,'ai_suggestion',1)",
-                          [(rid,f'SC-{i:03d}',v['category'],v['title'],json.dumps(v['preconditions']),json.dumps(v['test_steps']),v['expected_result'],json.dumps(v['criterion_codes'])) for i,v in enumerate(analysis['test_scenarios'],1)])
-            c.executemany("INSERT INTO requirement_assumptions(requirement_id,assumption_code,description,source,needs_confirmation) VALUES(?,?,?,'ai_assumption',1)",
-                          [(rid,f'AS-{i:03d}',v) for i,v in enumerate(analysis['assumptions'],1)])
-            c.execute("UPDATE requirements SET analysis_summary=?,risk_score=NULL,risk_level=?,suggested_priority=?,review_status='Draft',revision=revision+1,updated_at=? WHERE id=?",
+            human_edits = analysis.get('human_edits', {})
+            existing_case_ids = {item[0] for item in c.execute('SELECT id FROM test_scenarios WHERE requirement_id=?',(rid,))}
+            import uuid
+            generation_code = uuid.uuid4().hex
+            c.executemany("INSERT INTO requirement_acceptance_criteria(requirement_id,criterion_code,description,source,needs_confirmation) VALUES(?,?,?,?,1)",
+                          [(rid,f'AC-{i:03d}',v,'original' if 'acceptance_criteria' in human_edits else 'ai_suggestion') for i,v in enumerate(analysis['acceptance_criteria'],1)])
+            c.executemany("INSERT INTO test_scenarios(requirement_id,scenario_code,category,title,preconditions,test_steps,expected_result,criterion_codes,source,needs_confirmation) VALUES(?,?,?,?,?,?,?,?,?,1)",
+                          [(rid,f'SC-{generation_code}-{i:03d}',v['category'],v['title'],json.dumps(v['preconditions']),json.dumps(v['test_steps']),v['expected_result'],json.dumps(v['criterion_codes']),'original' if 'test_scenarios' in human_edits else 'ai_suggestion') for i,v in enumerate(analysis['test_scenarios'],1)])
+            c.executemany("INSERT INTO requirement_assumptions(requirement_id,assumption_code,description,source,needs_confirmation) VALUES(?,?,?,?,1)",
+                          [(rid,f'AS-{i:03d}',v,'original' if 'assumptions' in human_edits else 'ai_assumption') for i,v in enumerate(analysis['assumptions'],1)])
+            c.execute("UPDATE requirements SET analysis_summary=?,risk_score=NULL,risk_level=?,suggested_priority=?,review_status='Draft',revision=revision+1,content_revision=content_revision+1,criteria_review_required=1,reviewed_content_revision=NULL,reviewed_by_user_id=NULL,reviewed_at=NULL,reviewer_notes='',updated_at=? WHERE id=?",
                       (json.dumps(summary),analysis['risk_level'],analysis['suggested_priority'],_utc_timestamp(),rid))
+            register_generated_cases(c,rid,{item[0] for item in c.execute('SELECT id FROM test_scenarios WHERE requirement_id=?',(rid,))} - existing_case_ids)
             snapshot(c,rid,'ai_analysis_accepted')
             return {'requirement':_get_requirement_detail(c,rid)}
     finally:

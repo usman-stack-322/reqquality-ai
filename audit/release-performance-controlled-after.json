@@ -1,0 +1,97 @@
+{
+  "metric_reuse": true,
+  "environment": {
+    "os": "Windows",
+    "release": "11",
+    "machine": "AMD64",
+    "logical_cpus": 8,
+    "python": "3.14.7",
+    "sqlite": "3.50.4",
+    "flask": "3.1.3"
+  },
+  "dataset": {
+    "requirements": 100,
+    "test_cases": 199,
+    "executions": 0,
+    "bugs": 0,
+    "synthetic_users": 34
+  },
+  "transport": "Flask test client, sequential single process, temporary local SQLite; initialized schema. Not browser/network/PG or true process-cold timings.",
+  "percentile": "Nearest rank p95 of 30/40 observations; descriptive sample tail, not production SLA evidence.",
+  "requests": {
+    "dashboard": {
+      "n": 40,
+      "median_ms": 9.59,
+      "p95_ms": 14.32,
+      "first_ms": 21.94
+    },
+    "admin_dashboard": {
+      "n": 40,
+      "median_ms": 15.11,
+      "p95_ms": 27.23,
+      "first_ms": 14.16
+    },
+    "detail": {
+      "n": 40,
+      "median_ms": 6.9,
+      "p95_ms": 10.62,
+      "first_ms": 11.8
+    },
+    "login": {
+      "n": 30,
+      "median_ms": 255.04,
+      "p95_ms": 357.23,
+      "first_ms": 267.65
+    },
+    "material_save": {
+      "n": 30,
+      "median_ms": 50.62,
+      "p95_ms": 76.42,
+      "first_ms": 51.51
+    }
+  },
+  "login_stages_ms": {
+    "connect": {
+      "n": 30,
+      "median_ms": 3.69,
+      "p95_ms": 5.08,
+      "first_ms": 0.85
+    },
+    "user_query": {
+      "n": 30,
+      "median_ms": 0.5,
+      "p95_ms": 0.69,
+      "first_ms": 0.42
+    },
+    "password": {
+      "n": 30,
+      "median_ms": 210.57,
+      "p95_ms": 272.47,
+      "first_ms": 223.07
+    },
+    "permissions": {
+      "n": 30,
+      "median_ms": 0.58,
+      "p95_ms": 0.85,
+      "first_ms": 0.62
+    },
+    "rate_limit": {
+      "n": 30,
+      "median_ms": 21.24,
+      "p95_ms": 29.0,
+      "first_ms": 20.47
+    },
+    "tokens": {
+      "n": 30,
+      "median_ms": 18.92,
+      "p95_ms": 21.97,
+      "first_ms": 19.3
+    },
+    "total": {
+      "n": 30,
+      "median_ms": 252.77,
+      "p95_ms": 354.74,
+      "first_ms": 265.27
+    }
+  }
+}

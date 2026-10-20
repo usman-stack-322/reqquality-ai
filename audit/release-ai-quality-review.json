@@ -1,0 +1,42 @@
+{
+  "provider": "REAL",
+  "rubric": "backend/evaluation/requirement_cases.json",
+  "reviewer": "Codex source/output inspection, not stakeholder sign-off",
+  "results": [
+    {
+      "case": "clear",
+      "assessment": "needs correction",
+      "finding": "Facts are preserved, but non-librarian archival denial is an unsupported extra permission rule; optional implementation details are overreported as missing facts."
+    },
+    {
+      "case": "vague",
+      "assessment": "satisfactory on this rubric",
+      "finding": "No invented numerical targets; dependent criteria/case remain explicitly blocked."
+    },
+    {
+      "case": "contradictory",
+      "assessment": "satisfactory on this rubric",
+      "finding": "Conflict remains unresolved; no policy precedence selected."
+    },
+    {
+      "case": "functional",
+      "assessment": "needs correction",
+      "finding": "Ownership is preserved, but a supplied ownership relationship is unnecessarily flagged as unspecified implementation association. AC text also redundantly contains assigned codes."
+    },
+    {
+      "case": "security",
+      "assessment": "not graded",
+      "finding": "Standalone evaluation transport failure. Later real API generation/persistence succeeded, but that transient fixture output was not retained for semantic grading."
+    },
+    {
+      "case": "performance_missing",
+      "assessment": "satisfactory on this rubric",
+      "finding": "Asks for load, percentile and response targets, with no invented acceptance thresholds."
+    },
+    {
+      "case": "performance_clear",
+      "assessment": "satisfactory with stakeholder review",
+      "finding": "Preserves 200 users, 95%, 2 seconds and 30 minutes. Operational setup questions are retained separately; risk rationale remains an opinion."
+    }
+  ]
+}

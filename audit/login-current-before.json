@@ -1,0 +1,98 @@
+[
+  {
+    "stage": "runtime",
+    "executable": "C:\\Users\\ua589\\ReqQuality AI\\backend\\.venv\\Scripts\\python.exe",
+    "cwd": "C:\\Users\\ua589\\ReqQuality AI\\backend",
+    "app_module": "C:\\Users\\ua589\\ReqQuality AI\\backend\\app.py",
+    "database_backend": "postgres",
+    "config_source": "backend/.env",
+    "matches_backend_env": true,
+    "inherited_database_url_present": false
+  },
+  {
+    "stage": "configuration",
+    "success": true,
+    "provider": "Neon",
+    "pooled": true,
+    "port": 5432,
+    "sslmode": "require"
+  },
+  {
+    "stage": "dns",
+    "success": true,
+    "addresses": 3,
+    "elapsed_ms": 352.6
+  },
+  {
+    "stage": "tcp_tls",
+    "success": false,
+    "results": [
+      {
+        "address_index": 0,
+        "success": false,
+        "elapsed_ms": 3.05,
+        "exception_type": "PermissionError",
+        "sqlstate": null,
+        "category": "network_access_denied",
+        "frames": [
+          "diagnose_login.py:74:tcp_tls",
+          "socket.py:874:create_connection",
+          "socket.py:859:create_connection"
+        ]
+      },
+      {
+        "address_index": 1,
+        "success": false,
+        "elapsed_ms": 4.31,
+        "exception_type": "PermissionError",
+        "sqlstate": null,
+        "category": "network_access_denied",
+        "frames": [
+          "diagnose_login.py:74:tcp_tls",
+          "socket.py:874:create_connection",
+          "socket.py:859:create_connection"
+        ]
+      },
+      {
+        "address_index": 2,
+        "success": false,
+        "elapsed_ms": 3.36,
+        "exception_type": "PermissionError",
+        "sqlstate": null,
+        "category": "network_access_denied",
+        "frames": [
+          "diagnose_login.py:74:tcp_tls",
+          "socket.py:874:create_connection",
+          "socket.py:859:create_connection"
+        ]
+      }
+    ]
+  },
+  {
+    "stage": "postgres_connect_authentication",
+    "success": false,
+    "elapsed_ms": 78.26,
+    "exception_type": "OperationalError",
+    "sqlstate": null,
+    "category": "network_access_denied",
+    "frames": [
+      "diagnose_login.py:91:main",
+      "connection.py:134:connect"
+    ]
+  },
+  {
+    "stage": "select_1",
+    "success": false,
+    "blocked_by": "postgres_connect_authentication; no database session established"
+  },
+  {
+    "stage": "required_schema",
+    "success": false,
+    "blocked_by": "postgres_connect_authentication; no database session established"
+  },
+  {
+    "stage": "login_user_lookup",
+    "success": false,
+    "blocked_by": "postgres_connect_authentication; no database session established"
+  }
+]

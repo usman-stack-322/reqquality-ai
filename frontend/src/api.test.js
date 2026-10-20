@@ -158,3 +158,15 @@ test('caller cancellation aborts once without replaying a write', async () => {
   await assert.rejects(fetch('/api/requirements', { method:'POST', signal:controller.signal }), /Navigation cancelled/);
   assert.equal(calls, 1);
 });
+
+test('database unavailable never starts refresh or automatically replays login', async () => {
+  const calls = [];
+  const fetch = await fresh(async url => {
+    calls.push(url);
+    return json({ code: 'database_unavailable', error: 'Temporarily unavailable' }, 503);
+  });
+  for (const path of ['/api/auth/me', '/api/auth/login', '/api/dashboard']) {
+    assert.equal((await fetch(path, path.endsWith('login') ? { method: 'POST' } : {})).status, 503);
+  }
+  assert.deepEqual(calls, ['/api/auth/me', '/api/auth/login', '/api/dashboard']);
+});

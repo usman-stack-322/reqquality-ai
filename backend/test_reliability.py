@@ -83,7 +83,7 @@ class ReliabilityTests(unittest.TestCase):
         answers = 'Locked accounts are rejected, confirmed by the stakeholder.'
         r = self.analyst.patch(f"/api/requirements/{r['id']}", json={**self.payload, 'revision': r['revision'], 'acceptance_criteria': [v['description'] for v in r['acceptance_criteria']], 'clarifications': answers}, headers=fixtures.HEADERS).json['requirement']
         with patch('analyzers.ai_analyzer.analyze_with_llm', side_effect=lambda _: dict(status='success', analysis=valid_analysis())) as provider:
-            analysis = self.post('/api/analyze-requirement', {**self.payload, 'clarifications': answers}).json
+            analysis = self.post('/api/analyze-requirement', {**self.payload, 'clarifications': answers, 'requirement_id':r['id'], 'requirement_revision':r['revision']}).json
             self.assertEqual(provider.call_args.args[0]['clarifications'], answers)
         result = self.analyst.patch(f"/api/requirements/{r['id']}/analysis", json={'revision': r['revision'], 'title': r['title'], 'description': r['description'], 'analysis': analysis}, headers=fixtures.HEADERS)
         self.assertEqual(result.status_code, 200, result.json)

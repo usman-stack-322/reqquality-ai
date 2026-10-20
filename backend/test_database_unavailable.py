@@ -1,7 +1,7 @@
 """Outages return safe errors without authenticating or discarding sessions."""
 import unittest
 from unittest.mock import patch
-from psycopg_pool import PoolTimeout
+from psycopg_pool import PoolTimeout, TooManyRequests, PoolClosed
 import psycopg
 import app
 import test_admin_dashboard as fixtures
@@ -19,7 +19,10 @@ class DatabaseUnavailableTests(unittest.TestCase):
         self.client = self.fixture.admin
 
     def test_login_outage_is_not_invalid_credentials_and_leaks_no_details(self):
-        for exception in [PoolTimeout('private connection info'), psycopg.OperationalError('private connection info')]:
+        for exception in [PoolTimeout('private connection info'), TooManyRequests('private connection info'), PoolClosed('private connection info'),
+                          psycopg.OperationalError('private connection info'),
+                          psycopg.errors.QueryCanceled('private connection info'),
+                          psycopg.errors.LockNotAvailable('private connection info')]:
             with patch('services.auth_service.get_connection', side_effect=exception), self.assertLogs(app.app.logger, level='ERROR') as logs:
                 response = self.client.post('/api/auth/login', json={'email': 'manager@example.com', 'password': fixtures.PASSWORD})
             self.assertEqual(response.status_code, 503)
@@ -41,3 +44,12 @@ class DatabaseUnavailableTests(unittest.TestCase):
         response = self.client.post('/api/auth/login', json={'email': 'manager@example.com', 'password': 'wrong'})
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json['error'], 'Email or password is incorrect.')
+
+    def test_query_timeout_releases_connection_and_preserves_existing_session(self):
+        c = app.get_connection()
+        with patch('services.auth_service.get_connection', return_value=c), patch.object(c, 'close', wraps=c.close) as close, patch.object(c, 'execute', side_effect=psycopg.errors.QueryCanceled('private query text')):
+            response = self.client.post('/api/auth/login', json={'email': 'manager@example.com', 'password': fixtures.PASSWORD})
+        self.assertEqual(response.status_code, 503)
+        close.assert_called_once()
+        self.assertFalse(response.headers.getlist('Set-Cookie'))
+        self.assertTrue(self.client.get('/api/auth/me').json['authenticated'])

@@ -1,0 +1,37 @@
+[
+  {
+    "case": "clear",
+    "request_ms": 18595.12,
+    "status": 200,
+    "provider": "REAL",
+    "application_database": "disposable SQLite",
+    "original_unchanged": true,
+    "persisted_draft": true,
+    "case_count": 3,
+    "clarification_flagged_cases": 0
+  },
+  {
+    "case": "security",
+    "request_ms": 9227.66,
+    "status": 200,
+    "provider": "REAL",
+    "application_database": "disposable SQLite",
+    "original_unchanged": true,
+    "persisted_draft": true,
+    "case_count": 3,
+    "clarification_flagged_cases": 1,
+    "unresolved_pass_rejected": 409
+  },
+  {
+    "case": "performance_missing",
+    "request_ms": 9556.98,
+    "status": 200,
+    "provider": "REAL",
+    "application_database": "disposable SQLite",
+    "original_unchanged": true,
+    "persisted_draft": true,
+    "case_count": 1,
+    "clarification_flagged_cases": 1,
+    "unresolved_pass_rejected": 409
+  }
+]

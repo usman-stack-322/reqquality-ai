@@ -76,9 +76,10 @@ def login(payload):
         g.login_timings = timings
         LOGGER.info(
             'login timing total_ms=%.1f connect_ms=%.1f user_query_ms=%.1f '
-            'password_ms=%.1f permissions_ms=%.1f',
+            'password_ms=%.1f permissions_ms=%.1f rate_limit_ms=%.1f tokens_ms=%.1f',
             (perf_counter() - started) * 1000, timings['connect'],
             timings['user_query'], timings['password'], timings['permissions'],
+            timings.get('rate_limit', 0), timings.get('tokens', 0),
         )
     session.clear()
     return response_payload(user=public_user, csrf_token=csrf)

@@ -94,11 +94,13 @@ def _content_paragraph(item, review_status, style, default_source=None):
         needs_confirmation = False
 
     labels = []
+    if isinstance(item,dict) and item.get('needs_review'):
+        labels.append('Needs Review for Current Version')
     if source:
         labels.append(SOURCE_LABELS.get(source, "Historical analysis"))
     if needs_confirmation:
         labels.append("Needs Confirmation")
-    elif source == "confirmed" or review_status == "Approved":
+    elif source == "confirmed":
         labels.append("Confirmed")
     prefix = " ".join(f"[{label}]" for label in dict.fromkeys(labels))
     content = f"{prefix} {text}" if prefix else str(text)
@@ -197,7 +199,7 @@ def build_requirement_pdf(requirement):
         Paragraph(f"Requirement Report | #{int(requirement['id'])}", styles["title"]),
         _paragraph(f"Generated {_generated_at()}", styles["subtitle"]),
     ]
-    review_status = requirement.get("review_status", "Pending")
+    review_status = requirement.get("sqa_review_status", requirement.get("review_status", "Pending"))
     analysis = requirement.get("analysis_summary") or {}
     labeled = analysis.get("labeled_analysis") or {}
     story.append(_key_value_table([
@@ -213,8 +215,8 @@ def build_requirement_pdf(requirement):
     _section(story, "Analysis provenance", styles)
     version = analysis.get('analysis_version', 2)
     story.append(_paragraph(f"AI analysis (v{version if type(version) is int else 2})" if analysis.get("analysis_mode") == "ai_only" else "Historical analysis", styles["body"]))
-    if analysis.get('stale'):
-        story.append(_paragraph('Analysis describes an earlier revision.', styles['body']))
+    if analysis.get('stale') or requirement.get('analysis_outdated'):
+        story.append(_paragraph('Analysis describes an earlier revision or outdated context/configuration; review is required.', styles['body']))
     for reason in analysis.get('risk_reasons', []) + analysis.get('priority_reasons', []):
         story.append(_paragraph(reason, styles['body']))
     _section(story, "Original Requirement", styles)
@@ -224,10 +226,13 @@ def build_requirement_pdf(requirement):
         ("Ambiguity Findings", "ambiguity_issues", "rule_based"),
         ("Conflicting Statements", "conflict_issues", "ai_suggestion"),
         ("Missing Information", "missing_information", "rule_based"),
+        ("Clarification Questions", "clarification_questions", "ai_suggestion"),
         ("Testability Findings", "testability_issues", "rule_based"),
         ("Assumptions", "assumptions", "ai_assumption"),
     ):
         _section(story, title, styles)
+        if analysis.get('analysis_mode') == 'ai_only' and default_source == 'rule_based':
+            default_source = 'ai_suggestion'
         items = labeled.get(key) or analysis.get(key) or []
         story.extend(_item_list(items, review_status, styles, default_source))
 
@@ -260,6 +265,9 @@ def build_requirement_pdf(requirement):
         story.append(_paragraph("No linked test scenarios recorded.", styles["small"]))
     for scenario in scenarios:
         scenario_title = f"{scenario.get('scenario_code', '')} | {scenario.get('category', '')}: {scenario.get('title', '')}"
+        scenario_title += f" | Requirement version {scenario.get('requirement_revision', 'unknown')}"
+        if scenario.get('requirement_revision')!=requirement.get('content_revision'):
+            scenario_title += ' | Historical/stale - requires rebase and review'
         story.append(_content_paragraph(
             {**scenario, "text": scenario_title},
             review_status,
@@ -293,8 +301,7 @@ def build_requirement_pdf(requirement):
             styles["body"],
         )),
         ("Traceability", _paragraph(
-            "Criteria and scenarios are linked to this requirement record." if criteria and scenarios
-            else "Traceability is incomplete: one or more linked verification artifacts are missing.",
+            "See versioned evidence below. Historical cases do not validate the current source; recorded links do not prove complete test coverage.",
             styles["body"],
         )),
     ], styles))
@@ -306,6 +313,7 @@ def build_requirement_pdf(requirement):
         ("Reviewer Name", _paragraph(requirement.get("reviewed_by_name") or "Not assigned", styles["body"])),
         ("Review Timestamp", _paragraph(requirement.get("reviewed_at") or "Not reviewed", styles["body"])),
     ], styles))
+    _integrated_requirement(story,requirement,styles)
     return _build_pdf(story, f"ReqQuality AI Requirement {requirement.get('id')}")
 
 
@@ -320,13 +328,13 @@ def build_project_summary_pdf(summary):
         ("Total Requirements", _paragraph(summary["total_requirements"], styles["body"])),
         ("Average Quality Risk Score", _paragraph(f"{summary['average_risk_score']}/100", styles["body"])),
         ("Total Test Scenarios", _paragraph(summary["total_test_scenarios"], styles["body"])),
-        ("Traceability Coverage", _paragraph(f"{summary['traceability_coverage_percent']}% ({summary['traceable_requirement_count']} requirements)", styles["body"])),
+        ("All criteria explicitly linked", _paragraph(f"{summary['traceability_coverage_percent']}% ({summary['traceable_requirement_count']} requirements); recorded links, not proof of complete coverage", styles["body"])),
     ], styles))
 
     _section(story, "Review Status Distribution", styles)
     story.append(_key_value_table([
         (status, _paragraph(summary["review_counts"].get(status, 0), styles["body"]))
-        for status in ("Draft", "Ready for Review", "Pending", "In Review", "Approved", "Needs Revision")
+        for status in ("Pending", "In Review", "Approved", "Needs Revision")
     ], styles))
 
     _section(story, "Risk Distribution", styles)
@@ -374,4 +382,63 @@ def build_project_summary_pdf(summary):
     else:
         story.append(_paragraph("No high-attention requirements.", styles["small"]))
 
+    integrated=summary.get('integrated')
+    if integrated:
+        story.append(PageBreak())
+        _section(story,'Current-version metrics and definitions',styles)
+        for key in ('review_status_counts','requirements_with_linked_cases','requirements_without_linked_cases','latest_execution_counts','open_bugs_by_severity','items_needing_review_count'):
+            story.append(_paragraph(f'{key}: {integrated[key]}',styles['body']))
+        for value in integrated['metric_definitions'].values(): story.append(_paragraph(value,styles['small']))
+    for requirement in summary.get('requirements',[]):
+        story.append(PageBreak())
+        _integrated_requirement(story,requirement,styles)
     return _build_pdf(story, "ReqQuality AI Project Quality Summary")
+
+
+def _integrated_requirement(story,r,styles):
+    """Use flowing paragraphs so long user content can split safely across pages."""
+    data=r.get('integrated')
+    if not data: return
+    _section(story,f"REQ-{r['id']} - Versioned traceability and Manual execution",styles)
+    def line(value): story.append(_paragraph(value,styles['body']))
+    line(f"Project {data['project_id']} | Current content version {data['current_content_revision']} | {r['title']}")
+    line(f"SQA review: {data['sqa_review_status']} | Authoring state: {data['authoring_status']} | Reviewed version: {r.get('reviewed_content_revision') or 'not verified'}")
+    line('Recorded criterion links do not prove complete coverage. Only Pass is passed; Not Run and Blocked are not passed. Historical cases/results do not validate a new requirement version.')
+    for version in data['versions']:
+        source=version['snapshot']
+        _section(story,f"Requirement version {version['content_revision']} ({'current' if version['current'] else 'historical'})",styles)
+        line(f"Recorded {version['recorded_at']} | Actor {version['actor_id']} | {version['origin']}")
+        line(source.get('description',''))
+        for a in source.get('acceptance_criteria') or []: line(f"{a['criterion_code']}: {a['description']}")
+    for case in data['test_cases']:
+        _section(story,f"TC-{case['id']}: {case['title']}",styles)
+        line(f"Requirement version {case['requirement_revision']} | Case revision {case['case_revision']} | {case['review_status']} | {'archived' if case['archived'] else 'active'} | {case['test_type']} | Priority {case['priority']}")
+        line('Criterion links: '+', '.join(case['criterion_codes']))
+        line('Preconditions: '+'; '.join(case['preconditions']))
+        line('Test data: '+case['test_data'])
+        for i,step in enumerate(case['test_steps'],1): line(f'{i}. {step}')
+        line('Expected: '+case['expected_result'])
+        line('Clarification: '+(case['clarification_notes'] or 'None recorded'))
+    for version in data['case_versions']:
+        case=version['snapshot']
+        _section(story,f"Case snapshot #{version['id']} - TC-{version['scenario_id']} revision {version['case_revision']}",styles)
+        line(f"Requirement version {version['requirement_revision']} | {case['title']} | Criteria: {', '.join(case['criterion_codes'])}")
+        line('Preconditions: '+'; '.join(case['preconditions'])+' | Test data: '+case['test_data'])
+        for i,step in enumerate(case['test_steps'],1): line(f'{i}. {step}')
+        line('Expected: '+case['expected_result'])
+    for e in data['executions']:
+        _section(story,f"Manual execution #{e['id']}: {e['status']}",styles)
+        line(f"TC-{e['scenario_id']} | Case snapshot #{e['case_version_id']} | Requirement version {e['requirement_revision']} | {e['tester_name']} (User {e['tester_id']}) | {e['executed_at']}")
+        for key in ('actual_result','blocked_reason','environment','build','notes','evidence_reference'): line(f'{key}: {e[key]}')
+    for b in data['bugs']:
+        _section(story,f"{b['stable_id']}: {b['title']}",styles)
+        line(f"TC-{b['scenario_id']} | Failed execution #{b['failed_execution_id']} | Status {b['status']} | Severity {b['severity']} | Priority {b['priority']} | Reporter {b['reporter_name']} (User {b['reporter_id']}) | Created {b['created_at']} | Updated {b['updated_at']}")
+        line('Preconditions: '+'; '.join(b['preconditions']))
+        for i,step in enumerate(b['steps_to_reproduce'],1): line(f'{i}. {step}')
+        for key in ('expected_result','actual_result','environment','build','evidence_reference','resolution_reason','last_retest_execution_id'): line(f'{key}: {b[key]}')
+    for h in data['bug_history']:
+        line(f"BUG-{h['bug_id']} history #{h['id']}: {h['from_status'] or 'Created'} -> {h['to_status']} | {h['actor_name']} | {h['recorded_at']} | Retest {h['retest_execution_id']} | {h['note']}")
+    _section(story,'Version-bound SQA review history',styles)
+    if not data['reviews']: line('No version-verified review record. Legacy review metadata, if present above, has unknown version.')
+    for review in data['reviews']:
+        line(f"Review #{review['id']} | Requirement version {review['content_revision']} | {review['status']} | {review['reviewer_name']} (User {review['reviewer_id']}) | {review['reviewed_at']} | {review['notes']} | Evidence: {review['snapshot']}")

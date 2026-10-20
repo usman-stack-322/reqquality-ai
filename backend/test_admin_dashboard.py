@@ -136,17 +136,19 @@ class ManagerTests(unittest.TestCase):
         self.criteria(third, 'AC-2')
         self.scenario(third, 'TS-2')
         data = self.dashboard()
-        self.assertEqual(data['summary'], dict(total=5, analyzed=4, pending_reviews=3, approved=1, high_risk=2, needs_revision=1, unassigned=2, overdue=1))
-        self.assertEqual(data['traceability'], dict(with_criteria=2, with_tests=2, reviewed=1, fully_traceable=2, missing_links=3, coverage=40.0))
+        # Raw legacy approval has no reviewed version; unversioned/unlinked cases
+        # cannot establish current traceability merely by existing.
+        self.assertEqual(data['summary'], dict(total=5, analyzed=4, pending_reviews=4, approved=0, high_risk=2, needs_revision=1, unassigned=2, overdue=1))
+        self.assertEqual(data['traceability'], dict(with_criteria=2, with_tests=0, reviewed=0, fully_traceable=0, missing_links=5, coverage=0.0))
         self.assertEqual(data['quality']['ambiguity'], 1)
         self.assertEqual(data['quality']['missing_information'], 1)
         self.assertFalse(data['conflicts_available'])
         self.assertEqual(data['attention'][0]['id'], first)
         self.assertEqual(data['pending_reviews'][0]['id'], first)
-        self.assertEqual(next(row for row in data['review_distribution'] if row['value']=='Pending')['percent'], 40)
+        self.assertEqual(next(row for row in data['review_distribution'] if row['value']=='Pending')['percent'], 60)
         self.assertEqual(data['unscored'], 1)
         engineer = next(row for row in data['reviewer_workload'] if row['id'] == 3)
-        self.assertEqual([engineer[key] for key in ('assigned', 'pending', 'completed', 'high_risk')], [2, 1, 1, 1])
+        self.assertEqual([engineer[key] for key in ('assigned', 'pending', 'completed', 'high_risk')], [2, 2, 0, 1])
 
     def test_filters_pagination_and_search(self):
         first = self.requirement(title='Payment audit', risk_level='High', risk_score=70, requirement_type='Business', assigned_reviewer_user_id=3)
@@ -155,7 +157,7 @@ class ManagerTests(unittest.TestCase):
         filters = [{'risk': 'high-critical'}, {'type': 'Business'}, {'reviewer': '3'}, {'q': 'PAYMENT'}, {'q': f'REQ-{first}'}, {'review': 'pending-reviews'}, {'quality': 'has_criteria'}, {'from': self.now.date().isoformat()}]
         for values in filters:
             with self.subTest(filters=values):
-                self.assertEqual(self.dashboard(**values)['summary']['total'], 1)
+                self.assertEqual(self.dashboard(**values)['summary']['total'], 2 if values=={'review':'pending-reviews'} else 1)
         response = self.admin.get('/api/admin/requirements?page_size=1&page=2')
         self.assertEqual(response.json['total'], 2)
         self.assertEqual(response.json['requirements'][0]['id'], first)

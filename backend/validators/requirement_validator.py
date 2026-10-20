@@ -5,7 +5,7 @@ def _validate_analysis_payload(analysis):
         return None
     if not isinstance(analysis, dict):
         return 'Analysis must be an object.'
-    for field in ('ambiguity_issues', 'missing_information', 'testability_issues', 'assumptions', 'edge_cases', 'risk_reasons'):
+    for field in ('ambiguity_issues', 'missing_information', 'clarification_questions', 'testability_issues', 'assumptions', 'edge_cases', 'risk_reasons'):
         values = analysis.get(field, [])
         if not isinstance(values, list) or any(not isinstance(value, str) for value in values):
             return f"Analysis {field.replace('_', ' ')} must be a list of strings."

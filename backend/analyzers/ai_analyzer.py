@@ -6,11 +6,11 @@ from analyzers.value_safety import find_introduced_values
 from middlewares.observability import record_timing
 
 
-def analyze_ai(title, description, requirement_type, priority, clarifications=''):
+def analyze_ai(title, description, requirement_type, priority, clarifications='', **scope):
     start = perf_counter()
     try:
         result = analyze_with_llm(dict(title=title, description=description,
-                                       requirement_type=requirement_type, priority=priority, clarifications=clarifications))
+                                       requirement_type=requirement_type, priority=priority, clarifications=clarifications, **scope))
     except Exception:
         result = {'status': 'api_error', 'analysis': None}
     finally:
@@ -20,10 +20,12 @@ def analyze_ai(title, description, requirement_type, priority, clarifications=''
     if result.get('status') != 'success' or not result.get('analysis'):
         category = result.get('status', 'api_error')
         reason = {'quota_exceeded': 'Gemini quota or rate limit reached.', 'network_error': 'Gemini timed out or could not be reached.', 'malformed_json': 'Gemini returned invalid or incomplete analysis.', 'model_unavailable': 'The configured Gemini model is unavailable.', 'missing_api_key': 'Gemini is not configured.', 'missing_model': 'A Gemini model is not configured.'}.get(category, 'Gemini analysis failed.')
+        if category == 'service_unavailable':
+            reason = 'Gemini is temporarily unavailable.'
         return {'status': 'failed', 'code': result.get('status', 'api_error'),
                 'retryable': True, 'error': reason + ' Your input is preserved. Please retry.'}
     analysis = result['analysis']
-    original = f'{title}\n{description}\n{clarifications}'
+    original = f'{title}\n{description}\n{clarifications}\n{scope.get("project_context", "")}'
     def label(text, source='ai_suggestion'):
         return dict(text=text, source=source, needs_confirmation=True,
                     introduced_values=find_introduced_values(text, original))

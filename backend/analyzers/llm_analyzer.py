@@ -1,6 +1,7 @@
 """Gemini-backed requirement analysis with safe, structured failures."""
 
 import json
+from copy import deepcopy
 import logging
 import os
 from pathlib import Path
@@ -12,12 +13,13 @@ PROJECT_ROOT = BACKEND_ROOT.parent
 load_dotenv(BACKEND_ROOT / ".env")
 load_dotenv(PROJECT_ROOT / ".env")
 LOGGER = logging.getLogger(__name__)
-ANALYSIS_VERSION = 3
+ANALYSIS_VERSION = 4
 
 LIST_FIELDS = (
     "ambiguity_issues",
     "conflict_issues",
     "missing_information",
+    "clarification_questions",
     "testability_issues",
     "assumptions",
     "edge_cases",
@@ -39,7 +41,7 @@ Assess ambiguity, missing information, testability, type, refinement, acceptance
 criteria and quality risk/priority, explaining each recommendation. Risk is a
 qualitative AI opinion, not a deterministic score or proven defect.
 Return meaningful scenarios linked to acceptance criteria using AC-001, AC-002
-in list order. Include only applicable categories; never fabricate boundary values.
+in list order. Include relevant positive, negative and boundary cases only when supported by supplied facts. Never fabricate boundary values or unspecified expected behavior; mark dependent cases BLOCKED pending clarification.
 Return JSON only with all requested fields. No markdown.
 
 Before writing, separate explicit facts from unknowns. Preserve the actors,
@@ -56,8 +58,9 @@ that depend on that decision must say 'BLOCKED pending clarification', identify
 the exact decision, and describe conditional outcomes without selecting a policy.
 Likewise, do not pretend 'defined thresholds' or 'established protocols' are
 testable when no definition exists. Preserve supplied measurable targets exactly.
-missing_information must contain direct questions only. Keep optional suggestions
-out of this field. Each acceptance_criteria item is plain text without an AC code
+missing_information must identify missing facts and undecided values without
+choosing them. clarification_questions must contain direct questions to resolve
+those gaps. Keep optional suggestions out of these fields. Each acceptance_criteria item is plain text without an AC code
 prefix; the application assigns AC-001 etc. Scenarios must link only those codes.
 If proposing any unsupported behavior, prefix that item UNCONFIRMED SUGGESTION.
 Risk and priority explanations must identify uncertainty and describe impact
@@ -72,6 +75,15 @@ Do not extend a notification requirement into responsibility for processing the
 underlying financial transaction. Do not invent a rationale for the user priority;
 if no business rationale is supplied, say it needs stakeholder confirmation.
 """.strip()
+
+
+def generation_configuration():
+    """Public generation identity. Never includes provider credentials."""
+    import hashlib
+    return dict(provider='gemini', model=os.getenv('GEMINI_MODEL', '').strip(),
+                analysis_version=ANALYSIS_VERSION, temperature=0.2, max_output_tokens=8192,
+                prompt_hash=hashlib.sha256(SYSTEM_INSTRUCTION.encode()).hexdigest(),
+                schema_hash=hashlib.sha256(json.dumps(RESPONSE_SCHEMA, sort_keys=True).encode()).hexdigest())
 
 STRING = {"type": "STRING"}
 STRINGS = {"type": "ARRAY", "items": STRING}
@@ -119,6 +131,8 @@ def _validate_analysis(value):
     analysis['type_explanation'] = value['type_explanation'].strip()
     if not analysis['risk_reasons'] or not analysis['priority_reasons'] or not analysis['acceptance_criteria']:
         return None
+    if analysis['missing_information'] and not analysis['clarification_questions']:
+        return None
     scenarios = value.get('test_scenarios')
     if not isinstance(scenarios, list) or not scenarios or len(scenarios) > 50:
         return None
@@ -150,7 +164,9 @@ def _error_status(error):
         return "model_unavailable"
     if code == 429 or "quota" in error_name or "resourceexhausted" in error_name:
         return "quota_exceeded"
-    if code in (408, 504) or any(word in error_name for word in ("timeout", "connect", "network")):
+    if code in (500, 502, 503):
+        return "service_unavailable"
+    if code in (408, 504) or any(word in error_name for word in ("timeout", "connect", "network", "readerror", "writeerror", "protocolerror")):
         return "network_error"
     if isinstance(error, (TypeError, ValueError)):
         return "sdk_usage_error"
@@ -205,7 +221,9 @@ def analyze_with_llm(requirement):
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_INSTRUCTION,
                 response_mime_type="application/json",
-                response_schema=RESPONSE_SCHEMA,
+                # The SDK normalizes dict schemas in place. Keep the public
+                # generation identity immutable across first/subsequent calls.
+                response_schema=deepcopy(RESPONSE_SCHEMA),
                 temperature=0.2,
                 max_output_tokens=8192,
             ),
@@ -217,7 +235,7 @@ def analyze_with_llm(requirement):
 
     try:
         parsed_response = json.loads(response.text or "")
-    except (json.JSONDecodeError, TypeError) as error:
+    except (ValueError, TypeError, AttributeError) as error:
         _log_status(model, "malformed_json", "malformed_json", error)
         return {"status": "malformed_json", "analysis": None}
 

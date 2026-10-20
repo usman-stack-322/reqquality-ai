@@ -23,6 +23,14 @@
   line-height: 1.6;
 }
 
+/* Integrated V1 evidence panels follow the existing report forest/beige palette. */
+.integrated-metrics, .integrated-review { background: #F4EFE6; color: #161A18; border: 1px solid #D8CEC0; border-radius: 12px; padding: 1.25rem; margin-block: 1.25rem; }
+.integrated-metrics h2, .integrated-metrics h3, .integrated-review h2, .integrated-review h3 { color: #173F35; }
+.integrated-metrics .metric-card, .integrated-review article { background: #FBF7F0; border-color: #3F765F; }
+.integrated-metrics a, .integrated-review a { color: #173F35; }
+.integrated-review details { border-block-start: 1px solid #D8CEC0; padding-block: .7rem; }
+.integrated-review label { display: grid; gap: .35rem; }
+
 * { box-sizing: border-box; }
 html, body, #root { min-height: 100vh; }
 body { margin: 0; }
@@ -560,3 +568,12 @@ textarea { line-height: 1.6; }
 .workflow-editor input:not([type="checkbox"]), .workflow-editor textarea, .workflow-editor select { width: 100%; box-sizing: border-box; padding: .65rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
 .workflow-editor button { margin: .4rem .5rem .4rem 0; }
 .workflow-editor details { margin-block: .8rem; }
+
+/* Detailed cases and append-only manual-execution forms. */
+.detailed-test-cases label { display: grid; gap: .35rem; margin: .8rem 0; }
+.detailed-test-cases label:has(input[type="checkbox"]) { display: flex; align-items: flex-start; gap: .5rem; }
+.detailed-test-cases textarea, .detailed-test-cases input:not([type="checkbox"]), .detailed-test-cases select { width: 100%; max-width: 100%; }
+.detailed-test-cases fieldset { min-width: 0; margin: 1rem 0; padding: 1rem; }
+.detailed-test-cases .card { margin-block: 1rem; overflow-wrap: anywhere; }
+.detailed-test-cases button { margin: .25rem .5rem .25rem 0; }
+.detailed-test-cases details { margin-block: .75rem; }

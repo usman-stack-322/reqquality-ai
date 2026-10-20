@@ -1,6 +1,8 @@
 import { apiFetch as fetch } from '../api.js';
 import React, { useEffect, useRef, useState } from 'react';
 import SourceBadges from '../components/SourceBadges';
+import AnalysisDraft from '../components/AnalysisDraft';
+import ProjectContext from '../components/ProjectContext';
 
 function LabeledItems({ items, defaultSource = 'ai_suggestion' }) {
   if (!items.length) return <p className="analysis-clear">No findings returned in this category.</p>;
@@ -39,6 +41,7 @@ export default function RequirementInput({ csrfToken }) {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [analysis, setAnalysis] = useState(null);
+  const [analysisEdits, setAnalysisEdits] = useState({});
   const [analysisError, setAnalysisError] = useState('');
 
   useEffect(() => {
@@ -66,7 +69,7 @@ export default function RequirementInput({ csrfToken }) {
     if (busy.current) return;
     if (analysis && !accepted) { setErrorMessage('Review and accept the analysis before saving it.'); return; }
     busy.current = true;
-    const body = JSON.stringify({title, description, requirement_type:type, priority, analysis});
+    const body = JSON.stringify({title, description, requirement_type:type, priority, analysis, analysis_edits:analysisEdits});
     if (submission.current?.body !== body) submission.current = {body, key:globalThis.crypto.randomUUID()};
     setIsSaving(true);
     setSuccessMessage('');
@@ -106,6 +109,7 @@ export default function RequirementInput({ csrfToken }) {
     }
     busy.current = true;
     setAccepted(false);
+    setAnalysisEdits({});
     setIsAnalyzing(true);
     setAnalysis(null);
     setAnalysisError('');
@@ -134,7 +138,7 @@ export default function RequirementInput({ csrfToken }) {
   }
 
   return (
-    <div className="requirement-page">
+    <div className="requirement-page"><ProjectContext />
       <section className="card requirement-form-card">
         <div className="requirement-heading">
           <p className="eyebrow">REQUIREMENTS</p>
@@ -232,7 +236,7 @@ export default function RequirementInput({ csrfToken }) {
               onClick={handleAnalyze}
               disabled={isAnalyzing || isSaving}
             >
-              {isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}
+              {isAnalyzing ? 'Analyzing...' : analysisError ? 'Retry AI analysis' : 'Analyze with AI'}
             </button>
             </div>
             {isAnalyzing && <p className="form-loading-status" role="status"><span className="loading-dot" aria-hidden="true" />Analyzing with Gemini. Your text stays here if you need to retry...</p>}
@@ -257,6 +261,7 @@ export default function RequirementInput({ csrfToken }) {
               {analysis.llm_status && ` | Gemini: ${analysis.llm_status.replaceAll('_', ' ')}`}
             </p>
           </div>
+          <AnalysisDraft analysis={analysis} edits={analysisEdits} onChange={value => {setAnalysisEdits(value); setAccepted(false);}} disabled={isSaving || isAnalyzing} />
           <label><input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)} /> I have reviewed these unconfirmed suggestions and accept saving them for review.</label>
           <p>Suggested type: {analysis.suggested_requirement_type}. {analysis.type_explanation}</p>
           <ul>{analysis.priority_reasons?.map(reason => <li key={reason}>{reason}</li>)}</ul>

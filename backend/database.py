@@ -7,15 +7,16 @@ from contextlib import contextmanager
 from threading import Lock
 import sqlite3
 from pathlib import Path
-from time import perf_counter
+from time import perf_counter, monotonic
 from middlewares.observability import record_timing
 
 import psycopg
-from psycopg_pool import ConnectionPool, PoolTimeout
+from psycopg_pool import ConnectionPool, PoolTimeout, TooManyRequests, PoolClosed
 from services.database_diagnostics import DiagnosticConnection, LOGGER
 
 # Connectivity failures are service outages, not failed credential checks.
-DATABASE_UNAVAILABLE_ERRORS = (psycopg.OperationalError, PoolTimeout)
+DATABASE_UNAVAILABLE_ERRORS = (psycopg.OperationalError, PoolTimeout, TooManyRequests, PoolClosed,
+                               psycopg.errors.QueryCanceled, psycopg.errors.LockNotAvailable)
 
 
 def _postgres_row_factory(cursor):
@@ -86,6 +87,7 @@ class DatabaseConnection:
             return
         self._released = True
         if self._pool is not None:
+            self._connection._reqquality_returned_at = monotonic()
             self._pool.putconn(self._connection)
         else:
             self._connection.close()
@@ -119,6 +121,14 @@ _POSTGRES_POOLS = {}
 _POOL_LOCK = Lock()
 
 
+def _check_idle_connection(connection):
+    # Warm checkouts avoid a network round trip. Validate sockets after inactivity
+    # so serverless freezes/provider idle disconnects don't fail the next login.
+    returned = getattr(connection, '_reqquality_returned_at', None)
+    if connection.closed or (returned is not None and monotonic() - returned >= 30):
+        ConnectionPool.check_connection(connection)
+
+
 def _get_postgres_pool(database_url):
     key = (os.getpid(), database_url)
     with _POOL_LOCK:
@@ -127,11 +137,15 @@ def _get_postgres_pool(database_url):
             pool = ConnectionPool(
                 conninfo=database_url,
                 connection_class=DiagnosticConnection,
+                # Do not inject startup timeout options: Neon/PgBouncer rejects
+                # them. Query budgets must be configured as database role defaults.
                 kwargs={'row_factory': _postgres_row_factory, 'connect_timeout': 3},
+                check=_check_idle_connection,
                 # No eager connection or five-minute background retry chain. A new
                 # request can try again after a failed attempt; no SQLite fallback.
                 min_size=0,
                 max_size=int(os.getenv('DB_POOL_MAX_SIZE', '5')),
+                max_waiting=20,
                 timeout=float(os.getenv('DB_POOL_TIMEOUT', '10')),
                 max_idle=60,
                 max_lifetime=1800,
@@ -175,6 +189,19 @@ def connect_database(database_url, sqlite_path):
             stats = pool.get_stats()
             LOGGER.error('database stage=pool_checkout pid=%s stats=%s', os.getpid(),
                          {key: stats.get(key) for key in ('connections_num', 'connections_errors', 'pool_size', 'pool_available', 'requests_waiting')})
+            # psycopg_pool retains expired waiter slots until a connection is
+            # delivered. With reconnect_timeout=0 an empty failed pool would
+            # eventually fill max_waiting permanently. Retire only pools with
+            # no sockets (including borrowed/connecting ones); never disrupt
+            # active transactions and never retry this request's writes.
+            retire = False
+            with _POOL_LOCK:
+                key = (os.getpid(), normalized_url)
+                if _POSTGRES_POOLS.get(key) is pool and pool.get_stats().get('pool_size') == 0:
+                    _POSTGRES_POOLS.pop(key)
+                    retire = True
+            if retire:
+                pool.close()
             raise
         return DatabaseConnection(connection, "postgres", pool=pool)
 

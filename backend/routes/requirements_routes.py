@@ -11,6 +11,14 @@ def register_routes(app):
 
     from flask import request, jsonify, abort, g
     from services.workflow_service import change_requirement, revise_scenario
+    @app.get('/api/requirements/<int:rid>/traceability')
+    @login_required
+    def requirement_traceability(rid):
+        from app import get_connection
+        from services.integrated_service import graph
+        c=get_connection()
+        try: return jsonify(graph(c,rid))
+        finally: c.close()
     @app.patch('/api/requirements/<int:rid>')
     @login_required
     @roles_required('Analyst')

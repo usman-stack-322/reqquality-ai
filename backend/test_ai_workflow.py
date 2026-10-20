@@ -11,7 +11,7 @@ from analyzers.llm_analyzer import _validate_analysis, analyze_with_llm
 
 def valid_analysis():
     return dict(ambiguity_issues=[], conflict_issues=[], missing_information=['What should happen if the account is locked?'],
-                testability_issues=[], assumptions=[], edge_cases=[],
+                testability_issues=[], assumptions=[], edge_cases=[], clarification_questions=['What should happen if the account is locked?'],
                 improved_requirement='Registered users can sign in with valid credentials.',
                 acceptance_criteria=['Valid credentials open the account.'],
                 risk_reasons=['Locked-account behavior is unspecified.'],
@@ -23,10 +23,30 @@ def valid_analysis():
 
 
 class AIContractTests(unittest.TestCase):
+    def test_real_sdk_schema_normalization_preserves_generation_identity(self):
+        from analyzers.llm_analyzer import generation_configuration
+        from google.genai import _transformers
+        import google.genai
+        with patch.dict('os.environ',GEMINI_API_KEY='mock-key',GEMINI_MODEL='account-model'):
+            before=generation_configuration()
+            def sdk_normalization(**kwargs):
+                _transformers.t_schema(SimpleNamespace(vertexai=False),kwargs['config'].response_schema)
+                return SimpleNamespace(text=json.dumps(valid_analysis()))
+            with patch.object(google.genai,'Client') as client:
+                client.return_value.models.generate_content.side_effect=sdk_normalization
+                self.assertEqual(analyze_with_llm({})['status'],'success')
+                self.assertEqual(analyze_with_llm({})['status'],'success')
+            self.assertEqual(generation_configuration(),before)
+
+    def test_transport_read_failure_is_classified_without_fallback(self):
+        from analyzers.llm_analyzer import _error_status
+        ReadError = type('ReadError', (Exception,), {})
+        self.assertEqual(_error_status(ReadError()),'network_error')
+
     def test_complete_schema_and_malformed_output(self):
         self.assertIsNotNone(_validate_analysis(valid_analysis()))
         for change in ({'risk_level':[]},{'suggested_priority':{}},{'test_scenarios':[]},
-                       {'missing_information':'question'},{'risk_reasons':[]},{'type_explanation':''}):
+                       {'missing_information':'question'},{'risk_reasons':[]},{'type_explanation':''},{'clarification_questions':[]}):
             self.assertIsNone(_validate_analysis({**valid_analysis(),**change}))
         value=valid_analysis();value['test_scenarios'][0]['criterion_codes']=['AC-999']
         self.assertIsNone(_validate_analysis(value))
@@ -34,7 +54,7 @@ class AIContractTests(unittest.TestCase):
     def test_sdk_timeout_quota_and_invalid_json(self):
         import google.genai
         with patch.dict('os.environ', GEMINI_API_KEY='mock-key',GEMINI_MODEL='account-model'):
-            for error, status in [(TimeoutError(), 'network_error'),(SimpleAPIError(429),'quota_exceeded')]:
+            for error, status in [(TimeoutError(), 'network_error'),(SimpleAPIError(429),'quota_exceeded'),(SimpleAPIError(503),'service_unavailable')]:
                 with patch.object(google.genai,'Client') as client:
                     client.return_value.models.generate_content.side_effect=error
                     self.assertEqual(analyze_with_llm({})['status'],status)
@@ -164,7 +184,7 @@ class AIWorkflowTests(unittest.TestCase):
     def test_analysis_acceptance_is_explicit_versioned_and_text_bound(self):
         r=self.create()
         with patch('analyzers.ai_analyzer.analyze_with_llm',return_value={'status':'success','analysis':valid_analysis()}):
-            result=self.request(self.analyst,'post','/api/analyze-requirement',self.payload).json
+            result=self.request(self.analyst,'post','/api/analyze-requirement',{**self.payload,'requirement_id':r['id'],'requirement_revision':r['revision']}).json
         path=f"/api/requirements/{r['id']}/analysis"
         data={'revision':r['revision'],'analysis':result,'title':r['title'],'description':r['description']}
         self.assertEqual(self.request(self.analyst,'patch',path,{**data,'description':'Other text'}).status_code,409)

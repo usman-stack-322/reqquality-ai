@@ -143,11 +143,11 @@ function AppContent() {
     }
   }
 
-  if (sessionError) return <div className="app-shell"><main className="card"><h1>Session unavailable</h1><p role="alert">{sessionError}</p><button type="button" onClick={() => {
+  const publicPage = ['home', 'login', 'register', 'accept-invitation', 'forgot-password', 'reset-password'].includes(page);
+  if (sessionError && !publicPage) return <div className="app-shell"><main className="card"><h1>Session unavailable</h1><p role="alert">{sessionError}</p><button type="button" onClick={() => {
     sessionRequest.current = null; setSessionError(''); setIsCheckingSession(true); setSessionAttempt(v => v + 1);
   }}>Retry session</button><button type="button" onClick={() => { setSessionError(''); window.location.hash = 'login'; }}>Sign in</button></main></div>;
 
-  const publicPage = ['home', 'login', 'register', 'accept-invitation', 'forgot-password', 'reset-password'].includes(page);
   if ((isCheckingSession && !publicPage) || (user && ['home', 'login', 'register'].includes(page))) {
     return (
       <div className="app-shell">
@@ -180,7 +180,7 @@ function AppContent() {
   if (!user && page !== 'home') {
     return <div className="app-shell"><Login initialEmail={loginEmail} notice={loginNotice} onLogin={(data) => {
       authRevision.current++; setIsCheckingSession(false);
-      setUser(data.user); setCsrfToken(data.csrf_token); setLoginNotice('');
+      setUser(data.user); setCsrfToken(data.csrf_token); setLoginNotice(''); setSessionError('');
       window.location.hash = ['admin', 'Manager'].includes(data.user.role) ? 'admin' : 'dashboard';
     }} /></div>;
   }

@@ -1,6 +1,6 @@
 import json
 from datetime import datetime, timezone
-from flask import g, send_file
+from flask import g, send_file, has_request_context
 from admin_dashboard import record_activity
 from app import REQUIREMENT_TYPES, REVIEW_STATUSES, RISK_LEVELS, get_connection
 from services.responses import response_payload
@@ -52,6 +52,9 @@ def _get_requirement_detail(connection, requirement_id, include_history=True):
     if row is None:
         return None
     requirement = dict(row)
+    from services.integrated_service import review_status
+    requirement['sqa_review_status'] = review_status(requirement)
+    requirement['review_valid'] = requirement['sqa_review_status']=='Approved'
     requirement['history'] = _get_requirement_history(connection, requirement_id) if include_history else []
     requirement['needs_confirmation'] = bool(requirement['needs_confirmation'])
     try:
@@ -68,7 +71,8 @@ def _get_requirement_detail(connection, requirement_id, include_history=True):
     for criterion in requirement['acceptance_criteria']:
         criterion['needs_confirmation'] = bool(criterion['needs_confirmation'])
         criterion['introduced_values'] = json.loads(criterion['introduced_values'])
-    scenarios = connection.execute('SELECT id, scenario_code, category, title, preconditions, test_steps, expected_result, source, needs_confirmation, introduced_values, assumption_reasons, criterion_codes FROM test_scenarios WHERE requirement_id = ? ORDER BY id', (requirement_id,)).fetchall()
+        criterion['needs_review'] = bool(row['criteria_review_required'])
+    scenarios = connection.execute('SELECT * FROM test_scenarios WHERE requirement_id = ? AND archived=0 ORDER BY id', (requirement_id,)).fetchall()
     requirement['test_scenarios'] = []
     for scenario_row in scenarios:
         scenario = dict(scenario_row)
@@ -85,13 +89,30 @@ def _get_requirement_detail(connection, requirement_id, include_history=True):
         assumption['needs_confirmation'] = bool(assumption['needs_confirmation'])
         assumption['introduced_values'] = json.loads(assumption['introduced_values'])
     codes = {item['criterion_code'] for item in requirement['acceptance_criteria']}
-    linked = {code for item in requirement['test_scenarios'] for code in item['criterion_codes']}
+    linked = {code for item in requirement['test_scenarios'] if item['requirement_revision'] == row['content_revision'] for code in item['criterion_codes']}
     requirement['coverage_gaps'] = sorted(codes - linked)
     requirement['invalid_criterion_links'] = sorted(linked - codes)
     requirement['unlinked_scenarios'] = [item['scenario_code'] for item in requirement['test_scenarios'] if not item['criterion_codes']]
+    # Read saved proposals only. Viewing a page never invokes the provider.
+    from services.project_service import current_project
+    from services.analysis_receipts import bound_input, input_hash
+    project = current_project(connection)
+    requirement['project'] = project
+    requirement['analysis_draft'] = None
+    if has_request_context() and getattr(g, 'current_user', None) is not None:
+        inputs = bound_input(connection, dict(title=row['title'], description=row['description'], requirement_type=row['requirement_type'], priority=row['user_priority'], clarifications=requirement['analysis_summary'].get('clarifications', '')), row, project)
+        draft = connection.execute('SELECT result FROM requirement_analysis_drafts WHERE requirement_id=? AND requirement_revision=? AND user_id=? AND input_hash=?',
+                                   (requirement_id, row['revision'], g.current_user['id'], input_hash(inputs))).fetchone()
+        if draft:
+            requirement['analysis_draft'] = json.loads(draft['result'])
+    saved_input = requirement['analysis_summary'].get('analysis_input')
+    from analyzers.llm_analyzer import generation_configuration
+    requirement['analysis_outdated'] = bool(requirement['analysis_summary'].get('stale') or saved_input and (saved_input.get('context_revision') != project['revision'] or saved_input.get('generation_config') != generation_configuration()))
     return requirement
 
 def _project_report_summary(connection):
+    from services.integrated_service import metrics
+    integrated=metrics(connection)
     rows = connection.execute('SELECT review_status, risk_level, requirement_type, risk_score FROM requirements').fetchall()
     review_counts = {status: 0 for status in REVIEW_STATUSES}
     risk_counts = {level: 0 for level in RISK_LEVELS}
@@ -106,8 +127,10 @@ def _project_report_summary(connection):
         if row['risk_score'] is not None:
             risk_scores.append(row['risk_score'])
     total_requirements = len(rows)
-    total_test_scenarios = connection.execute('SELECT COUNT(*) FROM test_scenarios').fetchone()[0]
-    traceable_requirement_count = connection.execute('SELECT COUNT(*) FROM requirements AS requirement WHERE EXISTS (SELECT 1 FROM requirement_acceptance_criteria AS criterion WHERE criterion.requirement_id = requirement.id) AND EXISTS (SELECT 1 FROM test_scenarios AS scenario WHERE scenario.requirement_id = requirement.id)').fetchone()[0]
+    total_test_scenarios = connection.execute('SELECT COUNT(*) FROM test_scenarios WHERE archived=0').fetchone()[0]
+    traceable_requirement_count = integrated['requirements_with_all_criteria_linked']
+    review_counts = integrated['review_status_counts']
+    total_test_scenarios = integrated['current_test_case_count']
     high_attention_requirements = [dict(row) for row in connection.execute("SELECT id, title, risk_score, risk_level, review_status FROM requirements WHERE risk_level IN ('High', 'Critical') OR review_status = 'Needs Revision' ORDER BY CASE risk_level WHEN 'Critical' THEN 0 WHEN 'High' THEN 1 ELSE 2 END, risk_score DESC, COALESCE(updated_at, created_at) DESC, id DESC").fetchall()]
     return {'total_requirements': total_requirements, 'review_counts': review_counts, 'risk_counts': risk_counts, 'type_counts': type_counts, 'average_risk_score': round(sum(risk_scores) / len(risk_scores), 1) if risk_scores else 0, 'total_test_scenarios': total_test_scenarios, 'traceable_requirement_count': traceable_requirement_count, 'traceability_coverage_percent': round(traceable_requirement_count * 100 / total_requirements, 1) if total_requirements else 0, 'high_attention_requirements': high_attention_requirements}
 
@@ -135,6 +158,8 @@ def _save_review(requirement_id, data, required_fields=()):
                 abort(400, description='Choose a valid review status.')
             allowed = {'Pending': {'In Review'}, 'Ready for Review': {'In Review'},
                        'In Review': {'In Review', 'Approved', 'Needs Revision'}}
+            if row['review_status']=='Approved' and row['reviewed_content_revision']!=row['content_revision']:
+                allowed['Approved']={'In Review'}  # Re-review legacy approval of unknown source version.
             if target not in allowed.get(row['review_status'], set()):
                 abort(409, description='Start a submitted review before deciding; revisions must be resubmitted by an Analyst.')
             notes = data.get('reviewer_notes', row['reviewer_notes'])
@@ -144,8 +169,16 @@ def _save_review(requirement_id, data, required_fields=()):
                 abort(400, description='Explain the requested changes.')
             snapshot(c, requirement_id, 'before_review_transition')
             now = _utc_timestamp()
-            c.execute('UPDATE requirements SET review_status=?,reviewer_notes=?,reviewed_by_user_id=?,reviewed_at=?,updated_at=?,revision=revision+1 WHERE id=?',
-                      (target,notes.strip(),g.current_user['id'],now,now,requirement_id))
+            c.execute('UPDATE requirements SET review_status=?,reviewer_notes=?,reviewed_by_user_id=?,reviewed_at=?,updated_at=?,reviewed_content_revision=?,criteria_review_required=?,revision=revision+1 WHERE id=?',
+                      (target,notes.strip(),g.current_user['id'],now,now,row['content_revision'],0 if target=='Approved' else row['criteria_review_required'],requirement_id))
+            evidence = {
+                'requirement_revision':row['revision'],
+                'case_version_ids':[v[0] for v in c.execute('SELECT v.id FROM test_case_versions v JOIN test_scenarios s ON s.id=v.scenario_id WHERE s.requirement_id=? AND v.requirement_revision=?',(requirement_id,row['content_revision']))],
+                'execution_ids':[v[0] for v in c.execute('SELECT e.id FROM test_executions e JOIN test_scenarios s ON s.id=e.scenario_id WHERE s.requirement_id=? AND e.requirement_revision=?',(requirement_id,row['content_revision']))],
+                'bug_ids':[v[0] for v in c.execute('SELECT id FROM bugs WHERE requirement_id=?',(requirement_id,))],
+            }
+            c.execute("INSERT INTO requirement_reviews(requirement_id,project_id,content_revision,status,reviewer_id,reviewer_name,notes,reviewed_at,snapshot) VALUES(?,'current',?,?,?,?,?,?,?)",
+                      (requirement_id,row['content_revision'],target,g.current_user['id'],g.current_user['name'],notes.strip(),now,json.dumps(evidence)))
             # Approval never silently confirms AI assumptions or business decisions.
             snapshot(c, requirement_id, 'review_'+target.lower().replace(' ','_'))
             return response_payload(requirement=_get_requirement_detail(c,requirement_id))

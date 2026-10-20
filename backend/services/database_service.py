@@ -41,7 +41,7 @@ def _initialize_database(connection):
         connection.execute("UPDATE requirement_assumptions SET needs_confirmation = 0 WHERE requirement_id IN (SELECT id FROM requirements WHERE review_status = 'Approved')")
     connection.commit()
 
-_SCHEMA_VERSION = 20261017
+_SCHEMA_VERSION = 20261023
 _SCHEMA_LOCK_ID = 7265717175616
 
 
@@ -76,6 +76,14 @@ def _initialize_production_schema(connection):
         initialize_token_schema(connection)
         initialize_rate_limit_schema(connection)
         initialize_workflow_schema(connection)
+        from services.project_service import initialize_project_schema
+        initialize_project_schema(connection)
+        from services.case_service import initialize_test_case_schema
+        initialize_test_case_schema(connection)
+        from services.bug_service import initialize_bug_schema
+        initialize_bug_schema(connection)
+        from services.integrated_service import initialize_integrated_schema
+        initialize_integrated_schema(connection)
         with connection:
             connection.execute('CREATE TABLE IF NOT EXISTS reqquality_schema (id INTEGER PRIMARY KEY, version INTEGER NOT NULL)')
             connection.execute('INSERT INTO reqquality_schema(id,version) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET version=excluded.version', (_SCHEMA_VERSION,))
@@ -122,7 +130,18 @@ def _get_connection():
                     initialize_rate_limit_schema(connection)
                     from services.workflow_service import initialize_workflow_schema
                     initialize_workflow_schema(connection)
+                    from services.project_service import initialize_project_schema
+                    initialize_project_schema(connection)
+                    from services.case_service import initialize_test_case_schema
+                    initialize_test_case_schema(connection)
+                    from services.bug_service import initialize_bug_schema
+                    initialize_bug_schema(connection)
+                    from services.integrated_service import initialize_integrated_schema
+                    initialize_integrated_schema(connection)
                     _SQLITE_READY.add(key)
+            # Role migration temporarily disables foreign keys. Restore them
+            # after all initialization commits, including on the first checkout.
+            connection.execute('PRAGMA foreign_keys = ON')
         connection._instrument = True
         if has_request_context():
             g.database_stage = 'connected'

@@ -1,10 +1,11 @@
+import QualityMetrics from '../components/QualityMetrics';
 import { apiFetch as fetch } from '../api.js';
 import React, { useEffect, useRef, useState } from 'react';
 import PdfExportButton from '../components/PdfExportButton';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 
 const REVIEW_DISTRIBUTION = [
-  ['Draft / Ready / Historical pending', 'pending_count', 'pending'],
+  ['Pending', 'pending_count', 'pending'],
   ['In Review', 'in_review_count', 'in-review'],
   ['Approved', 'approved_count', 'approved'],
   ['Needs Revision', 'needs_revision_count', 'needs-revision'],
@@ -68,7 +69,7 @@ function RequirementRow({ requirement, attention = false }) {
           {requirement.risk_score === null ? 'Not scored' : `${requirement.risk_score}/100`} · {requirement.risk_level || 'No risk data'}
         </span>
         <span className={`review-status review-${requirement.review_status.toLowerCase().replaceAll(' ', '-')}`}>
-          {requirement.review_status}
+          {requirement.sqa_review_status || requirement.review_status}
         </span>
         <span className={`priority-label priority-${(requirement.suggested_priority || requirement.user_priority || requirement.priority).toLowerCase()}`}>
           {requirement.suggested_priority || 'No suggestion'}
@@ -89,9 +90,11 @@ export default function Dashboard({ user }) {
   const [total, setTotal] = useState(0);
   const [queueFilters, setQueueFilters] = useState({status:'',risk:'',priority:'',type:''});
   const [error, setError] = useState('');
+  const [retry,setRetry]=useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
+    setIsLoading(true);setError('');
     async function loadRequirements() {
       try {
         const [dashboardResponse, requirementsResponse] = await Promise.all([
@@ -137,12 +140,12 @@ export default function Dashboard({ user }) {
     }
     loadRequirements();
     return () => controller.abort();
-  }, [page, queueFilters, user?.id]);
+  }, [page, queueFilters, user?.id,retry]);
 
   const [search, setSearch] = useState('');
   const [reviewFilter, setReviewFilter] = useState('');
   const visibleRequirements = requirements.filter(requirement =>
-    (!reviewFilter || requirement.review_status === reviewFilter)
+    (!reviewFilter || (requirement.sqa_review_status || requirement.review_status) === reviewFilter)
     && requirement.title.toLowerCase().includes(search.trim().toLowerCase()));
 
   return (
@@ -159,7 +162,7 @@ export default function Dashboard({ user }) {
           <PdfExportButton url="/api/exports/requirements.csv" filename="requirements.csv" format="CSV">Export CSV</PdfExportButton>
         </div>
       </div>
-      {error && <p className="error" role="alert">{error}</p>}
+      {error && <p className="error" role="alert">{error}</p>}<button disabled={isLoading} onClick={()=>{dashboardSnapshot.current=null;setRetry(v=>v+1);}}>Refresh dashboard / Retry</button>
       {isLoading ? (
         <LoadingSkeleton />
       ) : !dashboard ? (
@@ -179,8 +182,8 @@ export default function Dashboard({ user }) {
               helpText="Quality Risk Score indicates how much refinement and QA attention a requirement may need before implementation."
               tone="metric-risk"
             />
-            <MetricCard label="Total Generated Test Scenarios" value={dashboard.total_test_scenarios} tone="metric-scenarios" />
-            <MetricCard label="Traceability Coverage" value={`${dashboard.traceability_coverage_percent}%`} detail={`${dashboard.traceable_requirement_count} of ${dashboard.total_requirements} requirements`} tone="metric-coverage" />
+            <MetricCard label="Current-version test cases" value={dashboard.total_test_scenarios} tone="metric-scenarios" />
+            <MetricCard label="All criteria explicitly linked" value={`${dashboard.traceability_coverage_percent}%`} detail={`${dashboard.traceable_requirement_count} of ${dashboard.total_requirements} requirements`} tone="metric-coverage" />
           </section>
 
           {!isEngineer && <section className="analytics-section" aria-labelledby="distribution-title">
@@ -195,12 +198,13 @@ export default function Dashboard({ user }) {
             </div>
           </section>}
 
+          <QualityMetrics data={dashboard} />
           <section className="coverage-section" aria-labelledby="coverage-title">
             <div className="coverage-heading">
-              <div><p className="eyebrow">TRACEABILITY</p><h2 id="coverage-title">Traceability Coverage</h2></div>
+              <div><p className="eyebrow">TRACEABILITY</p><h2 id="coverage-title">Recorded criterion links</h2></div>
               <strong>{dashboard.traceability_coverage_percent}%</strong>
             </div>
-            <p>{dashboard.traceable_requirement_count} of {dashboard.total_requirements} requirements have at least one acceptance criterion and one linked test scenario.</p>
+            <p>{dashboard.traceable_requirement_count} of {dashboard.total_requirements} requirements have every current criterion explicitly linked to a current active case. This does not prove complete test coverage or execution success.</p>
             <div className="coverage-track" role="progressbar" aria-label="Traceability coverage" aria-valuemin="0" aria-valuemax="100" aria-valuenow={dashboard.traceability_coverage_percent}>
               <span style={{ width: `${dashboard.traceability_coverage_percent}%` }} />
             </div>
@@ -240,11 +244,11 @@ export default function Dashboard({ user }) {
               <span>{total} items ? page {page}</span>
             </div>
             <div className="dashboard-filters">
-              {Object.entries({status:['Draft','Ready for Review','Pending','In Review','Approved','Needs Revision'],risk:['Low','Medium','High','Critical'],priority:['Low','Medium','High'],type:['Functional','Non-Functional','Business']}).map(([key,choices]) => <label key={key}>Filter {key}<select value={queueFilters[key]} onChange={e => {setQueueFilters({...queueFilters,[key]:e.target.value});setPage(1);}}><option value="">All</option>{choices.map(v => <option key={v}>{v}</option>)}</select></label>)}
+              {Object.entries({status:['Pending','In Review','Approved','Needs Revision'],risk:['Low','Medium','High','Critical'],priority:['Low','Medium','High'],type:['Functional','Non-Functional','Business']}).map(([key,choices]) => <label key={key}>Filter {key}<select value={queueFilters[key]} onChange={e => {setQueueFilters({...queueFilters,[key]:e.target.value});setPage(1);}}><option value="">All</option>{choices.map(v => <option key={v}>{v}</option>)}</select></label>)}
               <button disabled={page===1 || isLoading} onClick={() => setPage(page-1)}>Previous page</button>
               <button disabled={page*50>=total || isLoading} onClick={() => setPage(page+1)}>Next page</button>
               <label>Search this page<input type="search" placeholder="Search by title" value={search} onChange={event => setSearch(event.target.value)} /></label>
-              <label>Review status<select value={reviewFilter} onChange={event => setReviewFilter(event.target.value)}><option value="">All statuses</option>{['Draft','Ready for Review','Pending','In Review','Approved','Needs Revision'].map(label => <option key={label}>{label}</option>)}</select></label>
+              <label>Review status<select value={reviewFilter} onChange={event => setReviewFilter(event.target.value)}><option value="">All statuses</option>{['Pending','In Review','Approved','Needs Revision'].map(label => <option key={label}>{label}</option>)}</select></label>
             </div>
             {visibleRequirements.length ? (
               <div className="dashboard-requirement-list">

@@ -84,6 +84,47 @@ class DatabasePoolTests(unittest.TestCase):
         pool.close.assert_called_once()
         self.assertEqual(database._POSTGRES_POOLS, {})
 
+    def test_pool_bounds_waiters_without_injecting_unsupported_startup_options(self):
+        with patch.object(database, 'ConnectionPool', return_value=MagicMock(closed=False)) as factory:
+            database._get_postgres_pool('postgresql://test-only/db?options=-c%20application_name%3Dreqquality')
+        options = factory.call_args.kwargs
+        self.assertEqual(options['max_waiting'], 20)
+        self.assertIs(options['check'], database._check_idle_connection)
+        self.assertNotIn('options', options['kwargs'])
+        self.assertIn('application_name', options['conninfo'])
+
+    def test_idle_socket_is_checked_but_warm_checkout_has_no_extra_query(self):
+        raw = MagicMock(closed=False)
+        raw._reqquality_returned_at = 100
+        with patch.object(database, 'monotonic', return_value=129), patch.object(database.ConnectionPool, 'check_connection') as check:
+            database._check_idle_connection(raw)
+            check.assert_not_called()
+        with patch.object(database, 'monotonic', return_value=130), patch.object(database.ConnectionPool, 'check_connection') as check:
+            database._check_idle_connection(raw)
+            check.assert_called_once_with(raw)
+
+    def test_return_records_idle_time_and_failed_check_reaches_pool_recovery(self):
+        raw = MagicMock(closed=False)
+        pool = MagicMock()
+        adapter = database.DatabaseConnection(raw, 'postgres', pool=pool)
+        with patch.object(database, 'monotonic', return_value=100):
+            adapter.close()
+        self.assertEqual(raw._reqquality_returned_at, 100)
+        pool.putconn.assert_called_once_with(raw)
+        with patch.object(database, 'monotonic', return_value=140), patch.object(database.ConnectionPool, 'check_connection', side_effect=database.psycopg.OperationalError('test disconnect')):
+            with self.assertRaises(database.psycopg.OperationalError):
+                database._check_idle_connection(raw)
+
+    def test_checkout_timeout_never_retires_pool_with_live_or_connecting_sockets(self):
+        pool = MagicMock(closed=False)
+        pool.getconn.side_effect = database.PoolTimeout('test saturation')
+        pool.get_stats.return_value = {'pool_size': 1}
+        with patch.object(database, 'ConnectionPool', return_value=pool), self.assertLogs('reqquality.database', level='ERROR'):
+            with self.assertRaises(database.PoolTimeout):
+                database.connect_database('postgresql://live-test-only', 'unused.db')
+        pool.close.assert_not_called()
+        self.assertIn(pool, database._POSTGRES_POOLS.values())
+
 
 if __name__ == '__main__':
     unittest.main()

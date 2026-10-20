@@ -1,19 +1,22 @@
+import IntegratedReview from '../components/IntegratedReview';
 import { apiFetch as fetch } from '../api.js';
 import PdfExportButton from '../components/PdfExportButton';
 import React, { useEffect, useState } from 'react';
 import SourceBadges from '../components/SourceBadges';
 import WorkflowEditor from '../components/WorkflowEditor';
+import TestCases from '../components/TestCases';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 
 const REVIEW_STATUSES = ['In Review', 'Approved', 'Needs Revision'];
 const SCENARIO_CATEGORIES = ['Positive', 'Negative', 'Boundary', 'Edge-case'];
 const ANALYSIS_GROUPS = [
-  ['Ambiguity', 'ambiguity_issues', 'rule_based'],
+  ['Ambiguity', 'ambiguity_issues', 'ai_suggestion'],
   ['Conflicts', 'conflict_issues', 'ai_suggestion'],
-  ['Missing information', 'missing_information', 'rule_based'],
-  ['Testability', 'testability_issues', 'rule_based'],
+  ['Missing information', 'missing_information', 'ai_suggestion'],
+  ['Clarification questions', 'clarification_questions', 'ai_suggestion'],
+  ['Testability', 'testability_issues', 'ai_suggestion'],
   ['Assumptions', 'assumptions', 'ai_assumption'],
-  ['Possible edge cases', 'edge_cases', 'rule_based'],
+  ['Possible edge cases', 'edge_cases', 'ai_suggestion'],
   ['Risk explanation', 'risk_reasons', 'ai_suggestion'],
   ['Priority explanation', 'priority_reasons', 'ai_suggestion'],
 ];
@@ -48,6 +51,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [retry,setRetry]=useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -60,7 +64,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
         if (!response.ok) throw new Error(data.error || 'Unable to load requirement details.');
         if (controller.signal.aborted) return;
         setRequirement(data.requirement);
-        setReviewStatus(['Pending', 'Ready for Review'].includes(data.requirement.review_status) ? 'In Review' : data.requirement.review_status);
+        setReviewStatus(data.requirement.sqa_review_status==='Pending' ? 'In Review' : data.requirement.review_status);
         setReviewerNotes(data.requirement.reviewer_notes || '');
       } catch (loadError) {
         if (controller.signal.aborted) return;
@@ -71,7 +75,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
     }
     loadRequirement();
     return () => controller.abort();
-  }, [requirementId, revision]);
+  }, [requirementId, revision,retry]);
 
   useEffect(() => {
     if (openReview && requirement && !isLoading) document.getElementById('sqa-review-title')?.scrollIntoView({ block: 'start' });
@@ -92,7 +96,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to save the SQA review.');
       setRequirement(data.requirement);
-      setReviewStatus(['Pending', 'Ready for Review'].includes(data.requirement.review_status) ? 'In Review' : data.requirement.review_status);
+      setReviewStatus(data.requirement.sqa_review_status==='Pending' ? 'In Review' : data.requirement.review_status);
       setReviewerNotes(data.requirement.reviewer_notes || '');
       setMessage('SQA review saved.');
     } catch (saveError) {
@@ -103,9 +107,9 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
   }
 
   if (isLoading) return <LoadingSkeleton label="Loading requirement" />;
-  if (error && !requirement) return <p className="error" role="alert">{error} <a href={managerView ? '#admin/requirements' : '#dashboard'}>Return to requirements</a></p>;
+  if (error && !requirement) return <p className="error" role="alert">{error} <button onClick={()=>setRetry(v=>v+1)}>Retry requirement</button><a href={managerView ? '#admin/requirements' : '#dashboard'}>Return to requirements</a></p>;
   if (!requirement) return null;
-  const canReview = user?.role === 'SQA Engineer' && user.id !== requirement.created_by_user_id && user?.permissions?.includes('review_requirements') && ['Pending', 'Ready for Review', 'In Review'].includes(requirement.review_status);
+  const canReview = user?.role === 'SQA Engineer' && user.id !== requirement.created_by_user_id && user?.permissions?.includes('review_requirements') && (['Pending', 'Ready for Review', 'In Review'].includes(requirement.review_status) || (requirement.review_status==='Approved'&&!requirement.review_valid));
   const reviewedAt = requirement.reviewed_at
     ? new Date(requirement.reviewed_at).toLocaleString()
     : 'Not reviewed yet';
@@ -126,10 +130,10 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
           <div>
             <h1>{requirement.title}</h1>
             <p>{requirement.description}</p>
-            <SourceBadges source="original" confirmed={requirement.review_status === 'Approved'} />
+            <SourceBadges source="original" confirmed={requirement.review_valid} />
           </div>
           <span className={`review-status review-${requirement.review_status.toLowerCase().replaceAll(' ', '-')}`}>
-            {requirement.review_status}
+            {requirement.sqa_review_status}
           </span>
         </div>
         <div className="requirement-metadata">
@@ -157,9 +161,9 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
                 <div className="analysis-item-heading">
                   <h3>Suggested improved requirement</h3>
                   <SourceBadges
-                    source={savedAnalysis.labeled_analysis?.improved_requirement?.source || 'rule_based'}
+                    source={savedAnalysis.labeled_analysis?.improved_requirement?.source || (savedAnalysis.analysis_mode === 'ai_only' ? 'ai_suggestion' : 'rule_based')}
                     needsConfirmation={savedAnalysis.labeled_analysis?.improved_requirement?.needs_confirmation}
-                    confirmed={requirement.review_status === 'Approved'}
+                    confirmed={requirement.review_valid}
                   />
                 </div>
                 <p>{savedAnalysis.labeled_analysis?.improved_requirement?.text || savedAnalysis.improved_requirement}</p>
@@ -174,8 +178,8 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
                 <h3>{heading}</h3>
                 <AnalysisItems
                   items={savedAnalysis.labeled_analysis?.[field] || savedAnalysis[field] || []}
-                  fallbackSource={fallbackSource}
-                  confirmed={requirement.review_status === 'Approved'}
+                  fallbackSource={savedAnalysis.analysis_mode === 'ai_only' ? fallbackSource : 'rule_based'}
+                  confirmed={requirement.review_valid}
                 />
               </article>
             ))}
@@ -192,7 +196,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
           <ul className="labeled-detail-list">
             {requirement.assumptions.map((assumption) => (
               <li key={assumption.assumption_code}>
-                <div><p>{assumption.description}</p><SourceBadges source={assumption.source} needsConfirmation={assumption.needs_confirmation} confirmed={requirement.review_status === 'Approved'} /></div>
+                <div><p>{assumption.description}</p><SourceBadges source={assumption.source} needsConfirmation={assumption.needs_confirmation} confirmed={requirement.review_valid} /></div>
                 {assumption.introduced_values.length > 0 && <span className="introduced-value-list">Values: {assumption.introduced_values.join(', ')}</span>}
               </li>
             ))}
@@ -212,7 +216,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
                 <span>{criterion.criterion_code}</span>
                 <div className="labeled-detail-copy">
                   <p>{criterion.description}</p>
-                  <SourceBadges source={criterion.source} needsConfirmation={criterion.needs_confirmation} confirmed={requirement.review_status === 'Approved'} />
+                  <SourceBadges source={criterion.source} needsConfirmation={criterion.needs_confirmation} confirmed={requirement.review_valid} />
                   {criterion.introduced_values.length > 0 && <span className="introduced-value-list">AI-introduced values: {criterion.introduced_values.join(', ')}</span>}
                 </div>
               </li>
@@ -232,7 +236,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
           <h2 id="linked-scenarios-title">Linked Generated Test Scenarios</h2>
           <span>{requirement.test_scenarios.length}</span>
         </div>
-        <p>These scenarios have not been executed by this application. Review assumptions and expected outcomes before using them for testing.</p>
+        <p>Generation does not test an external application. Review these drafts, then record observed results under Manual execution below.</p>
         <div className="scenario-groups">
           {SCENARIO_CATEGORIES.map((category) => {
             const scenarios = requirement.test_scenarios.filter((item) => item.category === category);
@@ -242,7 +246,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
                 {scenarios.map((scenario) => (
                   <div className="scenario-item" key={scenario.id}>
                     <div className="scenario-title-row"><h4>{scenario.title}</h4><span>{scenario.scenario_code}</span></div>
-                    <SourceBadges source={scenario.source} needsConfirmation={scenario.needs_confirmation} confirmed={requirement.review_status === 'Approved'} />
+                    <SourceBadges source={scenario.source} needsConfirmation={scenario.needs_confirmation} confirmed={requirement.review_valid} />
                     {scenario.assumption_reasons.length > 0 && <p className="confirmation-note">Depends on AI assumptions: {scenario.assumption_reasons.join(' ')}</p>}
                     {scenario.introduced_values.length > 0 && <p className="introduced-value-list">AI-introduced values: {scenario.introduced_values.join(', ')}</p>}
                     <p>Linked criteria: {scenario.criterion_codes?.join(', ') || 'No links recorded'}</p>
@@ -261,6 +265,8 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
         </div>
       </section>
 
+      <IntegratedReview key={requirement.id} requirement={requirement} user={user} />
+      <TestCases requirement={requirement} user={user} onUpdate={setRequirement} />
       <section className="detail-section" aria-labelledby="record-traceability-title">
         <div className="detail-section-heading"><h2 id="record-traceability-title">Traceability</h2><span>REQ-{requirement.id}</span></div>
         <p>Criteria without linked scenarios: {requirement.coverage_gaps?.join(', ') || 'None'}. Unlinked scenarios: {requirement.unlinked_scenarios?.join(', ') || 'None'}. Invalid links: {requirement.invalid_criterion_links?.join(', ') || 'None'}.</p>
@@ -271,7 +277,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
       <section className="detail-section sqa-review" aria-labelledby="sqa-review-title">
         <div className="detail-section-heading">
           <h2 id="sqa-review-title">SQA Review</h2>
-          <span>{requirement.review_status}</span>
+          <span>{requirement.sqa_review_status}</span>
         </div>
         {canReview ? (
           <form className="review-form" onSubmit={handleSaveReview}>
@@ -293,7 +299,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
           </form>
         ) : (
           <div className="review-read-only">
-            <p><strong>Review Status</strong><span className={`review-status review-${requirement.review_status.toLowerCase().replaceAll(' ', '-')}`}>{requirement.review_status}</span></p>
+            <p><strong>Reviewed content version</strong><span>{requirement.reviewed_content_revision || 'Not version-verified'}</span></p><p><strong>Review Status</strong><span className={`review-status review-${requirement.review_status.toLowerCase().replaceAll(' ', '-')}`}>{requirement.sqa_review_status}</span></p>
             <p><strong>Reviewer Notes</strong><span>{requirement.reviewer_notes || 'No reviewer notes.'}</span></p>
             <p><strong>Assigned reviewer</strong><span>{requirement.assigned_reviewer || 'Unassigned'}</span></p>
             <p><strong>Reviewed by</strong><span>{requirement.reviewed_by_name || 'Not recorded'}</span></p>

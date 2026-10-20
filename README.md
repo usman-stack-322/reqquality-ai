@@ -132,7 +132,7 @@ Tests use temporary databases and mocked AI/email; they do not create production
   testability, suggested type with explanation, refinement, acceptance criteria,
   qualitative risk/priority with explanations, and criteria-linked test scenarios.
   Generated content remains unconfirmed until human review. New analysis has
-  `analysis_mode=ai_only`, `analysis_version=2`, and model provenance. Historical
+  `analysis_mode=ai_only`, `analysis_version=4`, and model provenance. Historical
   saved content remains available and is labelled Historical analysis. Existing
   numeric risk scores are retained; new AI results do not fabricate numeric scores.
 - `PATCH /api/requirements/<id>`: Analyst material edits, criteria and clarification
@@ -237,3 +237,85 @@ Flask's debug server is also intended for local development only.
 ## Isolated local database
 
 For this workstation, `backend/.env.local` selects `backend/instance/local-development.db` when running `python app.py`. Cloud configuration in `backend/.env` remains separate; WSGI imports do not load `.env.local`. Local login details are in `backend/instance/local-login.txt` (ignored by Git). Start the backend and frontend with the commands above. The local account is separate from your cloud account. `backend/setup_local.py` initializes the local schema and account without resetting an existing account.
+
+## Versioned AI analysis
+
+The supported project is `current`. It now has persisted context, editable by SQA
+Admin under Settings. `GET /api/project` reads context; `PATCH /api/project` requires
+Admin, CSRF and the latest project `revision`. Other project IDs are denied.
+This is a minimal single-project structure, not multi-project tenancy.
+
+For saved requirements, `POST /api/analyze-requirement` requires
+`requirement_id` and `requirement_revision` alongside matching saved input. Save
+source edits first. Generation persists a separate editable proposal without
+changing source text or review status. Opening the detail page reads that proposal
+without another provider call. Explicit acceptance supports validated
+`analysis_edits`, preserves the original signed output and keeps review status
+Draft. Type, missing facts, clarification questions, refinement, criteria and
+qualitative risk/priority suggestions all require human review.
+
+Reuse is bound to user/project, source version, clarification answers, project
+context revision and generation configuration. Changes invalidate acceptance and
+reuse. Failures preserve input, return a retryable error and never become saved
+successful analysis; no rule-based fallback is used.
+
+Schema version 20261020 adds the current project and proposal storage without
+rewriting existing requirement bodies, IDs or historical analysis. Rehearse cloud
+upgrades on a disposable database first; see [V1_PLAN.md](V1_PLAN.md), section 8.
+The seven-case opt-in real-provider evaluation and its limitations are documented
+in [backend/evaluation/README.md](backend/evaluation/README.md).
+
+### Detailed test cases, Manual execution and failure-linked bugs
+
+Requirement details now include detailed cases, case-version history and **Manual
+execution**. Existing scenario IDs/codes are preserved. Engineers with review
+permission can create/edit cases; `execute_test_cases` separately authorizes new
+execution records. Each retest preserves earlier observations and their source
+snapshot. Pass/Fail requires an actual result; Blocked requires a reason.
+
+In a failed execution's history, select **Bugs for execution**, review existing
+bugs, then **Create bug from failed execution**. Review/edit the prefilled details
+before saving. SQA Admin and Engineers with `manage_bugs` manage reports; Analysts
+read them. Severity and priority are independent. There is no Developer role,
+file upload, automatic external test execution or automatic bug closure.
+
+The lifecycle is Open -> In Progress -> Ready for Retest -> Closed. Closure needs
+a linked later passing retest of the same case after its latest failure, or a
+documented resolution reason. A new linked failed retest can reopen a ready/closed
+bug. History retains each change and previous evidence. Evidence references are
+plain text, never automatically fetched.
+
+Schema **20261022** additively extends scenarios and introduces case versions,
+executions, bugs and bug history. Reanalysis archives cases instead of deleting
+their links. Back up and rehearse PostgreSQL upgrades using a direct migration
+connection before rollout; no live migration was performed here. See sections
+9–10 of [V1_PLAN.md](V1_PLAN.md) for verification and remaining release blockers.
+
+### Version-bound review and integrated reports
+
+Requirement details include **Requirement versions, traceability and SQA review**.
+Choose a source version to inspect its acceptance criteria, case snapshots, Manual
+executions, failure-linked bugs and recorded reviews. Opening this view never calls
+the AI provider. Refresh evidence explicitly after adding an execution or changing
+a bug in another panel.
+
+Material edits preserve the previous source/evidence and invalidate the current
+approval, analysis and case applicability. Criteria are marked for review; stale
+cases must be explicitly rebased before execution. SQA review uses Pending,
+In Review, Approved and Needs Revision. Authoring Draft/Ready for Review states
+remain separate. A legacy approval without a verified reviewed version is Pending
+until an authorized non-author Engineer starts and records a new review.
+
+Dashboard definitions are displayed beside the metrics. Linked cases measure
+recorded criterion links, not complete coverage. Latest results use exact current
+case revisions; Not Run/Blocked never count as passed. Non-Closed bugs include
+Ready for Retest and historical failures. Admin dashboard metrics respect its
+requirement filters. Use **Refresh dashboard / Retry** to reload stored data.
+
+Existing requirement/project PDFs now include versioned cases, executions, bugs
+and reviews. The requirements CSV preserves its initial columns and adds scalar
+version/review fields and JSON columns for linked histories. CSV formula escaping,
+PDF text escaping, project authorization and no-store downloads remain enforced.
+Schema **20261023** adds `requirement_versions`, `requirement_reviews` and reviewed
+version/criteria review flags. No live migration is performed by verification.
+See section 11 of [V1_PLAN.md](V1_PLAN.md) for evidence and remaining release checks.
