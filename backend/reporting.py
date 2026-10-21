@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 from html import escape
 from io import BytesIO
+import textwrap
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
@@ -83,6 +84,15 @@ def _paragraph(text, style):
     return Paragraph(safe_text.replace("\n", "<br/>"), style)
 
 
+def _flow_text(text, style):
+    """Small flowables let headings stay with text without moving a huge block."""
+    lines = str(text).splitlines() or ['']
+    blocks = ['\n'.join(lines[index:index+8]) for index in range(0, len(lines), 8)]
+    return [_paragraph(chunk, style) for block in blocks
+            for chunk in (textwrap.wrap(block, width=1200, replace_whitespace=False,
+                                       drop_whitespace=False) or [''])]
+
+
 def _content_paragraph(item, review_status, style, default_source=None):
     if isinstance(item, dict):
         text = item.get("text", item.get("description", ""))
@@ -127,7 +137,9 @@ def _key_value_table(rows, styles, label_width=43 * mm):
         [_paragraph(label, styles["label"]), value]
         for label, value in rows
     ]
-    table = Table(table_data, colWidths=[label_width, 165 * mm - label_width], hAlign="LEFT")
+    # Review notes may exceed a page. Split inside rows rather than raising
+    # LayoutError or clipping the content at the bottom of the frame.
+    table = Table(table_data, colWidths=[label_width, 174 * mm - label_width], hAlign="LEFT", splitInRow=1)
     table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (0, -1), BEIGE),
         ("BACKGROUND", (1, 0), (1, -1), SURFACE),
@@ -214,13 +226,13 @@ def build_requirement_pdf(requirement):
 
     _section(story, "Analysis provenance", styles)
     version = analysis.get('analysis_version', 2)
-    story.append(_paragraph(f"AI analysis (v{version if type(version) is int else 2})" if analysis.get("analysis_mode") == "ai_only" else "Historical analysis", styles["body"]))
+    story.append(_paragraph(f"AI analysis (v{version if type(version) is int else 2})" if analysis.get("analysis_mode") == "ai_only" else "Historical analysis" if analysis else "Pending: AI analysis has not been saved.", styles["body"]))
     if analysis.get('stale') or requirement.get('analysis_outdated'):
         story.append(_paragraph('Analysis describes an earlier revision or outdated context/configuration; review is required.', styles['body']))
     for reason in analysis.get('risk_reasons', []) + analysis.get('priority_reasons', []):
         story.append(_paragraph(reason, styles['body']))
     _section(story, "Original Requirement", styles)
-    story.append(_paragraph(requirement.get("description", ""), styles["body"]))
+    story.extend(_flow_text(requirement.get("description", ""), styles["body"]))
 
     for title, key, default_source in (
         ("Ambiguity Findings", "ambiguity_issues", "rule_based"),
@@ -309,11 +321,12 @@ def build_requirement_pdf(requirement):
     _section(story, "SQA Review", styles)
     story.append(_key_value_table([
         ("Review Status", _paragraph(review_status, styles["body"])),
-        ("Reviewer Notes", _paragraph(requirement.get("reviewer_notes") or "No reviewer notes.", styles["body"])),
         ("Reviewer Name", _paragraph(requirement.get("reviewed_by_name") or "Not assigned", styles["body"])),
         ("Review Timestamp", _paragraph(requirement.get("reviewed_at") or "Not reviewed", styles["body"])),
     ], styles))
-    _integrated_requirement(story,requirement,styles)
+    _section(story, 'Reviewer Notes', styles)
+    story.extend(_flow_text(requirement.get('reviewer_notes') or 'No reviewer notes.', styles['body']))
+    _integrated_requirement(story,requirement,styles,include_current=False)
     return _build_pdf(story, f"ReqQuality AI Requirement {requirement.get('id')}")
 
 
@@ -366,7 +379,7 @@ def build_project_summary_pdf(summary):
                 _paragraph(f"{risk}/100 · {requirement.get('risk_level') or 'Unscored'}" if risk is not None else "Unscored", styles["body"]),
                 _paragraph(requirement.get("review_status", "Pending"), styles["body"]),
             ])
-        table = Table(table_data, colWidths=[15 * mm, 88 * mm, 30 * mm, 32 * mm], repeatRows=1)
+        table = Table(table_data, colWidths=[15 * mm, 97 * mm, 30 * mm, 32 * mm], repeatRows=1, hAlign="LEFT", splitInRow=1)
         table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), SECONDARY_GREEN),
             ("BACKGROUND", (0, 1), (-1, -1), SURFACE),
@@ -395,14 +408,27 @@ def build_project_summary_pdf(summary):
     return _build_pdf(story, "ReqQuality AI Project Quality Summary")
 
 
-def _integrated_requirement(story,r,styles):
+def _integrated_requirement(story,r,styles,include_current=True):
     """Use flowing paragraphs so long user content can split safely across pages."""
     data=r.get('integrated')
     if not data: return
     _section(story,f"REQ-{r['id']} - Versioned traceability and Manual execution",styles)
-    def line(value): story.append(_paragraph(value,styles['body']))
+    def line(value): story.extend(_flow_text(value,styles['body']))
     line(f"Project {data['project_id']} | Current content version {data['current_content_revision']} | {r['title']}")
     line(f"SQA review: {data['sqa_review_status']} | Authoring state: {data['authoring_status']} | Reviewed version: {r.get('reviewed_content_revision') or 'not verified'}")
+    if include_current:
+        line('Saved requirement: ' + (r.get('description') or 'Not recorded'))
+        analysis = r.get('analysis_summary') or {}
+        line('Saved analysis: ' + ('AI suggestions requiring review' if analysis.get('analysis_mode') == 'ai_only' else 'Pending or historical; no current AI analysis confirmed'))
+        if r.get('analysis_outdated'):
+            line('Needs review: analysis belongs to an earlier source, context or configuration.')
+        line('Proposed refinement: ' + (analysis.get('improved_requirement') or 'Not recorded'))
+        for label, key in [('Clarification', 'clarification_questions'), ('Missing information', 'missing_information'), ('Risk explanation', 'risk_reasons'), ('Priority explanation', 'priority_reasons')]:
+            for item in analysis.get(key, []):
+                line(f'{label}: {item}')
+        line(f"Suggested risk: {r.get('risk_level') or 'Not assessed'} | Suggested priority: {r.get('suggested_priority') or 'Not assessed'}")
+        for criterion in r.get('acceptance_criteria', []):
+            line(f"{criterion['criterion_code']}: {criterion['description']} | {'Needs review' if criterion.get('needs_review') or criterion.get('needs_confirmation') else 'Saved criterion'}")
     line('Recorded criterion links do not prove complete coverage. Only Pass is passed; Not Run and Blocked are not passed. Historical cases/results do not validate a new requirement version.')
     for version in data['versions']:
         source=version['snapshot']

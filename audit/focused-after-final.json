@@ -1,0 +1,98 @@
+{
+  "metric_reuse": true,
+  "environment": {
+    "os": "Windows",
+    "release": "11",
+    "machine": "AMD64",
+    "logical_cpus": 8,
+    "python": "3.14.7",
+    "sqlite": "3.50.4",
+    "flask": "3.1.3"
+  },
+  "dataset": {
+    "requirements": 100,
+    "test_cases": 199,
+    "executions": 0,
+    "bugs": 0,
+    "synthetic_users": 34
+  },
+  "transport": "Flask test client, sequential single process, temporary local SQLite; initialized schema. Not browser/network/PG or true process-cold timings.",
+  "percentile": "Nearest rank p95 of 30/40 observations; descriptive sample tail, not production SLA evidence.",
+  "requests": {
+    "dashboard": {
+      "n": 40,
+      "median_ms": 16.39,
+      "p95_ms": 17.38,
+      "first_ms": 31.19
+    },
+    "admin_dashboard": {
+      "n": 40,
+      "median_ms": 29.56,
+      "p95_ms": 37.13,
+      "first_ms": 30.01
+    },
+    "detail": {
+      "n": 40,
+      "median_ms": 14.58,
+      "p95_ms": 16.28,
+      "first_ms": 15.69
+    },
+    "login": {
+      "n": 30,
+      "median_ms": 447.92,
+      "p95_ms": 1018.69,
+      "first_ms": 569.83
+    },
+    "material_save": {
+      "n": 30,
+      "median_ms": 80.49,
+      "p95_ms": 274.02,
+      "first_ms": 84.21
+    }
+  },
+  "login_stages_ms": {
+    "connect": {
+      "n": 30,
+      "median_ms": 4.34,
+      "p95_ms": 27.71,
+      "first_ms": 1.99
+    },
+    "user_query": {
+      "n": 30,
+      "median_ms": 0.58,
+      "p95_ms": 1.3,
+      "first_ms": 0.93
+    },
+    "password": {
+      "n": 30,
+      "median_ms": 372.1,
+      "p95_ms": 671.04,
+      "first_ms": 319.58
+    },
+    "permissions": {
+      "n": 30,
+      "median_ms": 0.71,
+      "p95_ms": 1.49,
+      "first_ms": 1.12
+    },
+    "rate_limit": {
+      "n": 30,
+      "median_ms": 26.6,
+      "p95_ms": 133.06,
+      "first_ms": 70.46
+    },
+    "tokens": {
+      "n": 30,
+      "median_ms": 22.38,
+      "p95_ms": 162.19,
+      "first_ms": 162.19
+    },
+    "total": {
+      "n": 30,
+      "median_ms": 444.98,
+      "p95_ms": 903.08,
+      "first_ms": 556.8
+    }
+  },
+  "workflow_dashboard": true
+}

@@ -4,59 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import PdfExportButton from '../components/PdfExportButton';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 
-const REVIEW_DISTRIBUTION = [
-  ['Pending', 'pending_count', 'pending'],
-  ['In Review', 'in_review_count', 'in-review'],
-  ['Approved', 'approved_count', 'approved'],
-  ['Needs Revision', 'needs_revision_count', 'needs-revision'],
-];
-const RISK_DISTRIBUTION = [
-  ['Low', 'low_risk_count', 'low'],
-  ['Medium', 'medium_risk_count', 'medium'],
-  ['High', 'high_risk_count', 'high'],
-  ['Critical', 'critical_risk_count', 'critical'],
-];
-const TYPE_DISTRIBUTION = [
-  ['Functional', 'functional_count', 'functional'],
-  ['Non-Functional', 'non_functional_count', 'non-functional'],
-  ['Business', 'business_count', 'business'],
-];
-
-function MetricCard({ label, value, detail, tone = '', helpText = '' }) {
-  return (
-    <article className={`metric-card ${tone}`}>
-      <p>{label}</p>
-      <strong>{value}</strong>
-      {detail && <span>{detail}</span>}
-      {helpText && <span className="metric-help" title={helpText}>{helpText}</span>}
-    </article>
-  );
-}
-
-function Distribution({ title, items, data, total }) {
-  return (
-    <section className="distribution-panel" aria-label={title}>
-      <h3>{title}</h3>
-      <div className="distribution-list">
-        {items.map(([label, key, tone]) => {
-          const count = data[key] || 0;
-          const percentage = total ? count * 100 / total : 0;
-          return (
-            <div className="distribution-item" key={key}>
-              <div className="distribution-label-row">
-                <span>{label}</span><strong>{count}</strong>
-              </div>
-              <div className="distribution-track" role="progressbar" aria-label={`${label} ${title.toLowerCase()}`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(percentage)}>
-                <span className={`distribution-fill fill-${tone}`} style={{ width: `${percentage}%` }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
 function RequirementRow({ requirement, attention = false }) {
   return (
     <article className={`dashboard-requirement-row${attention ? ' attention-row' : ''}`}>
@@ -66,7 +13,7 @@ function RequirementRow({ requirement, attention = false }) {
       </div>
       <div className="dashboard-requirement-state">
         <span className={`risk-level risk-${(requirement.risk_level || 'unscored').toLowerCase()}`}>
-          {requirement.risk_score === null ? 'Not scored' : `${requirement.risk_score}/100`} · {requirement.risk_level || 'No risk data'}
+          Risk: {requirement.risk_level || 'Not analyzed'}
         </span>
         <span className={`review-status review-${requirement.review_status.toLowerCase().replaceAll(' ', '-')}`}>
           {requirement.sqa_review_status || requirement.review_status}
@@ -98,7 +45,7 @@ export default function Dashboard({ user }) {
     async function loadRequirements() {
       try {
         const [dashboardResponse, requirementsResponse] = await Promise.all([
-          dashboardSnapshot.current?.userId === user?.id ? Promise.resolve(null) : fetch('/api/dashboard', { signal: controller.signal }),
+          dashboardSnapshot.current?.userId === user?.id ? Promise.resolve(null) : fetch('/api/dashboard?view=workflow', { signal: controller.signal }),
           fetch(`/api/requirements?view=summary&page=${page}&${new URLSearchParams(queueFilters)}`, { signal: controller.signal }),
         ]);
         const [dashboardData, requirementsData] = await Promise.all([
@@ -108,15 +55,14 @@ export default function Dashboard({ user }) {
         if (dashboardResponse && !dashboardResponse.ok) throw new Error(dashboardData.error || 'Unable to load dashboard statistics.');
         if (!requirementsResponse.ok) throw new Error(requirementsData.error || 'Unable to load requirements.');
         const dashboardNumbers = [
-          'total_requirements', 'pending_count', 'in_review_count', 'approved_count',
-          'needs_revision_count', 'average_risk_score', 'total_test_scenarios',
-          'traceability_coverage_percent',
+          'requirements_with_linked_cases', 'requirements_without_linked_cases', 'items_needing_review_count',
         ];
         if (
           !dashboardData
           || dashboardNumbers.some((field) => !Number.isFinite(dashboardData[field]))
-          || !Array.isArray(dashboardData.high_attention_requirements)
-          || !Array.isArray(dashboardData.recent_requirements)
+          || !dashboardData.review_status_counts || !dashboardData.latest_execution_counts
+          || !dashboardData.open_bugs_by_severity || !dashboardData.metric_definitions
+          || !Array.isArray(dashboardData.items_needing_review)
           || !Array.isArray(requirementsData.requirements)
         ) {
           throw new Error('The dashboard response was incomplete. Refresh the page and try again.');
@@ -143,18 +89,16 @@ export default function Dashboard({ user }) {
   }, [page, queueFilters, user?.id,retry]);
 
   const [search, setSearch] = useState('');
-  const [reviewFilter, setReviewFilter] = useState('');
   const visibleRequirements = requirements.filter(requirement =>
-    (!reviewFilter || (requirement.sqa_review_status || requirement.review_status) === reviewFilter)
-    && requirement.title.toLowerCase().includes(search.trim().toLowerCase()));
+    requirement.title.toLowerCase().includes(search.trim().toLowerCase()));
 
   return (
     <section className={`requirements-dashboard${isEngineer ? ' engineer-dashboard' : ''}`} aria-labelledby="dashboard-title">
       <div className="dashboard-heading">
         <div>
           <p className="eyebrow">QUALITY OVERVIEW</p>
-          <h1 id="dashboard-title">{isEngineer ? 'SQA Engineer Dashboard' : 'SQA Dashboard'}</h1>
-          {isEngineer && <p className="dashboard-intro">Review requirement quality, prioritize risks, and track links to generated scenarios.</p>}
+          <h1 id="dashboard-title">{isEngineer ? 'SQE dashboard' : 'Analyst dashboard'}</h1>
+          <p className="dashboard-intro">{isEngineer ? 'Open a requirement to review its criteria, test cases, executions and defects.' : 'Add a requirement or open a draft to refine it and submit it for review.'}</p>
         </div>
         <div className="dashboard-actions">
           {user?.permissions?.includes('create_requirements') && <a className="button" href="#requirements">Add requirement</a>}
@@ -169,75 +113,7 @@ export default function Dashboard({ user }) {
         <p className="requirements-empty">Dashboard statistics are unavailable.</p>
       ) : (
         <>
-          <section className="metric-grid" aria-label="Key quality metrics">
-            <MetricCard label="Total Requirements" value={dashboard.total_requirements} />
-            <MetricCard label="Approved Requirements" value={dashboard.approved_count} tone="metric-approved" />
-            <MetricCard label="Pending Requirements" value={dashboard.pending_count} tone="metric-review" />
-            <MetricCard label="In Review Requirements" value={dashboard.in_review_count} tone="metric-review" />
-            <MetricCard label="Needs Revision Requirements" value={dashboard.needs_revision_count} tone="metric-revision" />
-            <MetricCard
-              label="Historical numeric risk average"
-              value={`${dashboard.average_risk_score}/100`}
-              detail="0–29 Low · 30–59 Medium · 60–79 High · 80–100 Critical"
-              helpText="Quality Risk Score indicates how much refinement and QA attention a requirement may need before implementation."
-              tone="metric-risk"
-            />
-            <MetricCard label="Current-version test cases" value={dashboard.total_test_scenarios} tone="metric-scenarios" />
-            <MetricCard label="All criteria explicitly linked" value={`${dashboard.traceability_coverage_percent}%`} detail={`${dashboard.traceable_requirement_count} of ${dashboard.total_requirements} requirements`} tone="metric-coverage" />
-          </section>
-
-          {!isEngineer && <section className="analytics-section" aria-labelledby="distribution-title">
-            <div className="dashboard-section-heading">
-              <div><p className="eyebrow">DISTRIBUTION</p><h2 id="distribution-title">Portfolio composition</h2></div>
-              <span>{dashboard.total_requirements} requirements</span>
-            </div>
-            <div className="distribution-grid">
-              <Distribution title="Review Status" items={REVIEW_DISTRIBUTION} data={dashboard} total={dashboard.total_requirements} />
-              <Distribution title="Risk Level" items={RISK_DISTRIBUTION} data={dashboard} total={dashboard.total_requirements} />
-              <Distribution title="Requirement Type" items={TYPE_DISTRIBUTION} data={dashboard} total={dashboard.total_requirements} />
-            </div>
-          </section>}
-
           <QualityMetrics data={dashboard} />
-          <section className="coverage-section" aria-labelledby="coverage-title">
-            <div className="coverage-heading">
-              <div><p className="eyebrow">TRACEABILITY</p><h2 id="coverage-title">Recorded criterion links</h2></div>
-              <strong>{dashboard.traceability_coverage_percent}%</strong>
-            </div>
-            <p>{dashboard.traceable_requirement_count} of {dashboard.total_requirements} requirements have every current criterion explicitly linked to a current active case. This does not prove complete test coverage or execution success.</p>
-            <div className="coverage-track" role="progressbar" aria-label="Traceability coverage" aria-valuemin="0" aria-valuemax="100" aria-valuenow={dashboard.traceability_coverage_percent}>
-              <span style={{ width: `${dashboard.traceability_coverage_percent}%` }} />
-            </div>
-          </section>
-
-          <section className="dashboard-section" aria-labelledby="attention-title">
-            <div className="dashboard-section-heading">
-              <div><p className="eyebrow">PRIORITY QUEUE</p><h2 id="attention-title">{isEngineer ? 'Review priorities' : 'High Attention Requirements'}</h2></div>
-              <span>{dashboard.high_attention_requirements.length} items</span>
-            </div>
-            {dashboard.high_attention_requirements.length ? (
-              <div className="dashboard-requirement-list">
-                {dashboard.high_attention_requirements.map((requirement) => (
-                  <RequirementRow requirement={requirement} attention key={requirement.id} />
-                ))}
-              </div>
-            ) : <p className="dashboard-empty">No high-risk or revision-required items.</p>}
-          </section>
-
-          <section className="dashboard-section" aria-labelledby="recent-title">
-            <div className="dashboard-section-heading">
-              <div><p className="eyebrow">LATEST ACTIVITY</p><h2 id="recent-title">Recent Requirements</h2></div>
-              <span>Latest 5</span>
-            </div>
-            {dashboard.recent_requirements.length ? (
-              <div className="dashboard-requirement-list">
-                {dashboard.recent_requirements.map((requirement) => (
-                  <RequirementRow requirement={requirement} key={requirement.id} />
-                ))}
-              </div>
-            ) : <p className="dashboard-empty">No saved requirements yet.{user?.permissions?.includes('create_requirements') && <> <a href="#requirements">Add a requirement</a> to begin.</>}</p>}
-          </section>
-
           <section className="dashboard-section" aria-labelledby="all-requirements-title">
             <div className="dashboard-section-heading">
               <div><p className="eyebrow">REGISTER</p><h2 id="all-requirements-title">All Requirements</h2></div>
@@ -248,7 +124,7 @@ export default function Dashboard({ user }) {
               <button disabled={page===1 || isLoading} onClick={() => setPage(page-1)}>Previous page</button>
               <button disabled={page*50>=total || isLoading} onClick={() => setPage(page+1)}>Next page</button>
               <label>Search this page<input type="search" placeholder="Search by title" value={search} onChange={event => setSearch(event.target.value)} /></label>
-              <label>Review status<select value={reviewFilter} onChange={event => setReviewFilter(event.target.value)}><option value="">All statuses</option>{['Pending','In Review','Approved','Needs Revision'].map(label => <option key={label}>{label}</option>)}</select></label>
+
             </div>
             {visibleRequirements.length ? (
               <div className="dashboard-requirement-list">

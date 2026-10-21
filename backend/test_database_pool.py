@@ -76,6 +76,23 @@ class DatabasePoolTests(unittest.TestCase):
                 raise ValueError('rollback')
         self.assertIs(raw.__exit__.call_args.args[0], ValueError)
 
+    def test_installed_psycopg_context_preserves_pool_socket_between_login_transactions(self):
+        # Real installed driver context behavior, with mocked network/connection.
+        raw = MagicMock(closed=False, _pool=MagicMock())
+        raw.__exit__.side_effect = lambda *args: database.psycopg.Connection.__exit__(raw, *args)
+        pool = MagicMock()
+        adapter = database.DatabaseConnection(raw, 'postgres', pool=pool)
+        with adapter:
+            adapter.execute('SELECT 1')
+        with adapter.autocommit_reads():
+            adapter.execute('SELECT 1')
+        with adapter:
+            adapter.execute('SELECT 1')
+        self.assertEqual(raw.commit.call_count, 2)
+        raw.close.assert_not_called()
+        adapter.close()
+        pool.putconn.assert_called_once_with(raw)
+
     def test_pool_shutdown_closes_cached_pools(self):
         pool = MagicMock(closed=False)
         with patch.object(database, 'ConnectionPool', return_value=pool):

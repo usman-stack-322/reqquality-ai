@@ -1,5 +1,5 @@
 import { apiFetch as fetch } from '../api.js';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { BACKEND_UNAVAILABLE, loginErrorMessage } from '../login-errors.js';
 
 export default function Login({ onLogin, onRegister, initialEmail = '', notice = '' }) {
@@ -8,9 +8,12 @@ export default function Login({ onLogin, onRegister, initialEmail = '', notice =
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitting = useRef(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (submitting.current) return;
+    submitting.current = true;
     setIsSubmitting(true);
     setError('');
     try {
@@ -27,6 +30,7 @@ export default function Login({ onLogin, onRegister, initialEmail = '', notice =
     } catch (loginError) {
       setError(loginError instanceof TypeError ? BACKEND_UNAVAILABLE : loginError.message || BACKEND_UNAVAILABLE);
     } finally {
+      submitting.current = false;
       setIsSubmitting(false);
     }
   }
@@ -38,7 +42,7 @@ export default function Login({ onLogin, onRegister, initialEmail = '', notice =
         <h1 id="login-title">Sign in</h1>
         <p className="auth-intro">Use your project account to review requirements and quality data.</p>
         {notice && <p className="success auth-notice" role="status">{notice}</p>}
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit} aria-busy={isSubmitting} aria-describedby="login-feedback">
           <div className="requirement-field">
             <label htmlFor="login-email">Email</label>
             <input id="login-email" type="email" autoComplete="email" maxLength={254} required disabled={isSubmitting} value={email} onChange={(event) => setEmail(event.target.value)} />
@@ -52,12 +56,14 @@ export default function Login({ onLogin, onRegister, initialEmail = '', notice =
               </button>
             </div>
           </div>
-          {error && <p className="error" role="alert">{error}</p>}
+          <div className="login-feedback" id="login-feedback" aria-live="polite" aria-atomic="true">
+            {error ? <p className="error" role="alert">{error}</p> : <p role="status">{isSubmitting ? 'Signing in securely…' : '\u00a0'}</p>}
+          </div>
           <button className="requirement-save-button" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
-        <p className="auth-switch"><a href="#forgot-password">Forgot password?</a></p>
+        <p className="auth-switch auth-recovery"><a href="#forgot-password">Forgot password?</a></p>
         <p className="auth-switch">To create an account, ask your administrator for an invitation.</p>
         <p className="auth-switch"><a href="#home">Back to Home</a></p>
       </section>

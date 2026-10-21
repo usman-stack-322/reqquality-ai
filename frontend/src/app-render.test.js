@@ -48,7 +48,7 @@ test('primary palette maintains WCAG AA text contrast', () => {
     const channels = hex.match(/\w\w/g).map(v => parseInt(v, 16) / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4);
     return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
   };
-  for (const [foreground, background] of [['ffffff', '0f172a'], ['ffffff', '0f766e'], ['1e293b', 'ffffff'], ['475569', 'f8fafc']]) {
+  for (const [foreground, background] of [['ffffff', '173f35'], ['173f35', 'fbf7f0'], ['161a18', 'f4efe6'], ['526157', 'fbf7f0']]) {
     const a = luminance(foreground), b = luminance(background);
     assert.ok((Math.max(a, b) + .05) / (Math.min(a, b) + .05) >= 4.5);
   }

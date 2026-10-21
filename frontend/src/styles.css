@@ -1,15 +1,15 @@
 :root {
-  --color-dark: #0f172a;
-  --color-dark-secondary: #0f766e;
-  --color-green: #99f6e4;
-  --color-green-strong: #0f766e;
-  --color-green-dark: #0f766e;
-  --color-background: #f8fafc;
-  --color-surface: #ffffff;
-  --color-border: #cbd5e1;
-  --color-text: #1e293b;
-  --color-muted: #475569;
-  --color-charcoal: #1e293b;
+  --color-dark: #161a18;
+  --color-dark-secondary: #173f35;
+  --color-green: #d7e4d8;
+  --color-green-strong: #285b4a;
+  --color-green-dark: #173f35;
+  --color-background: #f4efe6;
+  --color-surface: #fbf7f0;
+  --color-border: #d8cec0;
+  --color-text: #161a18;
+  --color-muted: #53635a;
+  --color-charcoal: #161a18;
   --color-error: #a53d31;
   --color-warning: #d97706;
   --radius-card: 12px;
@@ -318,12 +318,25 @@ textarea { width: 100%; padding: 0.75rem 0.85rem; border: 1px solid #cbd5e1; bor
 .dashboard-requirement-row .details-button { white-space: nowrap; }
 .attention-row { border-left: 3px solid #a33b32; padding-left: 0.65rem; }
 .dashboard-empty { margin: 0; padding: 1rem 0; color: #687587; border-top: 1px solid #dde3ed; }
-.auth-shell { display: grid; justify-items: center; padding: 3rem 1rem; }
-.auth-card { width: min(100%, 460px); padding: clamp(1.4rem, 4vw, 2.2rem); border-radius: var(--radius-panel); }
+.auth-shell { display: grid; justify-items: center; align-content: start; width: 100%; margin: 0; min-height: 100vh; padding: 3rem 1rem; background: #f4efe6; }
+.auth-card { width: min(100%, 460px); padding: clamp(1.4rem, 4vw, 2.2rem); border-radius: var(--radius-panel); background: #fbf7f0; border-color: #d8cec0; border-top: 5px solid #173f35; color: #161a18; }
+.auth-card h1, .auth-card label, .auth-card a, .auth-card > .eyebrow { color: #173f35; }
+.auth-card .auth-intro { color: #526157; }
+.auth-card .auth-form > .requirement-save-button { color: #fff; background: #173f35; }
+.auth-card .auth-form > .requirement-save-button:hover:not(:disabled) { color: #fff; background: #285b4a; transform: none; }
 .auth-card > .eyebrow { margin: 0 0 0.35rem; font-size: 0.75rem; }
 .auth-card h1 { margin-bottom: 0.4rem; font-size: 1.8rem; }
 .auth-intro { margin: 0 0 1.4rem; color: #5b6779; }
 .auth-form { display: grid; gap: 1rem; }
+.auth-form .login-feedback { min-height: 4.5rem; color: var(--color-text-muted, #53635a); font-size: .9rem; overflow-wrap: anywhere; }
+.auth-form .login-feedback p { margin: 0; }
+.auth-card .auth-recovery { text-align: right; margin-top: .75rem; }
+.auth-card .auth-switch { color: #526157; line-height: 1.5; }
+.auth-card input:focus-visible, .auth-card button:focus-visible, .auth-card a:focus-visible { outline: 3px solid #3f765f; outline-offset: 3px; }
+.detail-section > summary { cursor: pointer; color: #173f35; font-weight: 700; padding: .5rem 0; }
+.workflow-editor fieldset > button { margin: .4rem .6rem .4rem 0; }
+.workflow-editor fieldset > label { display: block; margin-block: .8rem; }
+.pdf-export-status { display: block; min-height: 1.5em; font-size: .8rem; }
 .auth-form .requirement-field input, .auth-form .requirement-field select { margin: 0; }
 .auth-form > button { width: 100%; min-height: 2.9rem; }
 .auth-form .error, .auth-form .success { margin: 0; }
@@ -560,6 +573,9 @@ textarea { line-height: 1.6; }
 }
 @media (max-width: 380px) {
   .workflow-steps, .preview-artifacts { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  main.auth-shell { padding: 1.5rem 1rem; }
 }
 
 /* Existing requirement review tools share the application's form styling. */

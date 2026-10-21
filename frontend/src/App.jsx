@@ -74,14 +74,25 @@ function AppContent() {
   const authRevision = useRef(0);
 
   useEffect(() => {
-    const onHashChange = () => setPage(currentPage());
+    const onHashChange = () => {
+      const next = currentPage();
+      if (!user && !['home', 'login', 'register', 'accept-invitation', 'forgot-password', 'reset-password'].includes(next)) setIsCheckingSession(true);
+      setPage(next);
+    };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     let active = true;
     const revision = authRevision.current;
+    // Public pages must not compete with an explicit login for refresh cookies,
+    // database connections or cold-start capacity. Restore only at a protected route.
+    if (user || ['home', 'login', 'register', 'accept-invitation', 'forgot-password', 'reset-password'].includes(page)) {
+      setIsCheckingSession(false);
+      return;
+    }
+    setIsCheckingSession(true);
     async function loadSession() {
       try {
         // Share the bootstrap across StrictMode's effect replay, without caching auth.
@@ -106,12 +117,13 @@ function AppContent() {
     }
     loadSession();
     return () => { active = false; };
-  }, [sessionAttempt]);
+  }, [sessionAttempt, page]);
 
   useEffect(() => {
     if (isCheckingSession || sessionError) return;
     if (['accept-invitation', 'forgot-password', 'reset-password'].includes(page)) return;
-    if (!user && !['home', 'login', 'register'].includes(page)) {
+    // Let a protected navigation finish its session check before redirecting.
+    if (!user && !['home', 'login', 'register'].includes(page) && sessionRequest.current) {
       window.location.hash = 'login';
     } else if (user && ['home', 'login', 'register'].includes(page)) {
       window.location.hash = ['admin', 'Manager'].includes(user?.role) ? 'admin' : 'dashboard';
@@ -133,6 +145,7 @@ function AppContent() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to log out.');
       authRevision.current++;
+      sessionRequest.current = null;
       setUser(null);
       setCsrfToken('');
       window.location.hash = 'login';

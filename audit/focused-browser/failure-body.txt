@@ -1,0 +1,180 @@
+RQ
+ReqQuality AI
+Add Requirement
+Dashboard
+Analyst
+Analyst
+Log out
+← All requirements
+Export PDF
+ 
+
+REQUIREMENT 1
+
+Authoring: Draft. Save your draft, review AI suggestions, then submit for SQE review.
+
+Sign in
+
+Registered users can sign in using their fixture account credentials.
+
+Original
+Pending
+Functional
+Risk: Not analyzed
+Suggested priority: Not analyzed
+Prepare requirement for review
+
+Project context: No context supplied; missing values require clarification.
+
+Saved analysis is outdated for the current context or configuration. It remains historical evidence; analyze explicitly to update it.
+
+Reviewer feedback: No feedback yet.
+
+Title
+Description
+Type
+Functional
+Non-Functional
+Business
+Priority
+Low
+Medium
+High
+Clarification answers
+Acceptance criteria, one per line
+Analyze saved version / Retry AISave edits as DraftSubmit saved requirement for SQE review
+
+Editing an approved requirement requires another review.
+
+The requirement was edited after this analysis. These findings describe an earlier revision.
+
+Saved AI findings ? suggestions requiring review
+Suggested improved requirement
+Original
+Needs Confirmation
+
+Registered users can sign in using valid credentials.
+
+Suggested type: Functional
+
+Describes system behavior.
+
+Ambiguity
+
+No findings recorded.
+
+Conflicts
+
+No findings recorded.
+
+Missing information
+What should happen if the account is locked?
+AI Suggestion
+Needs Confirmation
+Clarification questions
+What should happen if the account is locked?
+AI Suggestion
+Needs Confirmation
+Testability
+
+No findings recorded.
+
+Possible edge cases
+
+No findings recorded.
+
+Acceptance Criteria
+1
+AC-001
+
+Valid credentials open the registered account.
+
+Original
+Needs Confirmation
+Risk / Priority
+Unscored
+Locked-account behavior is unspecified.
+Confirm stakeholder priority; authentication affects access.
+
+Requirement-quality risk: Not analyzed. Suggested priority: Not analyzed. These indicate review attention, not proven software defects.
+
+Version history and traceability
+Detailed test cases and Manual execution
+
+Project current · Requirement content version 3. AI-generated cases start as editable drafts. Positive, negative and boundary behavior must be supported by the requirement; unspecified outcomes need clarification.
+
+TC-1: Valid sign in
+
+SC-aa8c0587df7b4e91800627fafaae8324-001 · Positive · Unspecified · Priority Medium · Draft
+
+Case version 1 · Requirement content version 2 · Latest manual result for this case version: Not Run
+
+Earlier requirement version. Edit and verify the links to rebase this case before new execution.
+
+Draft/review needed; generated expected behavior is unconfirmed.
+
+Criterion links: AC-001
+
+Preconditions: Registered account exists.
+
+Test data: Not specified
+
+Enter valid credentials.
+
+Expected results: Account opens.
+
+Open Manual execution and history for TC-1
+TC-2: Edited sign-in test case
+
+TC-bdfbdb591d44497ca024be947a81129d · Positive · Functional · Priority High · Draft
+
+Case version 2 · Requirement content version 2 · Latest manual result for this case version: Fail
+
+Earlier requirement version. Edit and verify the links to rebase this case before new execution.
+
+Draft/review needed; generated expected behavior is unconfirmed.
+
+Criterion links: AC-001
+
+Preconditions: Registered account exists.
+
+Test data: Edited fixture test data.
+
+Enter valid fixture credentials.
+Request sign in.
+
+Expected results: The fixture account opens.
+
+Open Manual execution and history for TC-2
+Previous cases Page 1; 2 cases including archived Next cases
+SQA Review
+Pending
+
+Reviewed content version
+Not version-verified
+
+Review Status
+Pending
+
+Reviewer Notes
+No reviewer notes.
+
+Assigned reviewer
+Unassigned
+
+Reviewed by
+Not recorded
+
+Reviewed at
+Not reviewed yet
+
+SQA Engineers record review decisions.
+
+ReqQuality AI
+
+AI-Powered Requirements & Software Quality Engineering Platform
+
+Add Requirement
+Dashboard
+Final Year Project
+2026

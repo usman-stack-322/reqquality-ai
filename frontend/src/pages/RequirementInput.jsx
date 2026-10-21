@@ -1,30 +1,7 @@
 import { apiFetch as fetch } from '../api.js';
-import React, { useEffect, useRef, useState } from 'react';
-import SourceBadges from '../components/SourceBadges';
+import React, { useRef, useState } from 'react';
 import AnalysisDraft from '../components/AnalysisDraft';
 import ProjectContext from '../components/ProjectContext';
-
-function LabeledItems({ items, defaultSource = 'ai_suggestion' }) {
-  if (!items.length) return <p className="analysis-clear">No findings returned in this category.</p>;
-  return (
-    <ul>
-      {items.map((entry, index) => {
-        const item = typeof entry === 'string'
-          ? { text: entry, source: defaultSource, needs_confirmation: defaultSource === 'ai_assumption' }
-          : entry;
-        return (
-          <li key={`${item.source}-${index}-${item.text}`}>
-            <span>{item.text}</span>
-            <SourceBadges source={item.source} needsConfirmation={item.needs_confirmation} />
-            {item.introduced_values?.length > 0 && (
-              <span className="introduced-value-list">Introduced values: {item.introduced_values.join(', ')}</span>
-            )}
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
 
 export default function RequirementInput({ csrfToken }) {
   const busy = useRef(false);
@@ -34,8 +11,6 @@ export default function RequirementInput({ csrfToken }) {
   const [description, setDescription] = useState('');
   const [type, setType] = useState('Functional');
   const [priority, setPriority] = useState('Medium');
-  const [requirements, setRequirements] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -43,26 +18,6 @@ export default function RequirementInput({ csrfToken }) {
   const [analysis, setAnalysis] = useState(null);
   const [analysisEdits, setAnalysisEdits] = useState({});
   const [analysisError, setAnalysisError] = useState('');
-
-  useEffect(() => {
-    const controller = new AbortController();
-    async function loadRequirements() {
-      try {
-        const response = await fetch('/api/requirements?view=summary', { signal: controller.signal });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Unable to load requirements.');
-        if (!controller.signal.aborted) setRequirements(data.requirements);
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        setErrorMessage(error.message || 'Unable to reach the requirements API.');
-      } finally {
-        if (!controller.signal.aborted) setIsLoading(false);
-      }
-    }
-
-    loadRequirements();
-    return () => controller.abort();
-  }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -84,7 +39,7 @@ export default function RequirementInput({ csrfToken }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Unable to save requirement.');
 
-      setRequirements((savedRequirements) => [data.requirement, ...savedRequirements]);
+      window.location.hash = `requirement/${data.requirement.id}`;
       setSuccessMessage('Requirement saved successfully.');
       setTitle('');
       setDescription('');
@@ -138,12 +93,12 @@ export default function RequirementInput({ csrfToken }) {
   }
 
   return (
-    <div className="requirement-page"><ProjectContext />
+    <div className="requirement-page"><a className="back-link" href="#dashboard">? Dashboard</a><ProjectContext />
       <section className="card requirement-form-card">
         <div className="requirement-heading">
           <p className="eyebrow">REQUIREMENTS</p>
           <h1>Add Requirement</h1>
-          <p>Capture a clear, testable need for your product.</p>
+          <p>Save a draft, then review AI findings and submit it to your SQE.</p>
         </div>
 
         <form className="requirement-form" onSubmit={handleSubmit} aria-busy={isSaving || isAnalyzing}>
@@ -263,143 +218,11 @@ export default function RequirementInput({ csrfToken }) {
           </div>
           <AnalysisDraft analysis={analysis} edits={analysisEdits} onChange={value => {setAnalysisEdits(value); setAccepted(false);}} disabled={isSaving || isAnalyzing} />
           <label><input type="checkbox" checked={accepted} onChange={e => setAccepted(e.target.checked)} /> I have reviewed these unconfirmed suggestions and accept saving them for review.</label>
-          <p>Suggested type: {analysis.suggested_requirement_type}. {analysis.type_explanation}</p>
-          <ul>{analysis.priority_reasons?.map(reason => <li key={reason}>{reason}</li>)}</ul>
-          <article className="card original-requirement-card">
-            <div className="analysis-item-heading">
-              <h3>Original stakeholder requirement</h3>
-              <SourceBadges source="original" />
-            </div>
-            <strong>{analysis.labeled_analysis?.original_requirement?.title || title}</strong>
-            <p>{analysis.labeled_analysis?.original_requirement?.description || description}</p>
-          </article>
-          <div className="analysis-grid">
-            <article className="card analysis-card improved-requirement-card">
-              <div className="analysis-item-heading">
-                <h3>Suggested improved requirement</h3>
-                <SourceBadges
-                  source={analysis.labeled_analysis?.improved_requirement?.source || 'ai_suggestion'}
-                  needsConfirmation={analysis.labeled_analysis?.improved_requirement?.needs_confirmation}
-                />
-              </div>
-              <p>{analysis.labeled_analysis?.improved_requirement?.text || analysis.improved_requirement}</p>
-              {analysis.labeled_analysis?.improved_requirement?.introduced_values?.length > 0 && (
-                <div className="confirmation-note">
-                  <strong>AI-introduced values:</strong>
-                  <ul className="introduced-value-chips">
-                    {analysis.labeled_analysis.improved_requirement.introduced_values.map((value) => (
-                      <li key={value}>{value}</li>
-                    ))}
-                  </ul>
-                  <p>These values are suggestions and require stakeholder/SQA confirmation before they are treated as requirements.</p>
-                </div>
-              )}
-            </article>
-            {[
-              ['Ambiguity', 'ambiguity_issues', analysis.ambiguity_issues || [], 'ai_suggestion'],
-              ['Conflicts', 'conflict_issues', analysis.conflict_issues || [], 'ai_suggestion'],
-              ['Missing information', 'missing_information', analysis.missing_information || [], 'ai_suggestion'],
-              ['Testability', 'testability_issues', analysis.testability_issues || [], 'ai_suggestion'],
-              ['Assumptions', 'assumptions', analysis.assumptions || [], 'ai_assumption'],
-              ['Possible edge cases', 'edge_cases', analysis.edge_cases || [], 'ai_suggestion'],
-              ['Acceptance criteria', 'acceptance_criteria', analysis.acceptance_criteria || [], 'ai_suggestion'],
-            ].map(([heading, field, fallbackItems, fallbackSource]) => {
-              const items = analysis.labeled_analysis?.[field] || fallbackItems;
-              return (
-              <article className="card analysis-card" key={heading}>
-                <h3>{heading}</h3>
-                <LabeledItems items={items} defaultSource={fallbackSource} />
-              </article>
-              );
-            })}
-          </div>
-          <article className={`card risk-summary risk-${analysis.risk_level?.toLowerCase() || 'low'}`}>
-            <div className="risk-summary-heading">
-              <h3>Quality risk</h3>
-              <span className="risk-score">AI assessment</span>
-            </div>
-            <div className="risk-summary-details">
-              <p><strong>Risk level</strong><span>{analysis.risk_level}</span></p>
-              <p><strong>Suggested priority</strong><span>{analysis.suggested_priority}</span></p>
-            </div>
-            <h4>Risk reasons</h4>
-            <ul>{(analysis.risk_reasons || []).map((reason) => <li key={reason}>{reason}</li>)}</ul>
-          </article>
-          <section className="test-scenarios" aria-labelledby="test-scenarios-title">
-            <div className="test-scenarios-heading">
-              <h3 id="test-scenarios-title">Generated Test Scenarios</h3>
-              <span>Gemini generated</span>
-            </div>
-            <div className="scenario-groups">
-              {[
-                ['Positive', 'Positive scenarios'],
-                ['Negative', 'Negative scenarios'],
-                ['Boundary', 'Boundary scenarios'],
-                ['Edge-case', 'Edge-case scenarios'],
-              ].map(([category, heading]) => {
-                const scenarios = (analysis.test_scenarios || []).filter(
-                  (scenario) => scenario.category === category,
-                );
-                return (
-                  <article className="card scenario-group" key={category}>
-                    <h4>{heading}</h4>
-                    {scenarios.map((scenario) => (
-                      <section className="scenario-item" key={scenario.id}>
-                        <div className="scenario-title-row">
-                          <h5>{scenario.title}</h5>
-                          <span>{scenario.id}</span>
-                        </div>
-                        <SourceBadges source={scenario.source || 'ai_suggestion'} needsConfirmation={scenario.needs_confirmation} />
-                        {scenario.assumption_reasons?.length > 0 && (
-                          <p className="confirmation-note">Depends on unconfirmed AI assumptions: {scenario.assumption_reasons.join(' ')}</p>
-                        )}
-                        {scenario.introduced_values?.length > 0 && (
-                          <p className="introduced-value-list">AI-introduced values: {scenario.introduced_values.join(', ')}</p>
-                        )}
-                        <p><strong>Preconditions</strong></p>
-                        <ul>{scenario.preconditions.map((item) => <li key={item}>{item}</li>)}</ul>
-                        <p><strong>Test steps</strong></p>
-                        <ol>{scenario.test_steps.map((step, index) => <li key={`${scenario.id}-${index}`}>{step}</li>)}</ol>
-                        <p><strong>Expected result</strong></p>
-                        <p>{scenario.expected_result}</p>
-                        <p className="scenario-linked-requirement">Linked requirement: {scenario.linked_requirement}</p>
-                      </section>
-                    ))}
-                    {scenarios.length === 0 && <p className="analysis-clear">No scenarios available.</p>}
-                  </article>
-                );
-              })}
-            </div>
-          </section>
+          <p>Save this draft to continue refining and submit it for SQE review.</p>
+
         </section>
       )}
 
-      <section className="saved-requirements" aria-labelledby="saved-requirements-title">
-        <div className="saved-requirements-heading">
-          <h2 id="saved-requirements-title">Saved requirements</h2>
-          <span>{requirements.length}</span>
-        </div>
-        {isLoading ? (
-          <p className="requirements-empty">Loading requirements...</p>
-        ) : requirements.length === 0 ? (
-          <p className="requirements-empty">Your saved requirements will appear here.</p>
-        ) : (
-          <div className="requirements-list">
-            {requirements.map((requirement) => (
-              <article className="card saved-requirement-card" key={requirement.id}>
-                <div className="saved-requirement-title-row">
-                  <h3><a href={`#requirement/${requirement.id}`}>{requirement.title}</a></h3>
-                  <span className={`priority-label priority-${(requirement.user_priority || requirement.priority).toLowerCase()}`}>
-                    {requirement.user_priority || requirement.priority}
-                  </span>
-                </div>
-                <p className="saved-requirement-description">{requirement.description}</p>
-                <span className="requirement-type-label">{requirement.requirement_type || requirement.type}</span>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
     </div>
   );
 }

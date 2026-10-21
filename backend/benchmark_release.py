@@ -22,7 +22,7 @@ def summary(values):
     return dict(n=len(values),median_ms=round(statistics.median(values),2),p95_ms=round(ordered[math.ceil(.95*len(ordered))-1],2),first_ms=round(values[0],2))
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--output',required=True);parser.add_argument('--without-metric-reuse',action='store_true');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--output',required=True);parser.add_argument('--without-metric-reuse',action='store_true');parser.add_argument('--workflow-dashboard',action='store_true');args=parser.parse_args()
     logging.disable(logging.CRITICAL)
     IntegratedReportingTests.setUpClass();f=IntegratedReportingTests();f.setUp()
     try:
@@ -43,7 +43,7 @@ def main():
         data={};stages={}
         from services import management_service
         original_load=management_service.load_requirements
-        for name,client,path in (('dashboard',f.analyst,'/api/dashboard'),('admin_dashboard',f.admin,'/api/admin/dashboard'),('detail',f.analyst,f'/api/requirements/{f.r["id"]}')):
+        for name,client,path in (('dashboard',f.analyst,'/api/dashboard?view=workflow' if args.workflow_dashboard else '/api/dashboard'),('admin_dashboard',f.admin,'/api/admin/dashboard'),('detail',f.analyst,f'/api/requirements/{f.r["id"]}')):
             values=[]
             for _ in range(40):
                 # A/B control reproduces the former duplicate read within this
@@ -70,6 +70,7 @@ def main():
             f.r=response.json['requirement']
         data['material_save']=summary(values)
         payload=dict(metric_reuse=not args.without_metric_reuse,environment=dict(os=platform.system(),release=platform.release(),machine=platform.machine(),logical_cpus=os.cpu_count(),python=platform.python_version(),sqlite=sqlite3.sqlite_version,flask=version('Flask')),dataset=dict(requirements=100,test_cases=199,executions=0,bugs=0,synthetic_users=34),transport='Flask test client, sequential single process, temporary local SQLite; initialized schema. Not browser/network/PG or true process-cold timings.',percentile='Nearest rank p95 of 30/40 observations; descriptive sample tail, not production SLA evidence.',requests=data,login_stages_ms={key:summary(values) for key,values in stages.items()})
+        payload['workflow_dashboard'] = args.workflow_dashboard
         Path(args.output).write_text(json.dumps(payload,indent=2),encoding='utf-8')
         print(json.dumps(dict(requests=data),sort_keys=True))
     finally:f.doCleanups()

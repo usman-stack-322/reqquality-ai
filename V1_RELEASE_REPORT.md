@@ -213,3 +213,8 @@ This explicitly selects disposable/demo SQLite; it is **not** an outage fallback
 - [ ] Deployment-owner review of the existing frontend backend-origin rewrite and backend WSGI deployment. No deployment or push is authorized here.
 
 These outstanding gates prevent an unconditional V1-complete declaration. Unknown historical versions remain labeled unknown; single-project scope, reference-only evidence and manual external execution remain explicit limits.
+
+
+## Focused single-project follow-up (21 October 2026)
+
+See `FOCUSED_RELEASE_REPORT.md` for current changes, measured regressions as well as improvements, test boundaries and exact evidence paths. Login now prevents duplicate submissions and public pages avoid competing session bootstrap; the reported production three-attempt login remains unverified. Export reads are batched and snapshot-consistent, dashboard/workflow duplication is reduced, and short/long PDF pagination and responsive layouts are verified on synthetic data. Existing security and AI-only behavior are retained. No schema change, real-user mutation, deployment or push. Prior production/provider/migration sign-off blockers remain; this follow-up does not declare V1 complete.

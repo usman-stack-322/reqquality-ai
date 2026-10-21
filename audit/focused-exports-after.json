@@ -1,0 +1,89 @@
+{
+  "environment": "Windows / Flask test client / temporary SQLite, sequential; 20 requirements, one detailed case; no AI; initialized schema; first is not hosting cold start",
+  "results": {
+    "requirement_pdf": {
+      "n": 20,
+      "median_ms": 35.28,
+      "p95_ms": 46.48,
+      "first_ms": 357.39,
+      "sql_statements": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ]
+    },
+    "project_pdf": {
+      "n": 20,
+      "median_ms": 96.87,
+      "p95_ms": 153.11,
+      "first_ms": 125.24,
+      "sql_statements": [
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24,
+        24
+      ]
+    },
+    "csv": {
+      "n": 20,
+      "median_ms": 8.01,
+      "p95_ms": 9.69,
+      "first_ms": 11.33,
+      "sql_statements": [
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17,
+        17
+      ]
+    }
+  }
+}

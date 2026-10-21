@@ -48,24 +48,24 @@ def review_status(row):
     return status if status in ('In Review','Approved','Needs Revision') else 'Pending'
 
 
-def graph(c,rid):
-    row=c.execute("SELECT * FROM requirements WHERE id=? AND project_id='current'",(rid,)).fetchone()
+def graph(c,rid,records=None):
+    row=records['requirement'] if records is not None else c.execute("SELECT * FROM requirements WHERE id=? AND project_id='current'",(rid,)).fetchone()
     if row is None: abort(404,description='Requirement not found in this project.')
     r=dict(row)
-    versions=[dict(v) for v in c.execute('SELECT * FROM requirement_versions WHERE requirement_id=? ORDER BY content_revision DESC',(rid,))]
+    versions=[dict(v) for v in (records['versions'] if records is not None else c.execute('SELECT * FROM requirement_versions WHERE requirement_id=? ORDER BY content_revision DESC',(rid,)))]
     for v in versions:
         v['snapshot']=json.loads(v['snapshot']);v['current']=v['content_revision']==r['content_revision']
     from services.case_service import serialize_case
-    cases=[serialize_case(v) for v in c.execute('SELECT * FROM test_scenarios WHERE requirement_id=? ORDER BY id',(rid,))]
-    case_versions=[dict(v) for v in c.execute('SELECT v.* FROM test_case_versions v JOIN test_scenarios s ON s.id=v.scenario_id WHERE s.requirement_id=? ORDER BY v.id',(rid,))]
+    cases=[serialize_case(v) for v in (records['cases'] if records is not None else c.execute('SELECT * FROM test_scenarios WHERE requirement_id=? ORDER BY id',(rid,)))]
+    case_versions=[dict(v) for v in (records['case_versions'] if records is not None else c.execute('SELECT v.* FROM test_case_versions v JOIN test_scenarios s ON s.id=v.scenario_id WHERE s.requirement_id=? ORDER BY v.id',(rid,)))]
     for v in case_versions: v['snapshot']=json.loads(v['snapshot'])
-    executions=[dict(v) for v in c.execute('SELECT e.* FROM test_executions e JOIN test_scenarios s ON s.id=e.scenario_id WHERE s.requirement_id=? ORDER BY e.id',(rid,))]
+    executions=[dict(v) for v in (records['executions'] if records is not None else c.execute('SELECT e.* FROM test_executions e JOIN test_scenarios s ON s.id=e.scenario_id WHERE s.requirement_id=? ORDER BY e.id',(rid,)))]
     for e in executions:
         e.pop('request_key',None);e.pop('input_hash',None)
     from services.bug_service import public_bug
-    bugs=[public_bug(v) for v in c.execute('SELECT * FROM bugs WHERE requirement_id=? ORDER BY id',(rid,))]
-    bug_history=[dict(v) for v in c.execute('SELECT h.* FROM bug_history h JOIN bugs b ON b.id=h.bug_id WHERE b.requirement_id=? ORDER BY h.id',(rid,))]
-    reviews=[dict(v) for v in c.execute('SELECT * FROM requirement_reviews WHERE requirement_id=? ORDER BY id',(rid,))]
+    bugs=[public_bug(v) for v in (records['bugs'] if records is not None else c.execute('SELECT * FROM bugs WHERE requirement_id=? ORDER BY id',(rid,)))]
+    bug_history=[dict(v) for v in (records['bug_history'] if records is not None else c.execute('SELECT h.* FROM bug_history h JOIN bugs b ON b.id=h.bug_id WHERE b.requirement_id=? ORDER BY h.id',(rid,)))]
+    reviews=[dict(v) for v in (records['reviews'] if records is not None else c.execute('SELECT * FROM requirement_reviews WHERE requirement_id=? ORDER BY id',(rid,)))]
     for v in reviews+bug_history: v['snapshot']=json.loads(v['snapshot'])
     return dict(project_id='current',requirement_id=rid,current_content_revision=r['content_revision'],sqa_review_status=review_status(r),authoring_status=r['review_status'],versions=versions,test_cases=cases,case_versions=case_versions,executions=executions,bugs=bugs,bug_history=bug_history,reviews=reviews,metric_definitions=DEFINITIONS)
 

@@ -42,9 +42,9 @@ export default function PdfExportButton({ url, filename, children = 'Export PDF'
 
   return <div className="pdf-export-control">
     <button className="button export-button" type="button" disabled={busy} aria-busy={busy} onClick={download}>
-      {busy ? `Exporting ${format}...` : children}
+      {busy ? `Downloading ${format}…` : children}
     </button>
-    {busy && <span className="pdf-export-status" role="status">Preparing your report...</span>}
+    <span className="pdf-export-status" role="status">{busy ? 'Preparing saved data. Please wait…' : '\u00a0'}</span>
     {error && <p className="error pdf-export-error" role="alert">{error}</p>}
   </div>;
 }

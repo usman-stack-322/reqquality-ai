@@ -47,8 +47,8 @@ def _get_requirement_history(connection, requirement_id):
     return [dict(item) for item in connection.execute('SELECT h.id,h.actor_id,h.action,h.created_at,u.name AS actor_name FROM requirement_history h LEFT JOIN users u ON u.id=h.actor_id WHERE h.requirement_id=? ORDER BY h.id DESC LIMIT 100', (requirement_id,))]
 
 
-def _get_requirement_detail(connection, requirement_id, include_history=True):
-    row = connection.execute('SELECT r.*, u.name AS assigned_reviewer FROM requirements r LEFT JOIN users u ON u.id=r.assigned_reviewer_user_id WHERE r.id = ?', (requirement_id,)).fetchone()
+def _get_requirement_detail(connection, requirement_id, include_history=True, report_rows=None):
+    row = (report_rows['requirement'] if report_rows is not None else connection.execute('SELECT r.*, u.name AS assigned_reviewer FROM requirements r LEFT JOIN users u ON u.id=r.assigned_reviewer_user_id WHERE r.id = ?', (requirement_id,)).fetchone())
     if row is None:
         return None
     requirement = dict(row)
@@ -63,16 +63,16 @@ def _get_requirement_detail(connection, requirement_id, include_history=True):
     except (ValueError, TypeError):
         requirement['analysis_summary'] = {}
     if requirement.get('reviewed_by_user_id') is not None:
-        reviewer = connection.execute('SELECT name FROM users WHERE id = ?', (requirement['reviewed_by_user_id'],)).fetchone()
+        reviewer = ({'name': report_rows['reviewed_by_name']} if report_rows is not None else connection.execute('SELECT name FROM users WHERE id = ?', (requirement['reviewed_by_user_id'],)).fetchone())
         requirement['reviewed_by_name'] = reviewer['name'] if reviewer else None
     else:
         requirement['reviewed_by_name'] = None
-    requirement['acceptance_criteria'] = [dict(item) for item in connection.execute('SELECT criterion_code, description, source, needs_confirmation, introduced_values FROM requirement_acceptance_criteria WHERE requirement_id = ? ORDER BY id', (requirement_id,)).fetchall()]
+    requirement['acceptance_criteria'] = [dict(item) for item in (report_rows['criteria'] if report_rows is not None else connection.execute('SELECT criterion_code, description, source, needs_confirmation, introduced_values FROM requirement_acceptance_criteria WHERE requirement_id = ? ORDER BY id', (requirement_id,)).fetchall())]
     for criterion in requirement['acceptance_criteria']:
         criterion['needs_confirmation'] = bool(criterion['needs_confirmation'])
         criterion['introduced_values'] = json.loads(criterion['introduced_values'])
         criterion['needs_review'] = bool(row['criteria_review_required'])
-    scenarios = connection.execute('SELECT * FROM test_scenarios WHERE requirement_id = ? AND archived=0 ORDER BY id', (requirement_id,)).fetchall()
+    scenarios = ([v for v in report_rows['cases'] if not v['archived']] if report_rows is not None else connection.execute('SELECT * FROM test_scenarios WHERE requirement_id = ? AND archived=0 ORDER BY id', (requirement_id,)).fetchall())
     requirement['test_scenarios'] = []
     for scenario_row in scenarios:
         scenario = dict(scenario_row)
@@ -83,7 +83,7 @@ def _get_requirement_detail(connection, requirement_id, include_history=True):
         scenario['introduced_values'] = json.loads(scenario['introduced_values'])
         scenario['assumption_reasons'] = json.loads(scenario['assumption_reasons'])
         requirement['test_scenarios'].append(scenario)
-    assumptions = connection.execute('SELECT assumption_code, description, source, needs_confirmation, introduced_values FROM requirement_assumptions WHERE requirement_id = ? ORDER BY id', (requirement_id,)).fetchall()
+    assumptions = (report_rows['assumptions'] if report_rows is not None else connection.execute('SELECT assumption_code, description, source, needs_confirmation, introduced_values FROM requirement_assumptions WHERE requirement_id = ? ORDER BY id', (requirement_id,)).fetchall())
     requirement['assumptions'] = [dict(item) for item in assumptions]
     for assumption in requirement['assumptions']:
         assumption['needs_confirmation'] = bool(assumption['needs_confirmation'])
@@ -96,10 +96,10 @@ def _get_requirement_detail(connection, requirement_id, include_history=True):
     # Read saved proposals only. Viewing a page never invokes the provider.
     from services.project_service import current_project
     from services.analysis_receipts import bound_input, input_hash
-    project = current_project(connection)
+    project = report_rows['project'] if report_rows is not None else current_project(connection)
     requirement['project'] = project
     requirement['analysis_draft'] = None
-    if has_request_context() and getattr(g, 'current_user', None) is not None:
+    if report_rows is None and has_request_context() and getattr(g, 'current_user', None) is not None:
         inputs = bound_input(connection, dict(title=row['title'], description=row['description'], requirement_type=row['requirement_type'], priority=row['user_priority'], clarifications=requirement['analysis_summary'].get('clarifications', '')), row, project)
         draft = connection.execute('SELECT result FROM requirement_analysis_drafts WHERE requirement_id=? AND requirement_revision=? AND user_id=? AND input_hash=?',
                                    (requirement_id, row['revision'], g.current_user['id'], input_hash(inputs))).fetchone()
@@ -110,10 +110,10 @@ def _get_requirement_detail(connection, requirement_id, include_history=True):
     requirement['analysis_outdated'] = bool(requirement['analysis_summary'].get('stale') or saved_input and (saved_input.get('context_revision') != project['revision'] or saved_input.get('generation_config') != generation_configuration()))
     return requirement
 
-def _project_report_summary(connection):
+def _project_report_summary(connection, integrated=None):
     from services.integrated_service import metrics
-    integrated=metrics(connection)
-    rows = connection.execute('SELECT review_status, risk_level, requirement_type, risk_score FROM requirements').fetchall()
+    integrated=metrics(connection) if integrated is None else integrated
+    rows = connection.execute("SELECT review_status, risk_level, requirement_type, risk_score FROM requirements WHERE project_id='current'").fetchall()
     review_counts = {status: 0 for status in REVIEW_STATUSES}
     risk_counts = {level: 0 for level in RISK_LEVELS}
     risk_counts['Unscored'] = 0
@@ -127,11 +127,10 @@ def _project_report_summary(connection):
         if row['risk_score'] is not None:
             risk_scores.append(row['risk_score'])
     total_requirements = len(rows)
-    total_test_scenarios = connection.execute('SELECT COUNT(*) FROM test_scenarios WHERE archived=0').fetchone()[0]
     traceable_requirement_count = integrated['requirements_with_all_criteria_linked']
     review_counts = integrated['review_status_counts']
     total_test_scenarios = integrated['current_test_case_count']
-    high_attention_requirements = [dict(row) for row in connection.execute("SELECT id, title, risk_score, risk_level, review_status FROM requirements WHERE risk_level IN ('High', 'Critical') OR review_status = 'Needs Revision' ORDER BY CASE risk_level WHEN 'Critical' THEN 0 WHEN 'High' THEN 1 ELSE 2 END, risk_score DESC, COALESCE(updated_at, created_at) DESC, id DESC").fetchall()]
+    high_attention_requirements = [dict(row) for row in connection.execute("SELECT id, title, risk_score, risk_level, review_status FROM requirements WHERE project_id='current' AND (risk_level IN ('High', 'Critical') OR review_status = 'Needs Revision') ORDER BY CASE risk_level WHEN 'Critical' THEN 0 WHEN 'High' THEN 1 ELSE 2 END, risk_score DESC, COALESCE(updated_at, created_at) DESC, id DESC").fetchall()]
     return {'total_requirements': total_requirements, 'review_counts': review_counts, 'risk_counts': risk_counts, 'type_counts': type_counts, 'average_risk_score': round(sum(risk_scores) / len(risk_scores), 1) if risk_scores else 0, 'total_test_scenarios': total_test_scenarios, 'traceable_requirement_count': traceable_requirement_count, 'traceability_coverage_percent': round(traceable_requirement_count * 100 / total_requirements, 1) if total_requirements else 0, 'high_attention_requirements': high_attention_requirements}
 
 def _download_response(file_stream, filename, mimetype):

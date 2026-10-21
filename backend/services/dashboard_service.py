@@ -1,9 +1,15 @@
 from app import get_connection
 from services.responses import response_payload
+from flask import request
 
 def dashboard_summary():
     connection = get_connection()
     try:
+        if request.args.get('view') == 'workflow':
+            from services.integrated_service import metrics
+            result = metrics(connection)
+            result.pop('requirement_states')
+            return response_payload(**result)
         totals = connection.execute("SELECT COUNT(*) AS total_requirements, SUM(CASE WHEN review_status IN ('Pending','Draft','Ready for Review') THEN 1 ELSE 0 END) AS pending_count, SUM(CASE WHEN review_status = 'In Review' THEN 1 ELSE 0 END) AS in_review_count, SUM(CASE WHEN review_status = 'Approved' THEN 1 ELSE 0 END) AS approved_count, SUM(CASE WHEN review_status = 'Needs Revision' THEN 1 ELSE 0 END) AS needs_revision_count, SUM(CASE WHEN risk_level = 'Low' THEN 1 ELSE 0 END) AS low_risk_count, SUM(CASE WHEN risk_level = 'Medium' THEN 1 ELSE 0 END) AS medium_risk_count, SUM(CASE WHEN risk_level = 'High' THEN 1 ELSE 0 END) AS high_risk_count, SUM(CASE WHEN risk_level = 'Critical' THEN 1 ELSE 0 END) AS critical_risk_count, SUM(CASE WHEN requirement_type = 'Functional' THEN 1 ELSE 0 END) AS functional_count, SUM(CASE WHEN requirement_type = 'Non-Functional' THEN 1 ELSE 0 END) AS non_functional_count, SUM(CASE WHEN requirement_type = 'Business' THEN 1 ELSE 0 END) AS business_count, COALESCE(ROUND(AVG(risk_score), 1), 0) AS average_risk_score FROM requirements").fetchone()
         requirement_fields = 'id, title, requirement_type, priority, user_priority, suggested_priority, risk_score, risk_level, review_status, created_at, updated_at, content_revision, reviewed_content_revision'
         recent_requirements = connection.execute(f'SELECT {requirement_fields} FROM requirements ORDER BY COALESCE(updated_at, created_at) DESC, id DESC LIMIT 5').fetchall()
