@@ -1,0 +1,1 @@
+{"reference": "AI Shorts localhost:5173/login", "source_modified": false, "account_interaction": false, "screenshot": "left hero only; sign-in fields and demo credentials excluded"}

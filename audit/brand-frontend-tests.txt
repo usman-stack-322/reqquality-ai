@@ -1,0 +1,29 @@
+
+> reqquality-ai-frontend@0.1.0 test
+> node --test src/*.test.js
+
+✔ login CSRF is sent automatically while invitation CSRF stays separate (67.0432ms)
+✔ expired access refreshes once and retries with the rotated CSRF value (6.648ms)
+✔ initial user lookup refreshes after a 200 unauthenticated response (6.5733ms)
+✔ anonymous session lookup skips refresh bootstrap when no refresh cookie exists (7.1694ms)
+✔ late session response cannot overwrite login CSRF or start a stale refresh (4.8918ms)
+✔ parallel unauthorized requests share a single refresh operation (4.9779ms)
+✔ explicit CSRF rejection bootstraps once before retrying the untouched action (4.2561ms)
+✔ permission failures are never retried (4.1216ms)
+✔ an unavailable refresh returns the original unauthorized response (3.3136ms)
+✔ a late session response cannot refresh after logout (3.4591ms)
+✔ refresh network failure preserves the original unauthorized response (3.4433ms)
+✔ caller cancellation aborts once without replaying a write (3.8601ms)
+✔ database unavailable never starts refresh or automatically replays login (3.0499ms)
+✔ public pages render synchronously and protected routes remain gated (404.7104ms)
+✔ primary palette maintains WCAG AA text contrast (0.8681ms)
+✔ sign-in distinguishes unavailable database, proxy failures and throttling (2.1118ms)
+✔ invalid credentials remain generic and validation errors remain useful (0.3793ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1173.5672

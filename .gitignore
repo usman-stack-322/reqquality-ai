@@ -20,6 +20,7 @@ backend/local-login*.log
 # Generated local browser verification profile and temporary benchmark copies
 audit/**/chrome-profile/
 .workflow-baseline-*/
+audit/tmp/
 
 # Local development configuration
 .env.local

@@ -1,0 +1,3 @@
+{"case": "clear", "request_ms": 11112.93, "status": 200, "provider": "REAL", "application_database": "disposable SQLite", "original_unchanged": true, "persisted_draft": true, "case_count": 3, "clarification_flagged_cases": 0}
+{"case": "security", "request_ms": 6447.43, "status": 200, "provider": "REAL", "application_database": "disposable SQLite", "original_unchanged": true, "persisted_draft": true, "case_count": 2, "clarification_flagged_cases": 0}
+{"case": "performance_missing", "request_ms": 7169.15, "status": 200, "provider": "REAL", "application_database": "disposable SQLite", "original_unchanged": true, "persisted_draft": true, "case_count": 1, "clarification_flagged_cases": 1, "unresolved_pass_rejected": 409}

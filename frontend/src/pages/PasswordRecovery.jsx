@@ -1,5 +1,6 @@
 import { apiFetch as fetch } from '../api.js';
 import React, { useState } from 'react';
+import BrandLogo from '../components/BrandLogo';
 
 const RECOVERY_UNAVAILABLE = 'The password reset service is temporarily unavailable. Please try again later.';
 
@@ -35,10 +36,10 @@ export default function PasswordRecovery({ reset, onReset }) {
   }
 
   return <main className="auth-shell"><section className="card auth-card" aria-labelledby="recovery-title">
-    <p className="eyebrow">REQQUALITY AI</p>
+    <div className="auth-brand"><BrandLogo size={48} /><span className="eyebrow">REQQUALITY AI</span></div>
     <h1 id="recovery-title">{reset ? 'Reset password' : 'Forgot password?'}</h1>
     <p className="auth-intro">{reset ? 'Choose a new password with 12 to 128 characters.' : 'Enter your account email to receive a password reset link.'}</p>
-    {message ? <p className="success auth-notice" role="status">{message}</p> : <form className="auth-form" onSubmit={submit}>
+    {message ? <p className={`${reset ? 'success' : 'notice'} auth-notice`} role="status">{message}</p> : <form className="auth-form" onSubmit={submit}>
       {reset ? <>
         <div className="requirement-field"><label htmlFor="new-password">New password</label><input id="new-password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} disabled={busy} value={password} onChange={event => setPassword(event.target.value)} /></div>
         <div className="requirement-field"><label htmlFor="confirm-password">Confirm password</label><input id="confirm-password" type="password" autoComplete="new-password" required minLength={12} maxLength={128} disabled={busy} value={confirmation} onChange={event => setConfirmation(event.target.value)} /></div>

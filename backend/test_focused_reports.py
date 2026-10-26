@@ -11,6 +11,15 @@ from test_integrated_reporting import IntegratedReportingTests
 
 
 class FocusedReportTests(IntegratedReportingTests):
+    def test_unanalyzed_draft_metadata_is_not_historical_analysis(self):
+        response = self.engineer.get(f'/api/requirements/{self.r["id"]}/report.pdf')
+        text = '\n'.join(p.extract_text() for p in PdfReader(BytesIO(response.data)).pages)
+        self.assertIn('Pending: AI analysis has not been saved.', text)
+        self.assertNotIn('Historical analysis', text)
+        self.assertNotIn('Analysis describes an earlier revision', text)
+        self.assertTrue(all(len(page.images) >= 1 for page in PdfReader(BytesIO(response.data)).pages))
+        self.assertLess(len(response.data), 100_000, 'Small reports should not embed the oversized full-resolution brand image.')
+
     def test_workflow_dashboard_matches_legacy_metrics_without_duplicate_lists(self):
         failed = self.run_case('Fail')
         self.create_bug(failed)

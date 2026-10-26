@@ -1,5 +1,6 @@
 import { apiFetch as fetch } from '../api.js';
 import React, { useEffect, useState } from 'react';
+import BrandLogo from '../components/BrandLogo';
 
 export default function AcceptInvitation({ onRegistered }) {
   const [token] = useState(() => new URLSearchParams(window.location.search).get('token') || '');
@@ -37,7 +38,7 @@ export default function AcceptInvitation({ onRegistered }) {
     } catch (err) { setError(err.message); if (err.status === 410) setStage('invalid'); }
     finally { setBusy(false); }
   }
-  return <main className="auth-shell"><section className="card auth-card"><p className="eyebrow">REQQUALITY AI</p><h1>Accept invitation</h1>
+  return <main className="auth-shell"><section className="card auth-card"><div className="auth-brand"><BrandLogo size={48} /><span className="eyebrow">REQQUALITY AI</span></div><h1>Accept invitation</h1>
     {stage === 'loading' && <p role="status">Validating invitation...</p>}
     {error && <p className="error" role="alert">{error}</p>}
     {stage === 'email' && <p>Enter the email address that received this invitation.</p>}

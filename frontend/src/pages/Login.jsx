@@ -1,6 +1,7 @@
 import { apiFetch as fetch } from '../api.js';
 import React, { useRef, useState } from 'react';
 import { BACKEND_UNAVAILABLE, loginErrorMessage } from '../login-errors.js';
+import BrandLogo from '../components/BrandLogo';
 
 export default function Login({ onLogin, onRegister, initialEmail = '', notice = '' }) {
   const [email, setEmail] = useState(initialEmail);
@@ -36,9 +37,15 @@ export default function Login({ onLogin, onRegister, initialEmail = '', notice =
   }
 
   return (
-    <main className="auth-shell">
+    <main className="auth-shell auth-login-shell">
+      <aside className="auth-story" aria-label="About ReqQuality AI">
+        <p className="eyebrow">REQUIREMENTS, WITH A CLEAR REVIEW PATH</p>
+        <h2>Clear requirements.<br /><span>Connected reviews.</span></h2>
+        <p>Turn stakeholder needs into reviewable requirements, linked acceptance criteria and test evidence. Keep human judgment at every step.</p>
+        <div className="auth-story-flow"><span>Capture the need</span><span>Review AI suggestions</span><span>Trace the evidence</span></div>
+      </aside>
       <section className="card auth-card" aria-labelledby="login-title">
-        <p className="eyebrow">REQQUALITY AI</p>
+        <div className="auth-brand"><BrandLogo size={48} /><span className="eyebrow">REQQUALITY AI</span></div>
         <h1 id="login-title">Sign in</h1>
         <p className="auth-intro">Use your project account to review requirements and quality data.</p>
         {notice && <p className="success auth-notice" role="status">{notice}</p>}

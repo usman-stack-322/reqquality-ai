@@ -1,0 +1,7 @@
+[2026-10-25 23:02:23,754] INFO in observability: api timing path=/api/dashboard status=200 request_ms=31.8 db_connect_ms=13.7 db_execute_ms=13.4
+[2026-10-25 23:02:24,348] INFO in observability: api timing path=/api/requirements/2/report.pdf status=200 request_ms=584.0 db_connect_ms=6.9 db_execute_ms=6.5
+[2026-10-25 23:02:24,367] INFO in observability: api timing path=/api/requirements/2/traceability status=200 request_ms=17.3 db_connect_ms=5.4 db_execute_ms=9.6
+----------------------------------------------------------------------
+Ran 3 tests in 7.260s
+
+OK

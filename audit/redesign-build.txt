@@ -1,0 +1,25 @@
+
+> reqquality-ai-frontend@0.1.0 build
+> vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 53 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                               0.80 kB │ gzip:  0.42 kB
+dist/assets/ManagerDashboard-pAIo1m_a.css    19.81 kB │ gzip:  4.21 kB
+dist/assets/index-XgWI7XuI.css               52.87 kB │ gzip: 10.16 kB
+dist/assets/Register-SokUkX64.js              0.63 kB │ gzip:  0.35 kB
+dist/assets/PdfExportButton-C4Kj9PDL.js       1.32 kB │ gzip:  0.75 kB
+dist/assets/ProjectContext-Btf03LEo.js        1.48 kB │ gzip:  0.77 kB
+dist/assets/QualityMetrics-EuPKwkR6.js        1.96 kB │ gzip:  0.71 kB
+dist/assets/AnalysisDraft-CJLqWkRg.js         2.46 kB │ gzip:  0.96 kB
+dist/assets/PasswordRecovery-ClmhGooE.js      3.25 kB │ gzip:  1.30 kB
+dist/assets/AcceptInvitation-D1wUmikc.js      3.53 kB │ gzip:  1.41 kB
+dist/assets/Dashboard-D1vaDcYS.js             5.73 kB │ gzip:  2.22 kB
+dist/assets/RequirementInput-L4gkoY5F.js      6.42 kB │ gzip:  2.10 kB
+dist/assets/ManagerDashboard-B74TC0TM.js     32.83 kB │ gzip:  9.07 kB
+dist/assets/RequirementDetails-BmcxeUar.js   48.26 kB │ gzip: 12.03 kB
+dist/assets/index-Cr9hbl7k.js               259.10 kB │ gzip: 79.82 kB
+✓ built in 2.66s

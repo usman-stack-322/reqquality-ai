@@ -1,0 +1,41 @@
+[
+  {
+    "url": "http://127.0.0.1:5173/",
+    "status": 200,
+    "title": "AI Shorts",
+    "ms": 56.63,
+    "content_type": "text/html",
+    "appearance_script_present": true,
+    "api_running": false
+  },
+  {
+    "url": "http://127.0.0.1:5000/api/health",
+    "error": "URLError",
+    "reason": "TimeoutError",
+    "ms": 12011.87
+  },
+  {
+    "url": "https://www.reqqualityai.site/",
+    "status": 200,
+    "title": "ReqQuality AI | Requirements &amp; Quality Engineering",
+    "ms": 1526.9,
+    "content_type": "text/html; charset=utf-8",
+    "appearance_script_present": false,
+    "api_running": false
+  },
+  {
+    "url": "https://reqqualityai.site/",
+    "error": "URLError",
+    "reason": "gaierror",
+    "ms": 133.95
+  },
+  {
+    "url": "https://reqquality-api.vercel.app/api/health",
+    "status": 200,
+    "title": null,
+    "ms": 2425.19,
+    "content_type": "application/json",
+    "appearance_script_present": false,
+    "api_running": true
+  }
+]

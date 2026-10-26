@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 from html import escape
 from io import BytesIO
+from pathlib import Path
 import textwrap
 
 from reportlab.lib import colors
@@ -29,6 +30,7 @@ BEIGE = colors.HexColor("#F4EFE6")
 SURFACE = colors.HexColor("#FBF7F0")
 BORDER = colors.HexColor("#D8CEC0")
 MUTED = colors.HexColor("#6B706C")
+BRAND_LOGO = Path(__file__).resolve().parent / 'assets' / 'reqquality-report-logo.png'
 
 SOURCE_LABELS = {
     "original": "Original",
@@ -160,8 +162,12 @@ def _draw_chrome(canvas, document):
     canvas.setFillColor(FOREST)
     canvas.rect(0, page_height - 13 * mm, page_width, 13 * mm, fill=1, stroke=0)
     canvas.setFillColor(colors.white)
+    canvas.roundRect(18 * mm, page_height - 11 * mm, 9 * mm, 9 * mm, 1.5 * mm, fill=1, stroke=0)
+    canvas.drawImage(str(BRAND_LOGO), 18.5 * mm, page_height - 10.5 * mm,
+                     width=8 * mm, height=8 * mm, preserveAspectRatio=True, mask='auto')
+    canvas.setFillColor(colors.white)
     canvas.setFont("Helvetica-Bold", 9)
-    canvas.drawString(18 * mm, page_height - 8.5 * mm, "ReqQuality AI")
+    canvas.drawString(30 * mm, page_height - 8.5 * mm, "ReqQuality AI")
     canvas.setFillColor(colors.HexColor("#D7E4D8"))
     canvas.setFont("Helvetica", 7)
     canvas.drawRightString(page_width - 18 * mm, page_height - 8.5 * mm, "REQUIREMENTS & SOFTWARE QUALITY")
@@ -226,8 +232,13 @@ def build_requirement_pdf(requirement):
 
     _section(story, "Analysis provenance", styles)
     version = analysis.get('analysis_version', 2)
-    story.append(_paragraph(f"AI analysis (v{version if type(version) is int else 2})" if analysis.get("analysis_mode") == "ai_only" else "Historical analysis" if analysis else "Pending: AI analysis has not been saved.", styles["body"]))
-    if analysis.get('stale') or requirement.get('analysis_outdated'):
+    # Draft edits add metadata such as `stale` and `clarifications` even when
+    # analysis has never run. Metadata alone is not historical analysis.
+    has_analysis = bool(analysis.get('analysis_mode') or any(analysis.get(key) for key in (
+        'ambiguity_issues', 'conflict_issues', 'missing_information', 'testability_issues',
+        'improved_requirement', 'labeled_analysis', 'risk_reasons', 'priority_reasons')))
+    story.append(_paragraph(f"AI analysis (v{version if type(version) is int else 2})" if analysis.get("analysis_mode") == "ai_only" else "Historical analysis" if has_analysis else "Pending: AI analysis has not been saved.", styles["body"]))
+    if has_analysis and (analysis.get('stale') or requirement.get('analysis_outdated')):
         story.append(_paragraph('Analysis describes an earlier revision or outdated context/configuration; review is required.', styles['body']))
     for reason in analysis.get('risk_reasons', []) + analysis.get('priority_reasons', []):
         story.append(_paragraph(reason, styles['body']))

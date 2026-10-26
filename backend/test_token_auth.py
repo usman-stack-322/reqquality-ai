@@ -149,12 +149,15 @@ class TokenAuthenticationTests(unittest.TestCase):
         login = self.login()
         token = self.refresh()
         family_id = self.claims()['sid']
+        # Materialize the response before sharing values between threads. Reading
+        # the same lazy response iterator concurrently can yield an empty body.
+        csrf = login.json['csrf_token']
         barrier = Barrier(2)
         def attempt():
             client = app.app.test_client()
             self.install(client, refresh=token)
             barrier.wait(timeout=10)
-            return client.post('/api/auth/refresh', headers={'X-CSRF-Token': login.json['csrf_token']}).status_code
+            return client.post('/api/auth/refresh', headers={'X-CSRF-Token': csrf}).status_code
         with ThreadPoolExecutor(max_workers=2) as executor:
             results = list(executor.map(lambda _: attempt(), range(2)))
         self.assertEqual(sorted(results), [200, 401])

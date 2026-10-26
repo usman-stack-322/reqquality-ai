@@ -236,7 +236,87 @@ Flask's debug server is also intended for local development only.
 
 ## Isolated local database
 
+### Verified demo and appearance
+
+The interface uses the inspected AI Shorts visual reference with shared tokens in
+`frontend/src/theme.css`. The header's Theme selector offers Light, Dark and System.
+Preferences stay in this browser (`reqquality-appearance`); switching themes keeps
+the current page and unsaved form values. PDFs retain their separate print styling.
+
+To prepare a separate, persistent demo with generated local credentials, from `backend`:
+
+```powershell
+.\.venv\Scripts\python.exe prepare_demo.py
+.\.venv\Scripts\python.exe run_demo.py
+```
+
+Preparation is explicitly invoked and idempotent. It uses
+`backend/instance/verified-demo/demo.db`, never DATABASE_URL, and creates clearly
+labeled local admin, Analyst and SQA Engineer accounts with random passwords.
+Credentials and local signing secrets remain in the ignored demo directory;
+open `backend/instance/verified-demo/credentials.txt` locally to sign in. Rerunning
+preparation preserves account passwords and edited demo records. Demo email is
+disabled. No production accounts or records are created.
+
+In another terminal, from `frontend`:
+
+```powershell
+npm.cmd run dev -- --port 5174
+```
+
+Open `http://127.0.0.1:5174`. Port 5173 may belong to the read-only AI Shorts
+reference and should not be stopped. ReqQuality's Vite proxy uses the demo backend
+on loopback port 5000. The existing local-development startup below remains separate.
+
+The existing seed can also be invoked directly against this prepared database:
+
+```powershell
+.\.venv\Scripts\python.exe seed_demo.py --sqlite .\instance\verified-demo\demo.db --owner-id 2 --reviewer-id 3
+```
+
+These IDs are established by fresh demo preparation. No AI is invoked by seeding,
+navigation or export. AI generation is explicit and uses the configured Gemini
+provider. `verify_prepared_demo.py --live --output ../audit/redesign-prepared-demo.json`
+is an opt-in synthetic local flow that uses provider quota and writes only demo
+records. Tests and browser fixtures that mock AI are documented separately in
+`REMAINING_ISSUES_REPORT.md`.
+
 For this workstation, `backend/.env.local` selects `backend/instance/local-development.db` when running `python app.py`. Cloud configuration in `backend/.env` remains separate; WSGI imports do not load `.env.local`. Local login details are in `backend/instance/local-login.txt` (ignored by Git). Start the backend and frontend with the commands above. The local account is separate from your cloud account. `backend/setup_local.py` initializes the local schema and account without resetting an existing account.
+
+### Explicit demo data
+
+`backend/seed_demo.py` adds four clearly labeled requirements (clear, ambiguous,
+incomplete and edge case), linked manual criteria/cases, case versions and two
+synthetic review records. It does not call AI, invent analysis/risk scores, create
+accounts, reset passwords or record passing executions. Samples still require
+analysis and human review. Reruns preserve existing samples, including edits.
+
+Select an **existing initialized local/demo SQLite file** and existing active
+accounts with project access: an Analyst (or admin) owner and an SQA Engineer
+reviewer. The command never uses `DATABASE_URL`, never initializes/migrates a
+database and refuses a missing file. Provision missing accounts through the
+existing administrator invitation flow before seeding; the workstation's local
+database may contain only its administrator. No production seeding runs on startup.
+
+From `backend`, with the chosen account IDs (the following IDs are examples):
+
+```powershell
+.\.venv\Scripts\python.exe seed_demo.py --sqlite .\instance\local-development.db --owner-id 2 --reviewer-id 3
+```
+
+The JSON result reports preexisting requirement count and created/skipped samples.
+Invalid accounts abort without inserting content. To verify the command safely,
+including its subprocess invocation, rerun preservation, relationship/dashboard
+checks and transaction rollback, use disposable test databases:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest test_seed_demo -v
+```
+
+Individual PDF responses expose `report_data`, `report_render` and
+`report_response` in `Server-Timing`, alongside database and total request timings.
+Response preparation is measured server work; actual network delivery must be
+measured in the browser. No SQL text or record contents are added to these headers.
 
 ## Versioned AI analysis
 

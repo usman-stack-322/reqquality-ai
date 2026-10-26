@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "C:\Users\ua589\ReqQuality AI\audit\focused-browser\check.py", line 398, in <module>
+    wait("document.body.innerText.includes('Bring clarity to requirements')")
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ua589\ReqQuality AI\audit\focused-browser\check.py", line 106, in wait
+    if js(condition): return
+       ~~^^^^^^^^^^^
+  File "C:\Users\ua589\ReqQuality AI\audit\focused-browser\check.py", line 101, in js
+    assert 'exceptionDetails' not in result.get('result',{}), 'Browser JavaScript failed'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Browser JavaScript failed

@@ -3,6 +3,7 @@
 Run with backend/.venv/Scripts/python.exe after building frontend. Uses no live DB.
 """
 import json
+import argparse
 import logging
 from pathlib import Path
 import subprocess
@@ -15,6 +16,12 @@ from unittest.mock import patch
 from websockets.sync.client import connect
 
 root = Path(__file__).resolve().parents[2]
+parser = argparse.ArgumentParser()
+parser.add_argument('--output', type=Path, default=Path(__file__).parent)
+parser.add_argument('--theme', choices=('light', 'dark'), default='light')
+args = parser.parse_args()
+screenshots = args.output
+screenshots.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(root / 'backend'))
 import app
 from flask import send_from_directory
@@ -29,6 +36,10 @@ fixture.setUp()
 app.app.config.update(LOCAL_HTTP_DEVELOPMENT=True, SESSION_COOKIE_SECURE=False)
 app.app.add_url_rule('/', 'browser_index', lambda: send_from_directory(root / 'frontend/dist', 'index.html'))
 app.app.add_url_rule('/assets/<path:name>', 'browser_assets', lambda name: send_from_directory(root / 'frontend/dist/assets', name))
+app.app.add_url_rule('/favicon.svg', 'browser_favicon', lambda: send_from_directory(root / 'frontend/public', 'favicon.svg'))
+for brand_file in ('appearance.js', 'reqquality-logo.png', 'favicon.ico', 'favicon-32.png', 'favicon-192.png', 'favicon-512.png', 'apple-touch-icon.png'):
+    app.app.add_url_rule('/' + brand_file, 'brand_' + brand_file,
+                         lambda name=brand_file: send_from_directory(root / 'frontend/public', name))
 calls = []
 
 
@@ -58,6 +69,26 @@ try:
             tab = next(tab for tab in tabs if tab.get('type') == 'page' and tab.get('url','').startswith(origin))
             with connect(tab['webSocketDebuggerUrl'], ping_interval=None) as ws:
                 seq = 0
+                diagnostics = dict(uncaught_exceptions=0, console_errors=0, transport_failures=0, cancelled_requests=0, transport_error_types={}, http_status_counts={})
+
+                def observe(event):
+                    method = event.get('method')
+                    params = event.get('params', {})
+                    if method == 'Runtime.exceptionThrown': diagnostics['uncaught_exceptions'] += 1
+                    if method == 'Runtime.consoleAPICalled' and params.get('type') == 'error': diagnostics['console_errors'] += 1
+                    if method == 'Network.loadingFailed':
+                        # Navigation and AbortController intentionally cancel stale
+                        # page requests. Keep them visible, separate from outages.
+                        key = 'cancelled_requests' if params.get('canceled') else 'transport_failures'
+                        diagnostics[key] += 1
+                        if not params.get('canceled'):
+                            error = params.get('errorText', 'unknown')
+                            errors = diagnostics['transport_error_types']
+                            errors[error] = errors.get(error, 0) + 1
+                    if method == 'Network.responseReceived':
+                        status = str(params['response']['status'])
+                        counts = diagnostics['http_status_counts']
+                        counts[status] = counts.get(status, 0) + 1
 
                 def js(code):
                     global seq
@@ -65,22 +96,23 @@ try:
                     ws.send(json.dumps({'id':seq,'method':'Runtime.evaluate','params':{'expression':code,'returnByValue':True,'awaitPromise':True}}))
                     while True:
                         result = json.loads(ws.recv(timeout=15))
+                        observe(result)
                         if result.get('id') == seq:
                             assert 'exceptionDetails' not in result.get('result',{}), 'Browser JavaScript failed'
                             return result.get('result',{}).get('result',{}).get('value')
 
                 def wait(condition):
                     for _ in range(200):
-                        if js(condition): return
+                        if js('!!document.body && (' + condition + ')'): return
                         time.sleep(.05)
-                    (Path(__file__).parent/'failure-body.txt').write_text(js('document.body.innerText'),encoding='utf-8')
+                    (screenshots/'failure-body.txt').write_text(js('document.body.innerText'),encoding='utf-8')
                     raise AssertionError(condition)
 
                 def fill(selector, value):
                     js("(() => {const e=document.querySelector("+json.dumps(selector)+");Object.getOwnPropertyDescriptor(e.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype,'value').set.call(e,"+json.dumps(value)+");e.dispatchEvent(new Event('input',{bubbles:true}));})()")
 
                 def click(text):
-                    assert js("(() => {const e=[...document.querySelectorAll('button')].find(e=>e.textContent.trim()==="+json.dumps(text)+");if(e){e.click();return true;}return false;})()")
+                    assert js("(() => {const e=[...document.querySelectorAll('button')].find(e=>e.textContent.trim()==="+json.dumps(text)+" || e.getAttribute('aria-label')==="+json.dumps(text)+");if(e){e.click();return true;}return false;})()")
 
                 def cdp(method, params):
                     global seq
@@ -88,11 +120,50 @@ try:
                     ws.send(json.dumps(dict(id=seq,method=method,params=params)))
                     while True:
                         result=json.loads(ws.recv(timeout=15))
+                        observe(result)
                         if result.get('id')==seq:
                             assert 'error' not in result,result.get('error')
                             return result.get('result',{})
 
+                cdp('Runtime.enable', {})
+                cdp('Network.enable', {})
+                wait("!!document.querySelector('#login-email') && location.origin==="+json.dumps(origin))
+                cdp('Emulation.setEmulatedMedia', dict(features=[dict(name='prefers-color-scheme', value='dark')]))
+                js("localStorage.setItem('reqquality-appearance','invalid')")
+                cdp('Page.reload', {})
                 wait("!!document.querySelector('#login-email')")
+                assert js("document.documentElement.dataset.theme==='dark' && document.documentElement.dataset.appearance==='system'")
+                js("window.reqQualityAppearance.set('light')")
+                assert js("document.documentElement.dataset.theme==='light'")
+                js("window.reqQualityAppearance.set('system')")
+                assert js("document.documentElement.dataset.theme==='dark'")
+                cdp('Emulation.setEmulatedMedia', dict(features=[dict(name='prefers-color-scheme', value='light')]))
+                wait("document.documentElement.dataset.theme==='light'")
+                js("window.reqQualityAppearance.set("+json.dumps(args.theme)+")")
+                cdp('Page.reload', {})
+                wait("!!document.querySelector('#login-email')")
+                assert js("document.documentElement.dataset.theme==="+json.dumps(args.theme))
+                import base64
+                for route in ('home','login','register','forgot-password'):
+                    js("location.hash="+json.dumps(route))
+                    wait({'home': "!!document.querySelector('#landing-title')", 'login': "!!document.querySelector('#login-email')", 'register': "document.body.innerText.includes('Invitation required')", 'forgot-password': "!!document.querySelector('#recovery-email')"}[route])
+                    for width in (360,768,1366):
+                        cdp('Emulation.setDeviceMetricsOverride',dict(width=width,height=900,deviceScaleFactor=1,mobile=width<500))
+                        assert js("document.documentElement.scrollWidth<=innerWidth"),(route,width)
+                        image=cdp('Page.captureScreenshot',dict(format='png',captureBeyondViewport=False))
+                        (screenshots/f'{route}-clean-{width}.png').write_bytes(base64.b64decode(image['data']))
+                js("location.hash='login'")
+                wait("!!document.querySelector('#login-email')")
+                wait("[...document.querySelectorAll('.brand-logo')].length > 0 && [...document.querySelectorAll('.brand-logo')].every(i => i.complete && i.naturalWidth > 0 && i.width === i.height)")
+                assert js("Promise.all(['/favicon.ico','/favicon-32.png','/favicon-192.png','/favicon-512.png','/apple-touch-icon.png'].map(async p => {const r=await fetch(p);return r.ok && r.headers.get('Content-Type').startsWith('image/')})).then(a=>a.every(Boolean))"), 'Brand icons unavailable'
+                js("document.querySelector('#login-email').focus()")
+                keyboard_order = []
+                for _ in range(6):
+                    keyboard_order.append(js("document.activeElement.id || document.activeElement.getAttribute('aria-label') || document.activeElement.textContent.trim()"))
+                    assert js("getComputedStyle(document.activeElement).outlineStyle !== 'none'"), 'Missing keyboard focus outline'
+                    cdp('Input.dispatchKeyEvent', dict(type='keyDown', key='Tab', code='Tab', windowsVirtualKeyCode=9))
+                    cdp('Input.dispatchKeyEvent', dict(type='keyUp', key='Tab', code='Tab', windowsVirtualKeyCode=9))
+                assert keyboard_order == ['login-email', 'login-password', 'Show password', 'Sign in', 'Forgot password?', 'Back to Home'], keyboard_order
                 js("window.requestLog=[];window.realFetch=window.fetch;window.fetch=async(...a)=>{window.requestLog.push(String(a[0]));if(window.failLogin&&String(a[0]).includes('/api/auth/login')){window.failLogin=false;return new Response(JSON.stringify({error:'The database is temporarily unavailable. Please try again later.',code:'database_unavailable'}),{status:503,headers:{'Content-Type':'application/json'}});}return window.realFetch(...a);}")
                 time.sleep(.3)
                 assert js("window.requestLog.filter(p=>p.includes('/api/auth/')).length===0")
@@ -111,7 +182,7 @@ try:
                     cdp('Emulation.setDeviceMetricsOverride',dict(width=width,height=900,deviceScaleFactor=1,mobile=width<500))
                     assert js("document.documentElement.scrollWidth<=innerWidth"),width
                     capture=cdp('Page.captureScreenshot',dict(format='png',captureBeyondViewport=False))
-                    (Path(__file__).parent/f'login-{width}.png').write_bytes(base64.b64decode(capture['data']))
+                    (screenshots/f'login-{width}.png').write_bytes(base64.b64decode(capture['data']))
                 js("window.requestLog=[];document.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));document.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));")
                 wait("location.hash==='#dashboard' && document.body.innerText.includes('All Requirements')")
                 assert js("window.requestLog.filter(p=>p.includes('/api/auth/login')).length===1")
@@ -120,6 +191,15 @@ try:
                 wait("!!document.querySelector('#requirement-title')")
                 assert js("!window.requestLog.some(p=>p.includes('view=summary')&&p.includes('requirements')&&p.endsWith('view=summary'))")
                 fill('#requirement-title',payload['title']);fill('#requirement-description',payload['description'])
+                before_hash = js('location.hash')
+                for theme in ('dark', 'light', args.theme):
+                    js("(()=>{const s=document.querySelector('[aria-label=\"Appearance\"]');s.value="+json.dumps(theme)+";s.dispatchEvent(new Event('change',{bubbles:true}));})()")
+                    assert js("document.querySelector('#requirement-title').value") == payload['title']
+                    assert js("document.querySelector('#requirement-description').value") == payload['description']
+                    assert js('location.hash') == before_hash
+                cdp('Emulation.setDeviceMetricsOverride',dict(width=1366,height=900,deviceScaleFactor=1,mobile=False))
+                image=cdp('Page.captureScreenshot',dict(format='png',captureBeyondViewport=False))
+                (screenshots/'requirement-input.png').write_bytes(base64.b64decode(image['data']))
                 click('Save Requirement')
                 wait("location.hash.startsWith('#requirement/') && document.body.innerText.includes('Analyze saved version / Retry AI')")
                 rid=js("Number(location.hash.split('/')[1])")
@@ -322,19 +402,40 @@ try:
                     cdp('Emulation.setDeviceMetricsOverride',dict(width=width,height=900,deviceScaleFactor=1,mobile=width<500))
                     assert js("document.documentElement.scrollWidth<=innerWidth"),('dashboard',width)
                     image=cdp('Page.captureScreenshot',dict(format='png',captureBeyondViewport=False))
-                    (Path(__file__).parent/f'dashboard-{width}.png').write_bytes(base64.b64decode(image['data']))
+                    (screenshots/f'dashboard-{width}.png').write_bytes(base64.b64decode(image['data']))
                 js("location.hash='requirement/"+str(rid)+"'")
                 wait("document.body.innerText.includes('Edited sign-in test case')")
                 cdp('Emulation.setDeviceMetricsOverride',dict(width=360,height=900,deviceScaleFactor=1,mobile=True))
                 assert js("document.documentElement.scrollWidth<=innerWidth"),'detail mobile overflow'
                 image=cdp('Page.captureScreenshot',dict(format='png',captureBeyondViewport=False))
-                (Path(__file__).parent/'detail-360.png').write_bytes(base64.b64decode(image['data']))
+                (screenshots/'detail-360.png').write_bytes(base64.b64decode(image['data']))
                 cdp('Emulation.setDeviceMetricsOverride',dict(width=1366,height=900,deviceScaleFactor=1,mobile=False))
                 login('manager@example.com')
                 admin_session=request('GET','/api/auth/me')
                 assert admin_session['user']['role']=='admin'
                 assert request('GET','/api/project')['project']['id']=='current'
+                wait("!!document.querySelector('.qm-brand .brand-logo') && document.querySelector('.qm-brand .brand-logo').naturalWidth > 0")
+                for width in (360,1366):
+                    cdp('Emulation.setDeviceMetricsOverride',dict(width=width,height=900,deviceScaleFactor=1,mobile=width<500))
+                    if width == 360: js("document.querySelector('[aria-label=\"Toggle navigation\"]').click()")
+                    assert js("document.documentElement.scrollWidth<=innerWidth"), ('admin', width)
+                    image=cdp('Page.captureScreenshot',dict(format='png',captureBeyondViewport=False))
+                    (screenshots/f'admin-{width}.png').write_bytes(base64.b64decode(image['data']))
+                    if width == 360: js("document.querySelector('[aria-label=\"Toggle navigation\"]').click()")
+                admin_pages = [('dashboard','SQA Admin Dashboard'),('requirements','Requirements'),('reviews','Reviews'),('team','Team Management'),('permissions','Role Permissions'),('invitations','Invitations'),('traceability','Traceability'),('reports','Reports'),('activity','Activity Logs'),('settings','Settings')]
+                for section, title in admin_pages:
+                    js("location.hash="+json.dumps('admin' if section=='dashboard' else 'admin/'+section))
+                    wait("document.querySelector('.qm-top-title h1')?.textContent==="+json.dumps(title))
+                    wait("!document.body.innerText.includes('Loading quality workspace')")
+                    time.sleep(.2)
+                    assert js("document.querySelectorAll('.qm-error[role=\"alert\"]').length===0"), section
+                    for width in (360,1366):
+                        cdp('Emulation.setDeviceMetricsOverride',dict(width=width,height=900,deviceScaleFactor=1,mobile=width<500))
+                        assert js("document.documentElement.scrollWidth<=innerWidth"), (section,width)
+                        image=cdp('Page.captureScreenshot',dict(format='png',captureBeyondViewport=False))
+                        (screenshots/f'{section}-{width}.png').write_bytes(base64.b64decode(image['data']))
                 click('Logout');wait("!!document.querySelector('#login-email')")
+                assert js("document.documentElement.dataset.theme==="+json.dumps(args.theme))
                 denied=js("(async()=>{const out=[];for(const p of ['/api/project','/api/dashboard','/api/requirements/"+str(rid)+"/traceability','/api/exports/requirements.csv'])out.push((await fetch(p)).status);return out;})()")
                 assert denied==[401]*4
                 seq+=1
@@ -343,9 +444,12 @@ try:
                     capture=json.loads(ws.recv(timeout=15))
                     if capture.get('id')==seq:
                         import base64
-                        (Path(__file__).parent/'dashboard.png').write_bytes(base64.b64decode(capture['result']['data']))
+                        (screenshots/'dashboard.png').write_bytes(base64.b64decode(capture['result']['data']))
                         break
-                print(json.dumps(dict(real_browser_auth_api_sqlite=True,provider='MOCKED',provider_calls=len(calls),external_application_tested=False,all_three_role_logins='passed',logout_protected_resources=denied,ai_retry_edit_generated_drafts='passed',case_edit_fail_bug_duplicate_guard='passed',passing_retest_close_failed_retest_reopen='passed',reload_history='passed',version_change_preserves_evidence_invalidates_approval='passed',dashboard_matches_records='passed',report_downloads=sizes,review_actions='UI form; source/case/execution/bug actions also use UI',login_double_submit='one POST',public_auth_requests=0,login_layout_widths=[360,768,1366],export_buttons='duplicate guard and explicit retry passed',public_to_protected_session_restore='passed')))
+                assert diagnostics['uncaught_exceptions'] == 0, diagnostics
+                assert diagnostics['console_errors'] == 0, diagnostics
+                assert diagnostics['transport_failures'] == 0, diagnostics
+                print(json.dumps(dict(real_browser_auth_api_sqlite=True,provider='MOCKED',provider_calls=len(calls),external_application_tested=False,all_three_role_logins='passed',logout_protected_resources=denied,ai_retry_edit_generated_drafts='passed',case_edit_fail_bug_duplicate_guard='passed',passing_retest_close_failed_retest_reopen='passed',reload_history='passed',version_change_preserves_evidence_invalidates_approval='passed',dashboard_matches_records='passed',report_downloads=sizes,review_actions='UI form; source/case/execution/bug actions also use UI',login_double_submit='one POST',public_auth_requests=0,login_layout_widths=[360,768,1366],export_buttons='duplicate guard and explicit retry passed',public_to_protected_session_restore='passed',keyboard_order=keyboard_order,diagnostics=diagnostics)))
         finally:
             chrome.terminate()
             chrome.wait(timeout=10)

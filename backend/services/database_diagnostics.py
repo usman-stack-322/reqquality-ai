@@ -6,6 +6,7 @@ from pathlib import Path
 from time import perf_counter
 
 import psycopg
+from psycopg_pool import PoolTimeout, TooManyRequests
 
 LOGGER = logging.getLogger('reqquality.database')
 
@@ -20,7 +21,10 @@ def exception_details(error):
                 'query_cancelled_or_timed_out' if state == '57014' else
                 'network_access_denied' if any(v in message for v in ('permission denied', 'access permissions', '10013')) else
                 'dns_failure' if any(v in message for v in ('failed to resolve', 'getaddrinfo', 'name or service not known')) else
-                'connection_timeout' if isinstance(error, psycopg.errors.ConnectionTimeout) else 'unclassified')
+                'connection_timeout' if isinstance(error, psycopg.errors.ConnectionTimeout) else
+                'network_connect_timeout' if isinstance(error, TimeoutError) else
+                'pool_checkout_timeout' if isinstance(error, PoolTimeout) else
+                'pool_wait_queue_full' if isinstance(error, TooManyRequests) else 'unclassified')
     return dict(exception_type=type(error).__name__, sqlstate=state, category=category,
                 frames=[f'{Path(frame.filename).name}:{frame.lineno}:{frame.name}'
                         for frame in traceback.extract_tb(error.__traceback__)])

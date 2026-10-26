@@ -51,7 +51,9 @@ class LoginDiagnosisTests(unittest.TestCase):
         self.assertNotIn('postgres://', record.getMessage())
 
     def test_network_auth_schema_and_capacity_failures_are_distinguished(self):
-        cases = [(psycopg.errors.ConnectionTimeout('secret'), 'connection_timeout'),
+        cases = [(TimeoutError('secret'), 'network_connect_timeout'),
+                 (database.PoolTimeout('secret'), 'pool_checkout_timeout'),
+                 (psycopg.errors.ConnectionTimeout('secret'), 'connection_timeout'),
                  (psycopg.errors.InvalidPassword('secret'), 'authentication_rejected'),
                  (psycopg.errors.UndefinedTable('secret'), 'missing_table_or_column'),
                  (psycopg.errors.TooManyConnections('secret'), 'server_connection_limit'),

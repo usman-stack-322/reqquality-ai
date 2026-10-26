@@ -1,6 +1,7 @@
 """Synthetic short/long PDF rendering; no real accounts or database opened."""
 import json
 import logging
+import argparse
 from pathlib import Path
 from pypdf import PdfReader
 import pypdfium2 as pdfium
@@ -8,7 +9,9 @@ from PIL import Image, ImageDraw
 from test_integrated_reporting import IntegratedReportingTests
 
 logging.disable(logging.CRITICAL)
-out = Path('../audit/focused-pdf')
+parser = argparse.ArgumentParser()
+parser.add_argument('--output', type=Path, default=Path('../audit/focused-pdf'))
+out = parser.parse_args().output
 out.mkdir(parents=True, exist_ok=True)
 IntegratedReportingTests.setUpClass()
 fixture = IntegratedReportingTests()

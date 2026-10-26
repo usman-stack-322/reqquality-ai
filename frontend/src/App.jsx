@@ -3,6 +3,9 @@ import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import LoadingSkeleton from './components/LoadingSkeleton';
+import BrandLogo from './components/BrandLogo';
+import ThemeSelector from './components/ThemeSelector';
+import WorkspaceShell from './components/WorkspaceShell';
 
 const RequirementInput = lazy(() => import('./pages/RequirementInput'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -44,7 +47,7 @@ function AppFooter({ user }) {
     <footer className="app-footer">
       <div className="footer-inner">
         <div className="footer-brand-block">
-          <a className="footer-brand" href={user ? (['admin', 'Manager'].includes(user.role) ? '#admin' : '#dashboard') : '#home'}>ReqQuality <span>AI</span></a>
+          <a className="footer-brand" href={user ? (['admin', 'Manager'].includes(user.role) ? '#admin' : '#dashboard') : '#home'}><BrandLogo size={32} /><span className="footer-brand-name">ReqQuality <span>AI</span></span></a>
           <p>AI-Powered Requirements &amp; Software Quality Engineering Platform</p>
         </div>
         <nav className="footer-nav" aria-label="Footer navigation">
@@ -56,6 +59,10 @@ function AppFooter({ user }) {
       </div>
     </footer>
   );
+}
+
+function AccountShell({ children }) {
+  return <div className="app-shell public-account-shell"><header className="public-auth-header"><a href="#home">← Home</a><ThemeSelector /></header>{children}</div>;
 }
 
 function AppContent() {
@@ -72,6 +79,10 @@ function AppContent() {
   const canCreate = user?.project_access !== false && user?.role !== 'admin' && user?.permissions?.includes('create_requirements');
   const sessionRequest = useRef(null);
   const authRevision = useRef(0);
+  useEffect(() => {
+    const titles = {home: 'Requirements & Quality Engineering', login: 'Sign in', register: 'Invitation required', 'forgot-password': 'Password recovery', 'reset-password': 'Reset password', dashboard: 'Dashboard', requirements: 'Add requirement', 'requirement-detail': 'Requirement workspace', admin: 'Quality management', 'accept-invitation': 'Accept invitation'};
+    document.title = `ReqQuality AI | ${titles[page] || 'Workspace'}`;
+  }, [page]);
 
   useEffect(() => {
     const onHashChange = () => {
@@ -170,14 +181,14 @@ function AppContent() {
   }
 
   if (['forgot-password', 'reset-password'].includes(page)) {
-    return <div className="app-shell"><PasswordRecovery key={page} reset={page === 'reset-password'} onReset={(message) => {
+    return <AccountShell><PasswordRecovery key={page} reset={page === 'reset-password'} onReset={(message) => {
       authRevision.current++; setIsCheckingSession(false);
       setUser(null); setCsrfToken(''); setLoginNotice(message);
       window.history.replaceState(null, '', '/#login'); setPage('login');
-    }} /></div>;
+    }} /></AccountShell>;
   }
   if (page === 'accept-invitation') {
-    return <div className="app-shell"><AcceptInvitation onRegistered={(email) => {
+    return <AccountShell><AcceptInvitation onRegistered={(email) => {
       authRevision.current++; setIsCheckingSession(false);
       setUser(null);
       setCsrfToken('');
@@ -185,17 +196,17 @@ function AppContent() {
       setLoginNotice('Account created successfully. Sign in with your new credentials.');
       window.history.replaceState(null, '', '/#login');
       setPage('login');
-    }} /></div>;
+    }} /></AccountShell>;
   }
   if (!user && page === 'register') {
-    return <div className="app-shell"><Register onLogin={() => { window.location.hash = 'login'; }} /></div>;
+    return <AccountShell><Register onLogin={() => { window.location.hash = 'login'; }} /></AccountShell>;
   }
   if (!user && page !== 'home') {
-    return <div className="app-shell"><Login initialEmail={loginEmail} notice={loginNotice} onLogin={(data) => {
+    return <AccountShell><Login initialEmail={loginEmail} notice={loginNotice} onLogin={(data) => {
       authRevision.current++; setIsCheckingSession(false);
       setUser(data.user); setCsrfToken(data.csrf_token); setLoginNotice(''); setSessionError('');
       window.location.hash = ['admin', 'Manager'].includes(data.user.role) ? 'admin' : 'dashboard';
-    }} /></div>;
+    }} /></AccountShell>;
   }
 
   if (['admin', 'Manager'].includes(user?.role) && ['admin', 'dashboard', 'requirement-detail'].includes(page)) {
@@ -223,11 +234,13 @@ function AppContent() {
     content = <Dashboard user={user} />;
   }
 
+  if (user) return <WorkspaceShell user={user} canCreate={canCreate} page={page} onLogout={handleLogout}>{content}{logoutError && <p className="error" role="alert">{logoutError}</p>}</WorkspaceShell>;
+
   return (
     <div className="app-shell">
       <header className="app-header">
         <a className="brand" href={user ? (['admin', 'Manager'].includes(user.role) ? '#admin' : '#dashboard') : '#home'} aria-label={user ? 'ReqQuality AI workspace' : 'ReqQuality AI home'}>
-          <span className="brand-mark" aria-hidden="true">RQ</span>
+          <BrandLogo />
           <span>ReqQuality <span className="brand-ai">AI</span></span>
         </a>
         <nav aria-label="Main navigation">
@@ -239,6 +252,7 @@ function AppContent() {
           {user && <a href="#dashboard" aria-current={page === 'dashboard' || page === 'requirement-detail' ? 'page' : undefined}>Dashboard</a>}
         </nav>
         <div className="account-bar">
+          <ThemeSelector />
           {user ? <>
             <div className="account-identity"><strong>{user.name}</strong><span>{user.role === 'admin' ? 'SQA Admin' : user.role}</span></div>
             <button className="logout-button" type="button" onClick={handleLogout}>Log out</button>

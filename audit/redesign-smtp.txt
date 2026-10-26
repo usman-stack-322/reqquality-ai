@@ -1,0 +1,3 @@
+Required email settings are present; values and credentials are hidden.
+Invitation links use localhost and work only on the computer running the frontend.
+Run with --connect to check TLS and authentication without sending an email.

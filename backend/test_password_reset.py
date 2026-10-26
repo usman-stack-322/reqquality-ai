@@ -7,7 +7,11 @@ from test_invitations import InvitationTests, PASSWORD
 
 
 class PasswordResetTests(unittest.TestCase):
-    setUp = InvitationTests.setUp
+    def setUp(self):
+        InvitationTests.setUp(self)
+        settings = patch.dict('os.environ', SMTP_HOST='smtp.example.invalid', SMTP_FROM='noreply@example.invalid', INVITATION_FRONTEND_URL='https://example.invalid', SMTP_USERNAME='')
+        settings.start()
+        self.addCleanup(settings.stop)
     tearDown = InvitationTests.tearDown
     client = InvitationTests.client
     def test_reset_lifecycle(self):
@@ -38,6 +42,23 @@ class PasswordResetTests(unittest.TestCase):
             c.execute("UPDATE password_resets SET expires_at='2000-01-01'")
         c.close()
         self.assertEqual(self.guest.post('/api/auth/reset-password', json={'token': token, 'password': PASSWORD}).status_code, 400)
+
+    def test_unconfigured_recovery_fails_equally_for_all_accounts(self):
+        with patch.dict('os.environ', SMTP_HOST=''), patch.object(recovery, 'send_reset_email') as mail:
+            responses = [self.guest.post('/api/auth/forgot-password', json={'email': email}) for email in ('analyst@example.com', 'unknown@example.com')]
+        self.assertEqual([r.status_code for r in responses], [503, 503])
+        self.assertEqual(responses[0].json, responses[1].json)
+        mail.assert_not_called()
+
+    def test_delivery_failure_does_not_claim_success_or_reveal_account(self):
+        with patch.object(recovery, 'send_reset_email', side_effect=OSError('synthetic SMTP outage')):
+            known = self.guest.post('/api/auth/forgot-password', json={'email': 'analyst@example.com'})
+            unknown = self.guest.post('/api/auth/forgot-password', json={'email': 'unknown@example.com'})
+        self.assertEqual(known.json, unknown.json)
+        self.assertIn('Delivery is not confirmed', known.json['message'])
+        c = application.get_connection()
+        try: self.assertFalse(c.execute('SELECT * FROM password_resets').fetchall())
+        finally: c.close()
 
 
 if __name__ == '__main__':

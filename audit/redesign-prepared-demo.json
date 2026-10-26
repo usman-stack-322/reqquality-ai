@@ -1,0 +1,22 @@
+{
+  "database": "isolated prepared local demo",
+  "ai": "LIVE",
+  "timings_ms": {
+    "login_analyst": 409.54,
+    "login_engineer": 643.45,
+    "login_admin": 585.27,
+    "analysis": 9374.99,
+    "pdf": 1347.81
+  },
+  "requirement_id": 5,
+  "saved_after_reopen": true,
+  "criteria": 2,
+  "scenarios": 2,
+  "risk": "Medium",
+  "review": "Approved synthetic local review",
+  "traceability": "passed",
+  "analyst_review_denied": 403,
+  "pdf_pages": 4,
+  "pdf_bytes": 191652,
+  "dashboard_total": 5
+}

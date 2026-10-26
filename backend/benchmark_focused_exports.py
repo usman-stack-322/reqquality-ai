@@ -26,7 +26,7 @@ def main():
         for label, path in [('requirement_pdf', f'/api/requirements/{fixture.r["id"]}/report.pdf'),
                             ('project_pdf', '/api/reports/project.pdf'),
                             ('csv', '/api/exports/requirements.csv')]:
-            times, counts = [], []
+            times, counts, stages = [], [], []
             for _ in range(20):
                 count = 0
                 execute = DatabaseConnection.execute
@@ -41,7 +41,8 @@ def main():
                     times.append((time.perf_counter() - started) * 1000)
                 assert response.status_code == 200, response.status_code
                 counts.append(count)
-            results[label] = dict(**summary(times), sql_statements=counts)
+                stages.append(response.headers.get('Server-Timing', ''))
+            results[label] = dict(**summary(times), sql_statements=counts, server_timing=stages)
         data = dict(environment='Windows / Flask test client / temporary SQLite, sequential; 20 requirements, one detailed case; no AI; initialized schema; first is not hosting cold start', results=results)
         Path(args.output).write_text(json.dumps(data, indent=2), encoding='utf-8')
         print(json.dumps({key: {k: v for k, v in value.items() if k != 'sql_statements'} for key, value in results.items()}))

@@ -1,0 +1,31 @@
+{
+  "origin": "http://127.0.0.1:5174",
+  "login_status": 200,
+  "login_ms": 443.72,
+  "login_server_timing": "connect;dur=5.7, user_query;dur=0.6, password;dur=362.2, permissions;dur=1.4, rate_limit;dur=25.6, tokens;dur=20.5, total;dur=417.1, db_connect;dur=5.7, db_execute;dur=8.8, request;dur=420.0",
+  "reads": [
+    {
+      "path": "/api/auth/me",
+      "ms": 23.44,
+      "server_timing": "db_connect;dur=6.1, db_execute;dur=2.9, request;dur=11.3"
+    },
+    {
+      "path": "/api/dashboard?view=workflow",
+      "ms": 36.8,
+      "server_timing": "db_connect;dur=6.2, db_execute;dur=8.3, request;dur=19.9"
+    },
+    {
+      "path": "/api/requirements/5/traceability",
+      "ms": 30.22,
+      "server_timing": "db_connect;dur=3.5, db_execute;dur=5.3, request;dur=12.4"
+    }
+  ],
+  "pdf_bytes": 47369,
+  "pdf_server_timing": "db_connect;dur=3.5, db_execute;dur=4.6, report_data;dur=6.7, report_render;dur=147.5, report_response;dur=0.6, request;dur=159.6",
+  "session": true,
+  "dashboard": true,
+  "traceability": true,
+  "logout": true,
+  "ai_calls": 0,
+  "email_sent": false
+}

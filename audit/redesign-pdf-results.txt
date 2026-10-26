@@ -1,0 +1,2 @@
+{"report": "short", "pages": 3, "all_pages_rendered": true, "last_marker_present": false}
+{"report": "long", "pages": 7, "all_pages_rendered": true, "last_marker_present": true}

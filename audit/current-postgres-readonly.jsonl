@@ -1,0 +1,1 @@
+{"failure": {"exception_type": "PoolTimeout", "sqlstate": null, "category": "unclassified", "frames": ["benchmark_auth_current.py:21:<module>", "database.py:187:connect_database", "pool.py:218:getconn"]}}

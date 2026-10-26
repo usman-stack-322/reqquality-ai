@@ -51,6 +51,13 @@ def create_services(app, get_connection):
         email = data.get('email') if isinstance(data, dict) else None
         if not isinstance(email, str) or len(email.strip()) > 254 or (not EMAIL.fullmatch(email.strip())):
             return (response_payload(error='Enter a valid email address.'), 400)
+        base = os.getenv('PASSWORD_RESET_FRONTEND_URL') or os.getenv('INVITATION_FRONTEND_URL', '')
+        parsed = urlsplit(base)
+        if (not all(os.getenv(key, '').strip() for key in ('SMTP_HOST', 'SMTP_FROM'))
+                or (os.getenv('SMTP_USERNAME') and not os.getenv('SMTP_PASSWORD'))
+                or parsed.scheme not in ('http', 'https') or not parsed.netloc or parsed.query or parsed.fragment):
+            # Availability is checked identically for known and unknown accounts.
+            return response_payload(error='Password recovery is unavailable. Contact your administrator.'), 503
         connection = connect()
         try:
             with connection:
@@ -69,7 +76,9 @@ def create_services(app, get_connection):
                         app.logger.error('Password reset email delivery failed')
                         with connection:
                             connection.execute('DELETE FROM password_resets WHERE token_hash=?', (digest(token),))
-            return response_payload(message='If an active account exists for this email, a password reset link will be sent. Check your inbox and spam folder.')
+            # Keep the same response for all accounts, including delivery errors;
+            # never claim delivery or reveal whether the account exists.
+            return response_payload(message='Request received. If an active account exists, a reset email may be sent. Delivery is not confirmed. If no email arrives, contact your administrator.')
         except DATABASE_ERRORS:
             app.logger.error('Password reset database operation failed')
             return (response_payload(error='Unable to request a reset. Please try again.'), 503)

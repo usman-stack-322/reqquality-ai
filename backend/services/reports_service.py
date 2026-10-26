@@ -1,6 +1,7 @@
 import csv
 from contextlib import contextmanager
 from io import BytesIO, StringIO
+from time import perf_counter
 from app import get_connection
 from services.requirement_helpers import _get_requirement_detail, _project_report_summary, _download_response
 from services.responses import response_payload
@@ -61,7 +62,8 @@ def _report_requirements(connection, requirement_id=None):
     return result
 
 def export_requirement_pdf(requirement_id):
-    from reporting import build_requirement_pdf
+    from middlewares.observability import record_timing
+    started = perf_counter()
     connection = get_connection()
     try:
         with _read_snapshot(connection):
@@ -69,9 +71,19 @@ def export_requirement_pdf(requirement_id):
             requirement = rows[0] if rows else None
     finally:
         connection.close()
+        record_timing('report_data', (perf_counter() - started) * 1000)
     if requirement is None:
         return (response_payload(error='Requirement not found.'), 404)
-    return _download_response(build_requirement_pdf(requirement), f'reqquality-requirement-{requirement_id}.pdf', 'application/pdf')
+    started = perf_counter()
+    # Include the first-request ReportLab import in rendering, rather than
+    # leaving a large cold-request cost outside the measured export stages.
+    from reporting import build_requirement_pdf
+    document = build_requirement_pdf(requirement)
+    record_timing('report_render', (perf_counter() - started) * 1000)
+    started = perf_counter()
+    response = _download_response(document, f'reqquality-requirement-{requirement_id}.pdf', 'application/pdf')
+    record_timing('report_response', (perf_counter() - started) * 1000)
+    return response
 
 def export_project_pdf():
     from reporting import build_project_summary_pdf

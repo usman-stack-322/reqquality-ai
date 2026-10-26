@@ -1,0 +1,10 @@
+{"sample": 1, "path": "login", "status": 200, "total_ms": 308.13, "stages_ms": {"connect": 3.84, "user_query": 0.54, "password": 258.42, "permissions": 0.02, "rate_limit": 19.86, "tokens": 17.07, "total": 300.07}}
+{"sample": 1, "path": "/api/auth/me", "status": 200, "total_ms": 7.7, "bytes": 432}
+{"sample": 1, "path": "/api/admin/dashboard", "status": 200, "total_ms": 28.78, "bytes": 3345}
+{"sample": 2, "path": "login", "status": 200, "total_ms": 384.17, "stages_ms": {"connect": 2.96, "user_query": 0.61, "password": 337.04, "permissions": 0.04, "rate_limit": 19.3, "tokens": 21.28, "total": 381.77}}
+{"sample": 2, "path": "/api/auth/me", "status": 200, "total_ms": 12.38, "bytes": 432}
+{"sample": 2, "path": "/api/admin/dashboard", "status": 200, "total_ms": 22.37, "bytes": 3345}
+{"sample": 3, "path": "login", "status": 200, "total_ms": 361.27, "stages_ms": {"connect": 8.78, "user_query": 1.01, "password": 301.08, "permissions": 0.03, "rate_limit": 25.33, "tokens": 21.96, "total": 358.6}}
+{"sample": 3, "path": "/api/auth/me", "status": 200, "total_ms": 11.29, "bytes": 432}
+{"sample": 3, "path": "/api/admin/dashboard", "status": 200, "total_ms": 21.81, "bytes": 3345}
+{"path": "invalid_login", "status": 401}
