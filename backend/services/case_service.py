@@ -7,7 +7,7 @@ from flask import abort, g, request
 from services.requirement_helpers import _utc_timestamp
 
 CASE_TYPES = ('Unspecified', 'Functional', 'Security', 'Performance', 'Usability', 'Regression', 'Other')
-CASE_STATUSES = ('Draft', 'In Review', 'Approved', 'Needs Revision')
+CASE_STATUSES = ('Draft', 'Pending Review', 'In Review', 'Approved', 'Needs Revision')
 EXECUTION_STATUSES = ('Not Run', 'Pass', 'Fail', 'Blocked')
 
 
@@ -203,7 +203,7 @@ def review_case(rid,sid,data):
             if row['archived'] or type(data.get('case_revision')) is not int or data['case_revision'] != row['case_revision']:
                 abort(409,description='Case changed or is archived. Reload before review.')
             target = data.get('review_status')
-            allowed = {'Draft':('In Review',),'Needs Revision':('In Review',),'In Review':('Approved','Needs Revision','In Review')}
+            allowed = {'Pending Review':('In Review',),'Draft':('In Review',),'Needs Revision':('In Review',),'In Review':('Approved','Needs Revision','In Review')}
             if not isinstance(target,str) or target not in allowed.get(row['review_status'],()):
                 abort(409,description='Start case review before deciding it. Edit an approved case to reopen its draft.')
             notes = text(data,'review_notes',5000,target=='Needs Revision')

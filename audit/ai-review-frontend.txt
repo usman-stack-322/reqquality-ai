@@ -1,0 +1,33 @@
+
+> reqquality-ai-frontend@0.1.0 test
+> node --test src/*.test.js
+
+✔ revision preview separates saved and new cases, highlights differences and escapes provider text (90.4331ms)
+✔ login CSRF is sent automatically while invitation CSRF stays separate (57.7776ms)
+✔ expired access refreshes once and retries with the rotated CSRF value (8.3051ms)
+✔ initial user lookup refreshes after a 200 unauthenticated response (7.3933ms)
+✔ anonymous session lookup skips refresh bootstrap when no refresh cookie exists (6.0262ms)
+✔ late session response cannot overwrite login CSRF or start a stale refresh (3.1053ms)
+✔ parallel unauthorized requests share a single refresh operation (3.963ms)
+✔ explicit CSRF rejection bootstraps once before retrying the untouched action (3.9865ms)
+✔ permission failures are never retried (2.953ms)
+✔ an unavailable refresh returns the original unauthorized response (2.9203ms)
+✔ a late session response cannot refresh after logout (2.9996ms)
+✔ refresh network failure preserves the original unauthorized response (3.7591ms)
+✔ caller cancellation aborts once without replaying a write (2.8245ms)
+✔ database unavailable never starts refresh or automatically replays login (2.538ms)
+✔ public pages render synchronously and protected routes remain gated (121.8435ms)
+✔ sign-in distinguishes unavailable database, proxy failures and throttling (2.4576ms)
+✔ invalid credentials remain generic and validation errors remain useful (0.2701ms)
+✔ first paint defaults to System; OS changes follow only System (6.6898ms)
+✔ invalid storage and denied storage remain usable; changing theme needs no reload (3.651ms)
+✔ appearance boot runs before the application and stylesheet requests (1.0178ms)
+✔ shared light/dark token text pairs meet AA contrast (1.9733ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 383.4462

@@ -1,0 +1,9 @@
+{
+  "database": "isolated SQLite",
+  "provider": "live Gemini",
+  "http_status": 200,
+  "saved_case_unchanged": true,
+  "status": "passed",
+  "response_kind": "proposal",
+  "validated_changes": 1
+}

@@ -221,3 +221,17 @@ main.auth-login-shell { display: grid; grid-template-columns: minmax(0, 1fr) min
   .qm-top-title > span { display: none; }
   .qm-top-actions { margin-left: auto; }
 }
+/* AI review proposals use the same appearance tokens as the workspace. */
+.ai-review-panel { position:fixed; inset:0 0 0 auto; width:min(900px,94vw); z-index:80; overflow-y:auto; padding:24px; background:var(--surface); color:var(--ink); border-left:1px solid var(--line); box-shadow:-12px 0 40px var(--shadow-color); }
+.ai-review-panel header,.ai-actions { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
+.ai-review-panel header { justify-content:space-between; }
+.ai-review-context { position:sticky; top:-24px; z-index:1; padding:8px 0; background:var(--surface); border-bottom:1px solid var(--line); }
+.ai-review-panel textarea { width:100%; box-sizing:border-box; }
+.ai-turn,.ai-proposal { border:1px solid var(--line); border-radius:12px; padding:16px; margin:16px 0; }
+.ai-feedback { white-space:pre-wrap; overflow-wrap:anywhere; }
+.ai-comparison { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
+.ai-comparison section { min-width:0; background:var(--surface-alt); padding:12px; border-radius:8px; }
+.ai-comparison pre { white-space:pre-wrap; overflow-wrap:anywhere; font:inherit; margin:6px 0 16px; }
+.ai-changed { border-left:3px solid var(--accent); padding-left:8px; background:var(--accent-tint); }
+.ai-actions { margin:12px 0; }
+@media(max-width:600px) { .ai-review-panel { width:100%; padding:16px; box-sizing:border-box; } .ai-comparison { grid-template-columns:1fr; } }

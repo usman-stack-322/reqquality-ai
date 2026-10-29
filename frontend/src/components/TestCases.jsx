@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { apiFetch } from '../api.js';
 import ExecutionBugs from './ExecutionBugs';
+import AIReviewAssistant from './AIReviewAssistant';
 
 const blank = { title:'', category:'Positive', preconditions:[], test_data:'', test_steps:[], expected_result:'', test_type:'Unspecified', priority:'Medium', criterion_codes:[], clarification_notes:'' };
 const split = value => value.split('\n').map(v => v.trim()).filter(Boolean);
@@ -89,6 +90,9 @@ function History({ rid, testCase, refresh, user }) {
 }
 
 export default function TestCases({ requirement:r, user, onUpdate }) {
+  const [selected,setSelected]=useState([]);
+  const [reviewContext,setReviewContext]=useState(null);
+  const canRequest=(user?.role==='Analyst'&&user.permissions?.includes('create_requirements'))||(user?.role==='SQA Engineer'&&user.permissions?.includes('review_requirements'));
   const [data,setData] = useState(null);
   const [page,setPage] = useState(1);
   const [refresh,setRefresh] = useState(0);
@@ -127,6 +131,8 @@ export default function TestCases({ requirement:r, user, onUpdate }) {
     finally {lock.current=false;setBusy(false);}
   }
   return <section className="detail-section detailed-test-cases" aria-busy={busy}><h2>Detailed test cases and Manual execution</h2>
+    {canRequest&&<div className="ai-actions"><button onClick={()=>setReviewContext([])}>Discuss requirement coverage</button><button disabled={!selected.length} onClick={()=>setReviewContext([...selected])}>Request AI Revision for selected ({selected.length})</button></div>}
+    {reviewContext&&<AIReviewAssistant key={`${r.id}-${reviewContext.join(',')}`} requirement={r} caseIds={reviewContext} user={user} onUpdate={onUpdate} onClose={()=>setReviewContext(null)}/>}
     <p>Project {r.project_id} · Requirement content version {r.content_revision}. AI-generated cases start as editable drafts. Positive, negative and boundary behavior must be supported by the requirement; unspecified outcomes need clarification.</p>
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
     {!data&&!error&&<p role="status">Loading current test-case revisions…</p>}
@@ -134,6 +140,7 @@ export default function TestCases({ requirement:r, user, onUpdate }) {
     {canEdit && <button type="button" disabled={busy} onClick={() => setEditing({...blank,priority:r.user_priority || 'Medium'})}>Create test case</button>}
     {editing && <CaseForm key={`${editing.id || 'new'}-${editing.case_revision || 0}`} value={editing} requirement={r} busy={busy} onSave={value => send(value.id ? `/${value.id}` : '',value.id ? 'PATCH':'POST',{...value,revision:r.revision})} />}
     {data?.test_cases.map(c => <article className="card" key={c.id} id={`test-case-${c.id}`}><h3>{c.stable_id}: {c.title}</h3><p>{c.scenario_code} · {c.category} · {c.test_type} · Priority {c.priority} · {c.review_status}</p><p>Case version {c.case_revision} · Requirement content version {c.requirement_revision} · Latest manual result for this case version: {c.latest_execution_status}</p>
+      {canRequest&&!c.archived&&!c.stale&&<div className="ai-actions"><label><input type="checkbox" checked={selected.includes(c.id)} onChange={e=>setSelected(v=>e.target.checked?[...v,c.id]:v.filter(id=>id!==c.id))}/> Select {c.stable_id} for shared feedback</label><button onClick={()=>setReviewContext([c.id])}>Request AI Revision</button></div>}
       {c.archived && <p>Archived after reanalysis. Original links and execution evidence remain available below.</p>}{c.stale && !c.archived && <p>Earlier requirement version. Edit and verify the links to rebase this case before new execution.</p>}
       {c.needs_confirmation && <p>Draft/review needed; generated expected behavior is unconfirmed.</p>}{c.clarification_notes && <p>Requires clarification: {c.clarification_notes}</p>}
       <p>Criterion links: {c.criterion_codes.join(', ') || 'None'}</p><p>Preconditions: {c.preconditions.join('; ') || 'None'}</p><p>Test data: {c.test_data || 'Not specified'}</p><ol>{c.test_steps.map((v,i)=><li key={i}>{v}</li>)}</ol><p>Expected results: {c.expected_result}</p>

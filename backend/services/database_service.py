@@ -41,7 +41,7 @@ def _initialize_database(connection):
         connection.execute("UPDATE requirement_assumptions SET needs_confirmation = 0 WHERE requirement_id IN (SELECT id FROM requirements WHERE review_status = 'Approved')")
     connection.commit()
 
-_SCHEMA_VERSION = 20261023
+_SCHEMA_VERSION = 20261028
 _SCHEMA_LOCK_ID = 7265717175616
 
 
@@ -84,6 +84,8 @@ def _initialize_production_schema(connection):
         initialize_bug_schema(connection)
         from services.integrated_service import initialize_integrated_schema
         initialize_integrated_schema(connection)
+        from services.review_assistant_service import initialize_review_assistant_schema
+        initialize_review_assistant_schema(connection)
         with connection:
             connection.execute('CREATE TABLE IF NOT EXISTS reqquality_schema (id INTEGER PRIMARY KEY, version INTEGER NOT NULL)')
             connection.execute('INSERT INTO reqquality_schema(id,version) VALUES(1,?) ON CONFLICT(id) DO UPDATE SET version=excluded.version', (_SCHEMA_VERSION,))
@@ -138,6 +140,8 @@ def _get_connection():
                     initialize_bug_schema(connection)
                     from services.integrated_service import initialize_integrated_schema
                     initialize_integrated_schema(connection)
+                    from services.review_assistant_service import initialize_review_assistant_schema
+                    initialize_review_assistant_schema(connection)
                     _SQLITE_READY.add(key)
             # Role migration temporarily disables foreign keys. Restore them
             # after all initialization commits, including on the first checkout.

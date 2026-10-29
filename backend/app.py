@@ -180,6 +180,8 @@ from routes.project_routes import register_routes as register_project_routes
 register_project_routes(app)
 from routes.case_routes import register_routes as register_test_case_routes
 register_test_case_routes(app)
+from routes.review_assistant_routes import register_routes as register_review_assistant_routes
+register_review_assistant_routes(app)
 from routes.bug_routes import register_routes as register_bug_routes
 register_bug_routes(app)
 

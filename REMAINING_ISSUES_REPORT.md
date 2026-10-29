@@ -1,5 +1,30 @@
 # ReqQuality AI — redesign and verified local demo
 
+## AI Review Assistant — 28 October 2026
+
+Implemented the feedback-based test revision workflow. Per-case and multi-case entry
+points open a context-labeled side panel; requirement details also offer coverage
+discussion. The backend loads authorized source context, persists conversations and
+feedback, validates structured proposals, and keeps saved cases unchanged until
+acceptance. Follow-ups use proposal/history context. Accept/reject actions, comparison
+previews, retry states, optimistic concurrency, stable case identifiers, immutable
+versions, and Pending Review/reapproval use the existing architecture and permissions.
+
+**Verification:** 44 relevant backend tests and 21 frontend tests pass; production build
+passes. A Chrome journey using real local authentication/API/isolated SQLite and a
+mocked provider passes, including failure/retry, duplicate submission protection,
+follow-up, acceptance and context switching with no uncaught exceptions. One live
+Gemini request against synthetic isolated SQLite context also returned a validated
+proposal without changing saved cases. See `audit/ai-review-*` evidence and
+[AI_REVIEW_ASSISTANT.md](AI_REVIEW_ASSISTANT.md) for setup and API behavior.
+
+**Database setup:** schema version 20261028 adds conversation/turn tables through the
+existing initializer. This migration was tested on SQLite, not live PostgreSQL;
+production records and schema were not changed. Restarting an updated backend against
+its configured database invokes the existing additive migration process. No push or
+deployment was performed. The older PostgreSQL app-login credential blocker below
+remains outside this feature's verification scope.
+
 Updated **26 October 2026**. The isolated demo is running at
 **http://127.0.0.1:5174**. Changes remain local; nothing was pushed or deployed.
 Existing data, changes and DNS/hosting configuration were preserved. The previous

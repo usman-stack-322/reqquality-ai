@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "provider": "mocked",
+  "database": "isolated SQLite",
+  "provider_calls": 3,
+  "uncaught_exceptions": 0,
+  "checks": [
+    "failed feedback preserved",
+    "double submit guarded",
+    "retry",
+    "followup context",
+    "saved unchanged before acceptance",
+    "side-by-side preview",
+    "light dark mobile",
+    "accept Pending Review",
+    "context switch isolation"
+  ]
+}

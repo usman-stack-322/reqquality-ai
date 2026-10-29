@@ -237,7 +237,7 @@ export default function RequirementDetails({ requirementId, user, csrfToken, man
       </section>
 
       <details className="detail-section" onToggle={event => setShowHistory(event.currentTarget.open)}><summary>Version history and traceability</summary>{showHistory && <IntegratedReview key={requirement.id} requirement={requirement} user={user} />}</details>
-      <TestCases requirement={requirement} user={user} onUpdate={setRequirement} />
+      <TestCases key={requirement.id} requirement={requirement} user={user} onUpdate={setRequirement} />
       <section className="detail-section sqa-review" aria-labelledby="sqa-review-title">
         <div className="detail-section-heading">
           <h2 id="sqa-review-title">SQA Review</h2>

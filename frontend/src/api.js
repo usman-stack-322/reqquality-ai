@@ -5,7 +5,7 @@ const nativeFetch = async (input, options = {}) => {
   const abort = () => controller.abort(options.signal?.reason);
   if (options.signal?.aborted) abort();
   else options.signal?.addEventListener('abort', abort, { once: true });
-  const timeout = setTimeout(() => controller.abort(new Error('Request timed out. Your input is preserved. Please retry.')), path.includes('analyze-requirement') ? 30000 : 20000);
+  const timeout = setTimeout(() => controller.abort(new Error('Request timed out. Your input is preserved. Please retry.')), path.includes('analyze-requirement') || path.includes('/ai-review/') ? 35000 : 20000);
   try { return await globalThis.fetch(input, { ...options, signal: controller.signal }); }
   finally { clearTimeout(timeout); options.signal?.removeEventListener('abort', abort); }
 };
