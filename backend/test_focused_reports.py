@@ -11,6 +11,24 @@ from test_integrated_reporting import IntegratedReportingTests
 
 
 class FocusedReportTests(IntegratedReportingTests):
+    def test_project_pdf_missing_numeric_scores_are_not_reported_as_zero(self):
+        self.f.sql('UPDATE requirements SET risk_score=NULL')
+        response=self.engineer.get('/api/reports/project.pdf')
+        text='\n'.join(p.extract_text() for p in PdfReader(BytesIO(response.data)).pages)
+        self.assertIn('Not assessed (no numeric scores recorded)',text)
+        self.f.sql('UPDATE requirements SET risk_score=0')
+        response=self.engineer.get('/api/reports/project.pdf')
+        text='\n'.join(p.extract_text() for p in PdfReader(BytesIO(response.data)).pages)
+        self.assertIn('0.0/100',text)
+        self.assertNotIn('no numeric scores recorded',text)
+
+    def test_export_timings_separate_data_render_and_response_for_every_format(self):
+        for path in (f'/api/requirements/{self.r["id"]}/report.pdf','/api/reports/project.pdf','/api/exports/requirements.csv'):
+            response=self.engineer.get(path)
+            self.assertEqual(response.status_code,200)
+            for stage in ('report_data','report_render','report_response'):
+                self.assertIn(stage+';dur=',response.headers['Server-Timing'])
+
     def test_unanalyzed_draft_metadata_is_not_historical_analysis(self):
         response = self.engineer.get(f'/api/requirements/{self.r["id"]}/report.pdf')
         text = '\n'.join(p.extract_text() for p in PdfReader(BytesIO(response.data)).pages)

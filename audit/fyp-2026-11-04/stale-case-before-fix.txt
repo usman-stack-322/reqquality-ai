@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Users\ua589\ReqQuality AI\audit\focused-browser\check.py", line 287, in <module>
+    wait("document.querySelector('#test-case-"+str(case['id'])+" > p')?.textContent.includes("+json.dumps(status)+") && !document.querySelector('.detailed-test-cases[aria-busy=true]')")
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ua589\ReqQuality AI\audit\focused-browser\check.py", line 120, in wait
+    raise AssertionError(condition)
+AssertionError: document.querySelector('#test-case-2 > p')?.textContent.includes("In Review") && !document.querySelector('.detailed-test-cases[aria-busy=true]')

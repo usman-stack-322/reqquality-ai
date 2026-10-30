@@ -1,0 +1,2 @@
+# Keep generated report bytes intact across Windows and Unix checkouts.
+*.pdf binary

@@ -1,0 +1,14 @@
+[
+  {
+    "host": "reqqualityai.site",
+    "error_type": "gaierror",
+    "http_status": null,
+    "elapsed_ms": 345.05
+  },
+  {
+    "host": "www.reqqualityai.site",
+    "dns_addresses": 2,
+    "http_status": 200,
+    "elapsed_ms": 1391.62
+  }
+]

@@ -1,0 +1,10 @@
+[2026-10-30 14:45:04,083] INFO in observability: api timing path=/api/requirements status=201 request_ms=54.7 db_connect_ms=11.9 db_execute_ms=13.2
+[2026-10-30 14:45:04,149] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=62.7 db_connect_ms=16.0 db_execute_ms=16.1
+[2026-10-30 14:45:04,215] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=64.0 db_connect_ms=13.4 db_execute_ms=17.0
+[2026-10-30 14:45:04,767] INFO in observability: api timing path=/api/requirements/1/report.pdf status=200 request_ms=549.4 db_connect_ms=8.5 db_execute_ms=7.4
+[2026-10-30 14:45:04,847] INFO in observability: api timing path=/api/reports/project.pdf status=200 request_ms=79.3 db_connect_ms=4.2 db_execute_ms=4.7
+[2026-10-30 14:45:04,861] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=13.3 db_connect_ms=3.7 db_execute_ms=3.6
+----------------------------------------------------------------------
+Ran 1 test in 2.087s
+
+OK

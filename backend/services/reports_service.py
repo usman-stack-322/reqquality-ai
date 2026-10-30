@@ -86,7 +86,8 @@ def export_requirement_pdf(requirement_id):
     return response
 
 def export_project_pdf():
-    from reporting import build_project_summary_pdf
+    from middlewares.observability import record_timing
+    started = perf_counter()
     connection = get_connection()
     try:
         with _read_snapshot(connection):
@@ -97,10 +98,20 @@ def export_project_pdf():
             summary['requirements'] = _report_requirements(connection)
     finally:
         connection.close()
-    return _download_response(build_project_summary_pdf(summary), 'reqquality-project-summary.pdf', 'application/pdf')
+        record_timing('report_data', (perf_counter() - started) * 1000)
+    started = perf_counter()
+    from reporting import build_project_summary_pdf
+    document = build_project_summary_pdf(summary)
+    record_timing('report_render', (perf_counter() - started) * 1000)
+    started = perf_counter()
+    response = _download_response(document, 'reqquality-project-summary.pdf', 'application/pdf')
+    record_timing('report_response', (perf_counter() - started) * 1000)
+    return response
 
 def export_requirements_csv():
     import json
+    from middlewares.observability import record_timing
+    started = perf_counter()
     fields = ('id', 'title', 'requirement_type', 'user_priority', 'suggested_priority', 'risk_score', 'risk_level', 'review_status', 'created_at', 'updated_at', 'project_id', 'content_revision', 'sqa_review_status', 'reviewed_content_revision', 'reviewed_by_name', 'reviewer_notes', 'reviewed_at', 'description', 'analysis_outdated', 'criteria_review_required', 'acceptance_criteria', 'requirement_versions', 'test_cases', 'case_versions', 'executions', 'bugs', 'bug_history', 'reviews', 'metric_definitions')
     connection = get_connection()
     try:
@@ -112,6 +123,8 @@ def export_requirements_csv():
                 rows.append(r)
     finally:
         connection.close()
+        record_timing('report_data', (perf_counter() - started) * 1000)
+    started = perf_counter()
     output = StringIO(newline='')
     writer = csv.writer(output, lineterminator='\r\n')
     writer.writerow(fields)
@@ -124,4 +137,9 @@ def export_requirements_csv():
                 value = "'" + value
             cells.append(value)
         writer.writerow(cells)
-    return _download_response(BytesIO(output.getvalue().encode('utf-8-sig')), 'reqquality-requirements.csv', 'text/csv; charset=utf-8')
+    document = BytesIO(output.getvalue().encode('utf-8-sig'))
+    record_timing('report_render', (perf_counter() - started) * 1000)
+    started = perf_counter()
+    response = _download_response(document, 'reqquality-requirements.csv', 'text/csv; charset=utf-8')
+    record_timing('report_response', (perf_counter() - started) * 1000)
+    return response

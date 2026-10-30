@@ -1,5 +1,29 @@
 # ReqQuality AI — redesign and verified local demo
 
+## FYP readiness follow-up — 30 October 2026
+
+Prepared for the **4 November 2026** proposal presentation. Current status, screenshot
+acceptance, measurements and blockers supersede the older observations below:
+[FYP readiness report](docs/FYP_READINESS_REPORT.md). Updated
+[proposal](docs/FYP_PROPOSAL_2026-11-04.md) and
+[presentation/demo script](docs/FYP_PRESENTATION_2026-11-04.md) use the team-confirmed
+title, Maam Amina Ghulam Rasool, Muhammad Usman 28104, Hassaan Majid 27916 and
+Hassan Shabbir 27915. Current generation is Gemini-based, without rule-based fallback.
+
+Login layout/recovery link and role-specific dashboard guidance/status labels improved.
+Fixed a browser-reproduced race where stale case review controls remained clickable
+immediately after AI acceptance; delayed-refresh browser regression now passes.
+Dashboard duplication was not reproduced on current routes. Added all-format export
+timing stages and corrected absent numeric risk being shown as zero in project PDFs.
+Local first-attempt logins and both mocked and real-Gemini end-to-end rehearsals pass,
+including AI Review Assistant, separate SQA approval and readable PDF/CSV reports.
+
+**Hosted blockers:** PostgreSQL DNS resolves but every tested TCP 5432 address times out
+before TLS/authentication; this differs from the successful 26 October observation.
+The bare domain fails DNS here; `www` returns HTTPS 200. Exact hosted timeout cause and
+hosted valid-account login remain unverified. No DNS, deployment, production migration,
+data clearing or GitHub push was performed. Evidence: `audit/fyp-2026-11-04/`.
+
 ## AI Review Assistant — 28 October 2026
 
 Implemented the feedback-based test revision workflow. Per-case and multi-case entry

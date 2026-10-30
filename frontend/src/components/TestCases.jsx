@@ -132,7 +132,7 @@ export default function TestCases({ requirement:r, user, onUpdate }) {
   }
   return <section className="detail-section detailed-test-cases" aria-busy={busy}><h2>Detailed test cases and Manual execution</h2>
     {canRequest&&<div className="ai-actions"><button onClick={()=>setReviewContext([])}>Discuss requirement coverage</button><button disabled={!selected.length} onClick={()=>setReviewContext([...selected])}>Request AI Revision for selected ({selected.length})</button></div>}
-    {reviewContext&&<AIReviewAssistant key={`${r.id}-${reviewContext.join(',')}`} requirement={r} caseIds={reviewContext} user={user} onUpdate={onUpdate} onClose={()=>setReviewContext(null)}/>}
+    {reviewContext&&<AIReviewAssistant key={`${r.id}-${reviewContext.join(',')}`} requirement={r} caseIds={reviewContext} user={user} onUpdate={updated=>{setData(null);onUpdate(updated);}} onClose={()=>setReviewContext(null)}/>}
     <p>Project {r.project_id} · Requirement content version {r.content_revision}. AI-generated cases start as editable drafts. Positive, negative and boundary behavior must be supported by the requirement; unspecified outcomes need clarification.</p>
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
     {!data&&!error&&<p role="status">Loading current test-case revisions…</p>}

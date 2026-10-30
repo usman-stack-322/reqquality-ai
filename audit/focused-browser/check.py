@@ -19,6 +19,7 @@ root = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser()
 parser.add_argument('--output', type=Path, default=Path(__file__).parent)
 parser.add_argument('--theme', choices=('light', 'dark'), default='light')
+parser.add_argument('--review-assistant', action='store_true', help='Include AI revision acceptance and separate case approval in the UI rehearsal.')
 args = parser.parse_args()
 screenshots = args.output
 screenshots.mkdir(parents=True, exist_ok=True)
@@ -48,11 +49,21 @@ def provider(data):
     return dict(status='network_error', analysis=None) if len(calls) == 1 else dict(status='success', analysis=valid_analysis())
 
 
+review_calls=[]
+def review_provider(context):
+    from analyzers.review_assistant import FIELDS
+    review_calls.append(context)
+    case=context['test_cases'][0]
+    value={key:case[key] for key in FIELDS}
+    value['expected_result']='The registered account opens after successful sign-in.'
+    return dict(kind='proposal',message='Clarified the observable sign-in outcome.',changes=[dict(operation='revise',case_id=case['id'],summary='Preserve the checks and clarify expected wording.',content=value)])
+
+
 server = make_server('127.0.0.1', 0, app.app, threaded=True)
 threading.Thread(target=server.serve_forever, daemon=True).start()
 origin = f'http://127.0.0.1:{server.server_port}'
 try:
-    with patch('analyzers.ai_analyzer.analyze_with_llm', side_effect=provider), tempfile.TemporaryDirectory() as profile:
+    with patch('analyzers.ai_analyzer.analyze_with_llm', side_effect=provider), patch('analyzers.review_assistant.generate_review',side_effect=review_provider), tempfile.TemporaryDirectory() as profile:
         chrome = subprocess.Popen([
             r'C:\Program Files\Google\Chrome\Application\chrome.exe', '--headless=new',
             '--disable-gpu', '--no-first-run', '--no-default-browser-check',
@@ -185,10 +196,13 @@ try:
                     (screenshots/f'login-{width}.png').write_bytes(base64.b64decode(capture['data']))
                 js("window.requestLog=[];document.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));document.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));")
                 wait("location.hash==='#dashboard' && document.body.innerText.includes('All Requirements')")
+                capture=cdp('Page.captureScreenshot',dict(format='png',captureBeyondViewport=False))
+                (screenshots/'analyst-dashboard.png').write_bytes(base64.b64decode(capture['data']))
                 assert js("window.requestLog.filter(p=>p.includes('/api/auth/login')).length===1")
                 payload = dict(title='Sign in',description='Registered users can sign in with valid credentials.',requirement_type='Functional',priority='High')
                 js("location.hash='requirements'")
                 wait("!!document.querySelector('#requirement-title')")
+                assert js("document.querySelectorAll('.requirements-dashboard').length===0"), 'Dashboard repeated on requirement input'
                 assert js("!window.requestLog.some(p=>p.includes('view=summary')&&p.includes('requirements')&&p.endsWith('view=summary'))")
                 fill('#requirement-title',payload['title']);fill('#requirement-description',payload['description'])
                 before_hash = js('location.hash')
@@ -202,6 +216,7 @@ try:
                 (screenshots/'requirement-input.png').write_bytes(base64.b64decode(image['data']))
                 click('Save Requirement')
                 wait("location.hash.startsWith('#requirement/') && document.body.innerText.includes('Analyze saved version / Retry AI')")
+                assert js("document.querySelectorAll('.requirements-dashboard').length===0"), 'Dashboard repeated on detail page'
                 rid=js("Number(location.hash.split('/')[1])")
                 js("location.hash='requirement/"+str(rid)+"'")
                 wait("document.body.innerText.includes('Analyze saved version / Retry AI')")
@@ -256,6 +271,26 @@ try:
                 assert not js("!!document.getElementById('test-case-"+str(case['id'])+"')"), 'Old executable row remained interactive during delayed revision refresh'
                 js("globalThis.__delayCaseReads=false")
                 wait("[...document.querySelectorAll('.detailed-test-cases button')].some(b=>b.textContent.trim()==="+json.dumps('Open Manual execution and history for '+case['stable_id'])+")")
+                if args.review_assistant:
+                    js("[...document.querySelectorAll('#test-case-"+str(case['id'])+" button')].find(b=>b.textContent==='Request AI Revision').click()")
+                    wait("!!document.querySelector('.ai-review-panel textarea')")
+                    fill('.ai-review-panel textarea','Clarify the expected result wording while preserving existing checks.')
+                    js("document.querySelector('.ai-review-panel form').requestSubmit()")
+                    wait("document.querySelector('.ai-review-panel').innerText.includes('Proposal ready')")
+                    js('globalThis.__delayCaseReads=true')
+                    click('Accept Changes')
+                    wait("document.querySelector('.ai-review-panel').innerText.includes('Changes saved as Pending Review')")
+                    assert not js("!!document.getElementById('test-case-"+str(case['id'])+"')"), 'Old case review remained clickable after AI acceptance'
+                    js('globalThis.__delayCaseReads=false')
+                    click('Close')
+                    for status in ('In Review','Approved'):
+                        wait("!!document.querySelector('#test-case-"+str(case['id'])+" form select')")
+                        field('Case review decision',status,'select','#test-case-'+str(case['id']))
+                        js("document.querySelector('#test-case-"+str(case['id'])+" form').requestSubmit()")
+                        wait("document.querySelector('#test-case-"+str(case['id'])+" > p')?.textContent.includes("+json.dumps(status)+") && !document.querySelector('.detailed-test-cases[aria-busy=true]')")
+                    assert len(review_calls)==1
+                    capture=cdp('Page.captureScreenshot',dict(format='png',captureBeyondViewport=False))
+                    (screenshots/'sqa-case-approved.png').write_bytes(base64.b64decode(capture['data']))
                 click('Open Manual execution and history for '+case['stable_id'])
                 wait("!!document.querySelector('.manual-execution-form')")
                 field('Execution status','Fail','select')
@@ -402,7 +437,7 @@ try:
                     cdp('Emulation.setDeviceMetricsOverride',dict(width=width,height=900,deviceScaleFactor=1,mobile=width<500))
                     assert js("document.documentElement.scrollWidth<=innerWidth"),('dashboard',width)
                     image=cdp('Page.captureScreenshot',dict(format='png',captureBeyondViewport=False))
-                    (screenshots/f'dashboard-{width}.png').write_bytes(base64.b64decode(image['data']))
+                    (screenshots/f'sqa-dashboard-{width}.png').write_bytes(base64.b64decode(image['data']))
                 js("location.hash='requirement/"+str(rid)+"'")
                 wait("document.body.innerText.includes('Edited sign-in test case')")
                 cdp('Emulation.setDeviceMetricsOverride',dict(width=360,height=900,deviceScaleFactor=1,mobile=True))
@@ -449,7 +484,7 @@ try:
                 assert diagnostics['uncaught_exceptions'] == 0, diagnostics
                 assert diagnostics['console_errors'] == 0, diagnostics
                 assert diagnostics['transport_failures'] == 0, diagnostics
-                print(json.dumps(dict(real_browser_auth_api_sqlite=True,provider='MOCKED',provider_calls=len(calls),external_application_tested=False,all_three_role_logins='passed',logout_protected_resources=denied,ai_retry_edit_generated_drafts='passed',case_edit_fail_bug_duplicate_guard='passed',passing_retest_close_failed_retest_reopen='passed',reload_history='passed',version_change_preserves_evidence_invalidates_approval='passed',dashboard_matches_records='passed',report_downloads=sizes,review_actions='UI form; source/case/execution/bug actions also use UI',login_double_submit='one POST',public_auth_requests=0,login_layout_widths=[360,768,1366],export_buttons='duplicate guard and explicit retry passed',public_to_protected_session_restore='passed',keyboard_order=keyboard_order,diagnostics=diagnostics)))
+                print(json.dumps(dict(real_browser_auth_api_sqlite=True,provider='MOCKED',provider_calls=len(calls),review_assistant_calls=len(review_calls),separate_case_approval='passed' if args.review_assistant else 'not requested',external_application_tested=False,all_three_role_logins='passed',logout_protected_resources=denied,ai_retry_edit_generated_drafts='passed',case_edit_fail_bug_duplicate_guard='passed',passing_retest_close_failed_retest_reopen='passed',reload_history='passed',version_change_preserves_evidence_invalidates_approval='passed',dashboard_matches_records='passed',report_downloads=sizes,review_actions='UI form; source/case/execution/bug actions also use UI',login_double_submit='one POST',public_auth_requests=0,login_layout_widths=[360,768,1366],export_buttons='duplicate guard and explicit retry passed',public_to_protected_session_restore='passed',keyboard_order=keyboard_order,diagnostics=diagnostics)))
         finally:
             chrome.terminate()
             chrome.wait(timeout=10)

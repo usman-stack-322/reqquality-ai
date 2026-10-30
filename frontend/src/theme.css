@@ -235,3 +235,13 @@ main.auth-login-shell { display: grid; grid-template-columns: minmax(0, 1fr) min
 .ai-changed { border-left:3px solid var(--accent); padding-left:8px; background:var(--accent-tint); }
 .ai-actions { margin:12px 0; }
 @media(max-width:600px) { .ai-review-panel { width:100%; padding:16px; box-sizing:border-box; } .ai-comparison { grid-template-columns:1fr; } }
+.auth-login-shell .auth-form { gap:12px; }
+.auth-login-shell .login-feedback { min-height:3.75rem; }
+.auth-login-shell .requirement-save-button { display:flex; align-items:center; justify-content:center; width:100%; min-height:46px; margin:0; }
+.auth-login-shell .auth-recovery a { display:inline-flex; align-items:center; min-height:44px; padding:6px 12px; border-radius:8px; background:var(--accent-tint); color:var(--accent); text-decoration:none; font-weight:600; }
+.auth-login-shell .auth-recovery a:hover { text-decoration:underline; }
+.dashboard-workflow { margin:20px 0; padding:18px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+.dashboard-workflow h2 { margin-top:0; }
+.requirements-dashboard .dashboard-refresh { width:auto; justify-self:start; min-height:40px; padding:8px 14px; }
+.dashboard-workflow p,.dashboard-next-step { color:var(--muted); line-height:1.6; }
+.dashboard-requirement-state { flex-wrap:wrap; }

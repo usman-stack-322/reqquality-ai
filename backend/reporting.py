@@ -350,7 +350,7 @@ def build_project_summary_pdf(summary):
     _section(story, "Project Overview", styles)
     story.append(_key_value_table([
         ("Total Requirements", _paragraph(summary["total_requirements"], styles["body"])),
-        ("Average Quality Risk Score", _paragraph(f"{summary['average_risk_score']}/100", styles["body"])),
+        ("Average numeric risk score", _paragraph(f"{summary['average_risk_score']}/100" if summary.get('average_risk_score') is not None else 'Not assessed (no numeric scores recorded)', styles["body"])),
         ("Total Test Scenarios", _paragraph(summary["total_test_scenarios"], styles["body"])),
         ("All criteria explicitly linked", _paragraph(f"{summary['traceability_coverage_percent']}% ({summary['traceable_requirement_count']} requirements); recorded links, not proof of complete coverage", styles["body"])),
     ], styles))

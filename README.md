@@ -1,5 +1,16 @@
 # ReqQuality AI
 
+## FYP proposal presentation — 4 November 2026
+
+The current team-confirmed proposal is [here](docs/FYP_PROPOSAL_2026-11-04.md).
+Use the [presentation outline and demo script](docs/FYP_PRESENTATION_2026-11-04.md)
+and [readiness report](docs/FYP_READINESS_REPORT.md) for rehearsal and limitations.
+These supersede the older solo-project/unconfirmed-supervisor documentation.
+Current AI analysis is Gemini-based with human review; there is no active rule-based
+analysis engine or successful fallback on AI failure. Historical provenance is retained.
+Do not start the updated backend against production for presentation rehearsal;
+use the explicit isolated demo configuration.
+
 A beginner-friendly starting point for a Requirements Engineering and Software
 Quality Engineering platform. It includes a React frontend, a Flask API, and
 SQLite/PostgreSQL storage, AI analysis, and cookie-token authentication.

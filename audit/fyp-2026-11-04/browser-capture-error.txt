@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "C:\Users\ua589\ReqQuality AI\audit\focused-browser\check.py", line 471, in <module>
+    (screenshots/f'{section}-{width}.png').write_bytes(base64.b64decode(image['data']))
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\pathlib\__init__.py", line 796, in write_bytes
+    with self.open(mode='wb') as f:
+         ~~~~~~~~~^^^^^^^^^^^
+  File "C:\Python314\Lib\pathlib\__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 22] Invalid argument: 'audit\\fyp-2026-11-04\\browser\\requirements-1366.png'

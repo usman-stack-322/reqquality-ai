@@ -1,0 +1,588 @@
+[2026-10-30 09:53:06,246] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:06,482] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:06,499] INFO in auth_service: login timing total_ms=253.0 connect_ms=3.4 user_query_ms=1.1 password_ms=212.2 permissions_ms=0.0 rate_limit_ms=19.4 tokens_ms=16.1
+[2026-10-30 09:53:06,500] INFO in observability: api timing path=/api/auth/login status=200 request_ms=254.5 db_connect_ms=3.3 db_execute_ms=7.5
+[2026-10-30 09:53:07,411] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-30 09:53:07,641] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-30 09:53:07,664] INFO in auth_service: login timing total_ms=253.4 connect_ms=3.0 user_query_ms=0.6 password_ms=210.3 permissions_ms=0.8 rate_limit_ms=16.3 tokens_ms=21.6
+[2026-10-30 09:53:07,665] INFO in observability: api timing path=/api/auth/login status=200 request_ms=254.6 db_connect_ms=3.0 db_execute_ms=6.6
+[2026-10-30 09:53:07,694] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-30 09:53:07,995] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-30 09:53:08,016] INFO in auth_service: login timing total_ms=321.4 connect_ms=3.9 user_query_ms=0.8 password_ms=274.3 permissions_ms=0.8 rate_limit_ms=21.5 tokens_ms=19.7
+[2026-10-30 09:53:08,016] INFO in observability: api timing path=/api/auth/login status=200 request_ms=322.6 db_connect_ms=3.8 db_execute_ms=6.4
+[2026-10-30 09:53:08,941] INFO in auth_service: login attempt normalized_email=a***@example.com
+[2026-10-30 09:53:09,190] INFO in auth_service: login password_verification=true normalized_email=a***@example.com
+[2026-10-30 09:53:09,192] INFO in auth_service: login timing total_ms=250.6 connect_ms=0.1 user_query_ms=0.7 password_ms=231.3 permissions_ms=0.0 rate_limit_ms=17.4 tokens_ms=0.0
+[2026-10-30 09:53:09,192] ERROR in auth: API endpoint failed endpoint=login exception_type=RuntimeError
+Traceback (most recent call last):
+  File "C:\Users\ua589\ReqQuality AI\backend\middlewares\auth.py", line 112, in wrapped
+    return view(*args, **kwargs)
+  File "C:\Users\ua589\ReqQuality AI\backend\controllers\auth_controller.py", line 9, in login
+    response = make_response(respond(service.login(request.get_json(silent=True))))
+                                     ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ua589\ReqQuality AI\backend\services\auth_service.py", line 65, in login
+    public_user = _public_user(user, connection=connection)
+  File "C:\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1241, in _execute_mock_call
+    raise effect
+RuntimeError: lookup failed
+[2026-10-30 09:53:09,233] INFO in observability: api timing path=/api/auth/login status=500 request_ms=292.4 db_connect_ms=0.0 db_execute_ms=3.7
+[2026-10-30 09:53:10,087] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:10,428] WARNING in auth_service: login password_verification=false normalized_email=m***@example.com
+[2026-10-30 09:53:10,429] INFO in auth_service: login timing total_ms=341.7 connect_ms=5.4 user_query_ms=1.3 password_ms=310.1 permissions_ms=0.0 rate_limit_ms=23.9 tokens_ms=0.0
+[2026-10-30 09:53:10,430] INFO in observability: api timing path=/api/auth/login status=401 request_ms=343.0 db_connect_ms=5.3 db_execute_ms=6.1
+[2026-10-30 09:53:10,432] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:10,662] WARNING in auth_service: login password_verification=false normalized_email=m***@example.com
+[2026-10-30 09:53:10,663] INFO in auth_service: login timing total_ms=230.6 connect_ms=4.2 user_query_ms=0.5 password_ms=207.1 permissions_ms=0.0 rate_limit_ms=17.9 tokens_ms=0.0
+[2026-10-30 09:53:10,663] INFO in observability: api timing path=/api/auth/login status=401 request_ms=231.4 db_connect_ms=4.2 db_execute_ms=3.8
+[2026-10-30 09:53:11,862] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:12,192] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:12,214] INFO in auth_service: login timing total_ms=352.0 connect_ms=6.4 user_query_ms=1.1 password_ms=276.6 permissions_ms=0.0 rate_limit_ms=45.8 tokens_ms=21.2
+[2026-10-30 09:53:12,216] INFO in observability: api timing path=/api/auth/login status=200 request_ms=353.8 db_connect_ms=6.4 db_execute_ms=22.9
+[2026-10-30 09:53:12,259] INFO in observability: api timing path=/api/auth/refresh status=200 request_ms=34.0 db_connect_ms=8.1 db_execute_ms=6.2
+[2026-10-30 09:53:12,289] INFO in observability: api timing path=/api/auth/refresh status=401 request_ms=65.1 db_connect_ms=9.1 db_execute_ms=35.7
+[2026-10-30 09:53:13,185] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:13,492] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:13,795] INFO in auth_service: login timing total_ms=609.5 connect_ms=6.3 user_query_ms=1.2 password_ms=276.8 permissions_ms=0.0 rate_limit_ms=22.2 tokens_ms=302.0
+[2026-10-30 09:53:13,796] INFO in observability: api timing path=/api/auth/login status=200 request_ms=611.4 db_connect_ms=6.3 db_execute_ms=290.6
+[2026-10-30 09:53:13,800] INFO in observability: api timing path=/api/auth/csrf status=200 request_ms=1.4 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:13,803] INFO in observability: api timing path=/api/auth/logout status=403 request_ms=1.4 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:13,832] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=26.8 db_connect_ms=10.3 db_execute_ms=13.0
+[2026-10-30 09:53:13,865] INFO in observability: api timing path=/api/auth/logout status=200 request_ms=31.8 db_connect_ms=4.8 db_execute_ms=5.9
+[2026-10-30 09:53:14,812] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:15,068] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:15,091] INFO in auth_service: login timing total_ms=278.4 connect_ms=4.2 user_query_ms=0.8 password_ms=228.3 permissions_ms=0.0 rate_limit_ms=22.1 tokens_ms=21.7
+[2026-10-30 09:53:15,092] INFO in observability: api timing path=/api/auth/login status=200 request_ms=279.6 db_connect_ms=4.2 db_execute_ms=9.2
+[2026-10-30 09:53:15,121] INFO in observability: api timing path=/api/auth/logout status=200 request_ms=26.6 db_connect_ms=4.0 db_execute_ms=4.2
+[2026-10-30 09:53:16,175] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:16,428] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:16,445] INFO in auth_service: login timing total_ms=269.3 connect_ms=3.6 user_query_ms=0.7 password_ms=230.9 permissions_ms=0.0 rate_limit_ms=16.6 tokens_ms=16.7
+[2026-10-30 09:53:16,446] INFO in observability: api timing path=/api/auth/login status=200 request_ms=270.4 db_connect_ms=3.6 db_execute_ms=4.9
+[2026-10-30 09:53:16,492] INFO in observability: api timing path=/api/auth/refresh status=401 request_ms=22.5 db_connect_ms=3.8 db_execute_ms=3.2
+[2026-10-30 09:53:17,391] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:17,610] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:17,629] INFO in auth_service: login timing total_ms=237.4 connect_ms=4.8 user_query_ms=0.6 password_ms=188.1 permissions_ms=0.0 rate_limit_ms=25.4 tokens_ms=17.7
+[2026-10-30 09:53:17,629] INFO in observability: api timing path=/api/auth/login status=200 request_ms=238.7 db_connect_ms=4.7 db_execute_ms=6.1
+[2026-10-30 09:53:17,637] ERROR in auth: API endpoint failed endpoint=refresh exception_type=RuntimeError
+Traceback (most recent call last):
+  File "C:\Users\ua589\ReqQuality AI\backend\middlewares\auth.py", line 112, in wrapped
+    return view(*args, **kwargs)
+  File "C:\Users\ua589\ReqQuality AI\backend\controllers\auth_controller.py", line 25, in refresh
+    return respond(service.refresh())
+                   ~~~~~~~~~~~~~~~^^
+  File "C:\Users\ua589\ReqQuality AI\backend\services\auth_service.py", line 102, in refresh
+    return refresh_tokens()
+  File "C:\Users\ua589\ReqQuality AI\backend\services\token_service.py", line 151, in refresh_tokens
+    csrf, replacement = issue_tokens(user, connection, row['family_id'], row['expires_at'])
+                        ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\unittest\mock.py", line 1241, in _execute_mock_call
+    raise effect
+RuntimeError: simulated write failure
+[2026-10-30 09:53:17,665] INFO in observability: api timing path=/api/auth/refresh status=500 request_ms=34.2 db_connect_ms=4.2 db_execute_ms=1.4
+[2026-10-30 09:53:17,686] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=19.9 db_connect_ms=5.2 db_execute_ms=12.0
+[2026-10-30 09:53:18,585] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:18,811] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:18,828] INFO in auth_service: login timing total_ms=242.4 connect_ms=5.7 user_query_ms=0.8 password_ms=198.0 permissions_ms=0.0 rate_limit_ms=20.2 tokens_ms=17.0
+[2026-10-30 09:53:18,829] INFO in observability: api timing path=/api/auth/login status=200 request_ms=243.8 db_connect_ms=5.7 db_execute_ms=5.0
+[2026-10-30 09:53:22,199] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:22,555] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:22,605] INFO in auth_service: login timing total_ms=405.9 connect_ms=3.6 user_query_ms=0.6 password_ms=272.9 permissions_ms=0.0 rate_limit_ms=79.0 tokens_ms=48.9
+[2026-10-30 09:53:22,607] INFO in observability: api timing path=/api/auth/login status=200 request_ms=407.6 db_connect_ms=3.5 db_execute_ms=31.3
+[2026-10-30 09:53:22,688] INFO in observability: api timing path=/api/auth/logout status=200 request_ms=78.3 db_connect_ms=7.7 db_execute_ms=4.5
+[2026-10-30 09:53:22,703] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=12.3 db_connect_ms=7.3 db_execute_ms=3.5
+[2026-10-30 09:53:22,705] INFO in observability: api timing path=/api/auth/refresh status=401 request_ms=0.6 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:25,399] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:25,824] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:25,847] INFO in auth_service: login timing total_ms=447.6 connect_ms=6.5 user_query_ms=1.6 password_ms=377.6 permissions_ms=0.0 rate_limit_ms=39.6 tokens_ms=21.3
+[2026-10-30 09:53:25,848] INFO in observability: api timing path=/api/auth/login status=200 request_ms=449.4 db_connect_ms=6.5 db_execute_ms=26.8
+[2026-10-30 09:53:26,789] INFO in observability: api timing path=/api/auth/change-password status=200 request_ms=937.8 db_connect_ms=11.6 db_execute_ms=8.5
+[2026-10-30 09:53:29,084] INFO in observability: api timing path=/api/auth/login status=426 request_ms=0.2 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:33,028] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:33,509] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:33,563] INFO in auth_service: login timing total_ms=534.4 connect_ms=8.5 user_query_ms=1.8 password_ms=433.5 permissions_ms=0.0 rate_limit_ms=36.7 tokens_ms=52.5
+[2026-10-30 09:53:33,565] INFO in observability: api timing path=/api/auth/login status=200 request_ms=536.5 db_connect_ms=8.5 db_execute_ms=10.0
+[2026-10-30 09:53:33,569] INFO in observability: api timing path=/api/auth/refresh status=403 request_ms=0.8 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:33,572] INFO in observability: api timing path=/api/auth/refresh status=401 request_ms=0.8 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:35,683] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:36,139] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:36,163] INFO in auth_service: login timing total_ms=479.7 connect_ms=3.9 user_query_ms=1.0 password_ms=430.8 permissions_ms=0.1 rate_limit_ms=20.0 tokens_ms=22.4
+[2026-10-30 09:53:36,165] INFO in observability: api timing path=/api/auth/login status=200 request_ms=482.0 db_connect_ms=3.9 db_execute_ms=8.7
+[2026-10-30 09:53:36,203] INFO in observability: api timing path=/api/auth/refresh status=200 request_ms=34.0 db_connect_ms=6.8 db_execute_ms=5.2
+[2026-10-30 09:53:36,242] INFO in observability: api timing path=/api/auth/refresh status=401 request_ms=37.1 db_connect_ms=6.6 db_execute_ms=5.5
+[2026-10-30 09:53:36,258] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=13.8 db_connect_ms=8.7 db_execute_ms=3.1
+[2026-10-30 09:53:37,418] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:37,727] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:37,750] INFO in auth_service: login timing total_ms=331.7 connect_ms=4.6 user_query_ms=2.2 password_ms=279.9 permissions_ms=0.0 rate_limit_ms=21.6 tokens_ms=22.4
+[2026-10-30 09:53:37,751] INFO in observability: api timing path=/api/auth/login status=200 request_ms=333.0 db_connect_ms=4.5 db_execute_ms=9.6
+[2026-10-30 09:53:37,766] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=2.1 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:37,776] INFO in observability: api timing path=/api/auth/csrf status=200 request_ms=8.6 db_connect_ms=3.9 db_execute_ms=3.2
+[2026-10-30 09:53:37,821] INFO in observability: api timing path=/api/auth/refresh status=200 request_ms=43.9 db_connect_ms=6.2 db_execute_ms=10.8
+[2026-10-30 09:53:37,853] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=29.6 db_connect_ms=10.2 db_execute_ms=15.8
+[2026-10-30 09:53:38,924] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=0.7 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:40,002] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:40,826] INFO in auth_service: login password_verification=true normalized_email=m***@example.com
+[2026-10-30 09:53:40,848] INFO in auth_service: login timing total_ms=845.7 connect_ms=5.1 user_query_ms=0.9 password_ms=337.9 permissions_ms=0.1 rate_limit_ms=480.2 tokens_ms=20.3
+[2026-10-30 09:53:40,849] INFO in observability: api timing path=/api/auth/login status=200 request_ms=846.8 db_connect_ms=5.1 db_execute_ms=11.3
+[2026-10-30 09:53:40,851] INFO in observability: api timing path=/api/admin/dashboard status=401 request_ms=0.5 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:42,432] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:42,803] WARNING in auth_service: login password_verification=false normalized_email=m***@example.com
+[2026-10-30 09:53:42,804] INFO in auth_service: login timing total_ms=372.4 connect_ms=6.4 user_query_ms=1.2 password_ms=336.1 permissions_ms=0.0 rate_limit_ms=27.8 tokens_ms=0.0
+[2026-10-30 09:53:42,805] INFO in observability: api timing path=/api/auth/login status=401 request_ms=373.6 db_connect_ms=6.4 db_execute_ms=8.9
+[2026-10-30 09:53:45,116] INFO in auth_service: login attempt normalized_email=m***@example.com
+[2026-10-30 09:53:45,117] INFO in auth_service: login timing total_ms=0.5 connect_ms=0.1 user_query_ms=0.0 password_ms=0.0 permissions_ms=0.0 rate_limit_ms=0.0 tokens_ms=0.0
+[2026-10-30 09:53:45,150] ERROR in app: Database unavailable endpoint=login stage=unknown pid=19032 diagnostic={'exception_type': 'QueryCanceled', 'sqlstate': '57014', 'category': 'query_cancelled_or_timed_out', 'frames': ['app.py:917:full_dispatch_request', 'app.py:902:dispatch_request', 'auth.py:112:wrapped', 'auth_controller.py:9:login', 'auth_service.py:46:login', 'rate_limit_service.py:40:check_rate_limit', 'mock.py:1176:__call__', 'mock.py:1180:_mock_call', 'mock.py:1241:_execute_mock_call']}
+[2026-10-30 09:53:45,151] INFO in observability: api timing path=/api/auth/login status=503 request_ms=34.6 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:45,162] INFO in observability: api timing path=/api/auth/me status=200 request_ms=9.5 db_connect_ms=2.7 db_execute_ms=4.4
+[2026-10-30 09:53:46,989] ERROR in app: Database unavailable endpoint=current_user stage=unknown pid=19032 diagnostic={'exception_type': 'PoolTimeout', 'sqlstate': None, 'category': 'pool_checkout_timeout', 'frames': ['app.py:917:full_dispatch_request', 'app.py:902:dispatch_request', 'auth_controller.py:18:current_user', 'auth_service.py:89:current_user', 'auth.py:17:_get_current_user', 'mock.py:1176:__call__', 'mock.py:1180:_mock_call', 'mock.py:1241:_execute_mock_call']}
+[2026-10-30 09:53:46,990] INFO in observability: api timing path=/api/auth/me status=503 request_ms=4.0 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:46,995] ERROR in app: Database unavailable endpoint=manager_dashboard stage=unknown pid=19032 diagnostic={'exception_type': 'PoolTimeout', 'sqlstate': None, 'category': 'pool_checkout_timeout', 'frames': ['app.py:917:full_dispatch_request', 'app.py:902:dispatch_request', 'auth.py:54:wrapped', 'auth.py:17:_get_current_user', 'mock.py:1176:__call__', 'mock.py:1180:_mock_call', 'mock.py:1241:_execute_mock_call', 'app.py:917:full_dispatch_request', 'app.py:902:dispatch_request', 'auth_controller.py:18:current_user', 'auth_service.py:89:current_user', 'auth.py:17:_get_current_user', 'mock.py:1176:__call__', 'mock.py:1180:_mock_call', 'mock.py:1241:_execute_mock_call']}
+[2026-10-30 09:53:46,996] INFO in observability: api timing path=/api/admin/dashboard status=503 request_ms=4.0 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:47,035] ERROR in app: Database unavailable endpoint=dashboard_summary stage=unknown pid=19032 diagnostic={'exception_type': 'PoolTimeout', 'sqlstate': None, 'category': 'pool_checkout_timeout', 'frames': ['app.py:915:full_dispatch_request', 'app.py:1291:preprocess_request', 'workflow_service.py:35:project_access_guard', 'auth.py:17:_get_current_user', 'mock.py:1176:__call__', 'mock.py:1180:_mock_call', 'mock.py:1241:_execute_mock_call', 'app.py:917:full_dispatch_request', 'app.py:902:dispatch_request', 'auth.py:54:wrapped', 'auth.py:17:_get_current_user', 'mock.py:1176:__call__', 'mock.py:1180:_mock_call', 'mock.py:1241:_execute_mock_call', 'app.py:917:full_dispatch_request', 'app.py:902:dispatch_request', 'auth_controller.py:18:current_user', 'auth_service.py:89:current_user', 'auth.py:17:_get_current_user', 'mock.py:1176:__call__', 'mock.py:1180:_mock_call', 'mock.py:1241:_execute_mock_call']}
+[2026-10-30 09:53:47,036] INFO in observability: api timing path=/api/dashboard status=503 request_ms=39.0 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:53:47,054] INFO in observability: api timing path=/api/auth/me status=200 request_ms=15.8 db_connect_ms=9.5 db_execute_ms=4.3
+[2026-10-30 09:53:48,570] INFO in observability: api timing path=/api/requirements status=201 request_ms=40.5 db_connect_ms=8.8 db_execute_ms=7.0
+[2026-10-30 09:53:48,636] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=63.5 db_connect_ms=18.4 db_execute_ms=18.5
+[2026-10-30 09:53:48,715] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=76.0 db_connect_ms=15.2 db_execute_ms=11.3
+[2026-10-30 09:53:48,737] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=20.5 db_connect_ms=7.9 db_execute_ms=8.2
+[2026-10-30 09:53:48,755] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=16.6 db_connect_ms=6.5 db_execute_ms=7.5
+[2026-10-30 09:53:49,970] INFO in observability: api timing path=/api/requirements status=201 request_ms=54.0 db_connect_ms=13.6 db_execute_ms=14.1
+[2026-10-30 09:53:50,029] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=56.9 db_connect_ms=14.9 db_execute_ms=12.6
+[2026-10-30 09:53:50,111] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=80.6 db_connect_ms=17.1 db_execute_ms=19.5
+[2026-10-30 09:53:50,149] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=34.3 db_connect_ms=10.1 db_execute_ms=9.8
+[2026-10-30 09:53:50,509] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=28.6 db_connect_ms=11.7 db_execute_ms=9.1
+[2026-10-30 09:53:52,497] INFO in observability: api timing path=/api/requirements status=201 request_ms=786.5 db_connect_ms=14.3 db_execute_ms=213.7
+[2026-10-30 09:53:52,593] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=94.9 db_connect_ms=37.9 db_execute_ms=24.0
+[2026-10-30 09:53:52,733] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=137.3 db_connect_ms=49.3 db_execute_ms=41.2
+[2026-10-30 09:53:54,106] INFO in observability: api timing path=/api/requirements/1/report.pdf status=200 request_ms=1270.2 db_connect_ms=16.2 db_execute_ms=11.7
+[2026-10-30 09:53:54,309] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=15.2 db_connect_ms=4.9 db_execute_ms=6.6
+[2026-10-30 09:53:55,349] INFO in observability: api timing path=/api/requirements status=201 request_ms=54.1 db_connect_ms=15.1 db_execute_ms=14.4
+[2026-10-30 09:53:55,390] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=40.2 db_connect_ms=10.9 db_execute_ms=8.4
+[2026-10-30 09:53:55,438] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=46.5 db_connect_ms=8.0 db_execute_ms=7.1
+[2026-10-30 09:53:55,449] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=9.6 db_connect_ms=5.7 db_execute_ms=3.0
+[2026-10-30 09:53:55,485] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=35.1 db_connect_ms=7.0 db_execute_ms=6.9
+[2026-10-30 09:53:55,495] INFO in observability: api timing path=/api/executions/1/bugs status=200 request_ms=9.3 db_connect_ms=5.1 db_execute_ms=3.3
+[2026-10-30 09:53:55,545] INFO in observability: api timing path=/api/executions/1/bugs status=201 request_ms=49.2 db_connect_ms=3.5 db_execute_ms=9.4
+[2026-10-30 09:53:55,561] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=15.1 db_connect_ms=8.1 db_execute_ms=5.6
+[2026-10-30 09:53:55,606] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=42.8 db_connect_ms=8.7 db_execute_ms=10.9
+[2026-10-30 09:53:55,657] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=49.5 db_connect_ms=11.9 db_execute_ms=10.8
+[2026-10-30 09:53:55,711] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=51.6 db_connect_ms=11.0 db_execute_ms=10.8
+[2026-10-30 09:53:55,771] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=58.0 db_connect_ms=16.2 db_execute_ms=13.9
+[2026-10-30 09:53:55,794] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=20.6 db_connect_ms=8.0 db_execute_ms=9.6
+[2026-10-30 09:53:55,847] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=49.3 db_connect_ms=8.7 db_execute_ms=13.6
+[2026-10-30 09:53:55,869] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=19.9 db_connect_ms=6.9 db_execute_ms=9.6
+[2026-10-30 09:53:55,894] INFO in observability: api timing path=/api/dashboard status=200 request_ms=23.1 db_connect_ms=8.0 db_execute_ms=12.1
+[2026-10-30 09:53:55,922] INFO in observability: api timing path=/api/requirements/1/review status=409 request_ms=25.2 db_connect_ms=12.5 db_execute_ms=9.8
+[2026-10-30 09:53:57,041] INFO in observability: api timing path=/api/requirements status=201 request_ms=49.7 db_connect_ms=12.0 db_execute_ms=11.7
+[2026-10-30 09:53:57,091] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=48.5 db_connect_ms=13.4 db_execute_ms=11.6
+[2026-10-30 09:53:57,150] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=56.6 db_connect_ms=12.8 db_execute_ms=12.8
+[2026-10-30 09:53:57,173] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=21.2 db_connect_ms=10.9 db_execute_ms=7.9
+[2026-10-30 09:53:57,223] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=48.0 db_connect_ms=11.1 db_execute_ms=12.7
+[2026-10-30 09:53:57,241] INFO in observability: api timing path=/api/executions/1/bugs status=200 request_ms=17.0 db_connect_ms=8.9 db_execute_ms=6.3
+[2026-10-30 09:53:57,286] INFO in observability: api timing path=/api/executions/1/bugs status=201 request_ms=43.0 db_connect_ms=7.8 db_execute_ms=9.6
+[2026-10-30 09:53:57,307] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=19.5 db_connect_ms=9.9 db_execute_ms=7.7
+[2026-10-30 09:53:58,184] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=875.2 db_connect_ms=8.0 db_execute_ms=239.7
+[2026-10-30 09:53:58,228] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=42.5 db_connect_ms=7.1 db_execute_ms=8.9
+[2026-10-30 09:53:58,243] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=13.5 db_connect_ms=7.1 db_execute_ms=4.6
+[2026-10-30 09:53:58,279] INFO in observability: api timing path=/api/requirements/1/test-cases/2/executions status=201 request_ms=34.9 db_connect_ms=5.2 db_execute_ms=6.2
+[2026-10-30 09:53:58,322] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=41.3 db_connect_ms=8.2 db_execute_ms=7.8
+[2026-10-30 09:53:58,333] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=10.1 db_connect_ms=5.6 db_execute_ms=3.4
+[2026-10-30 09:53:58,365] INFO in observability: api timing path=/api/requirements/1/test-cases/3/executions status=201 request_ms=31.1 db_connect_ms=4.7 db_execute_ms=4.9
+[2026-10-30 09:53:58,407] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=41.1 db_connect_ms=5.9 db_execute_ms=6.3
+[2026-10-30 09:53:58,459] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=50.1 db_connect_ms=13.3 db_execute_ms=11.7
+[2026-10-30 09:53:58,499] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=38.8 db_connect_ms=8.1 db_execute_ms=7.6
+[2026-10-30 09:53:58,545] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=44.6 db_connect_ms=8.2 db_execute_ms=9.4
+[2026-10-30 09:53:58,695] INFO in observability: api timing path=/api/bugs/1/status status=200 request_ms=47.0 db_connect_ms=9.3 db_execute_ms=9.1
+[2026-10-30 09:53:58,741] INFO in observability: api timing path=/api/bugs/1/status status=200 request_ms=44.4 db_connect_ms=10.8 db_execute_ms=10.5
+[2026-10-30 09:53:58,767] INFO in observability: api timing path=/api/dashboard status=200 request_ms=23.8 db_connect_ms=9.5 db_execute_ms=11.3
+[2026-10-30 09:53:58,793] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=24.7 db_connect_ms=7.1 db_execute_ms=13.2
+[2026-10-30 09:53:58,819] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=23.6 db_connect_ms=7.4 db_execute_ms=11.7
+[2026-10-30 09:53:59,959] INFO in observability: api timing path=/api/requirements status=201 request_ms=56.8 db_connect_ms=12.8 db_execute_ms=12.3
+[2026-10-30 09:54:00,012] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=51.6 db_connect_ms=13.4 db_execute_ms=11.5
+[2026-10-30 09:54:00,071] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=55.6 db_connect_ms=14.3 db_execute_ms=11.9
+[2026-10-30 09:54:00,093] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=21.0 db_connect_ms=8.4 db_execute_ms=10.2
+[2026-10-30 09:54:00,114] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=18.8 db_connect_ms=6.3 db_execute_ms=10.3
+[2026-10-30 09:54:00,134] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=19.3 db_connect_ms=6.5 db_execute_ms=10.3
+[2026-10-30 09:54:00,136] INFO in observability: api timing path=/api/requirements/1/traceability status=401 request_ms=0.3 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:54:00,145] INFO in observability: api timing path=/api/requirements/1/traceability status=403 request_ms=7.9 db_connect_ms=3.2 db_execute_ms=3.4
+[2026-10-30 09:54:00,183] INFO in observability: api timing path=/api/requirements/1/traceability status=403 request_ms=11.2 db_connect_ms=6.3 db_execute_ms=3.3
+[2026-10-30 09:54:00,192] INFO in observability: api timing path=/api/dashboard status=403 request_ms=7.3 db_connect_ms=3.5 db_execute_ms=2.4
+[2026-10-30 09:54:00,201] INFO in observability: api timing path=/api/exports/requirements.csv status=403 request_ms=7.3 db_connect_ms=3.3 db_execute_ms=2.4
+[2026-10-30 09:54:00,210] INFO in observability: api timing path=/api/reports/project.pdf status=403 request_ms=7.2 db_connect_ms=3.1 db_execute_ms=2.8
+[2026-10-30 09:54:00,220] INFO in observability: api timing path=/api/requirements/1/report.pdf status=403 request_ms=8.0 db_connect_ms=3.9 db_execute_ms=2.7
+[2026-10-30 09:54:00,279] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=9.4 db_connect_ms=4.6 db_execute_ms=3.5
+[2026-10-30 09:54:00,286] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=5.3 db_connect_ms=2.6 db_execute_ms=1.6
+[2026-10-30 09:54:00,296] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=8.7 db_connect_ms=4.0 db_execute_ms=3.5
+[2026-10-30 09:54:00,331] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=12.6 db_connect_ms=5.0 db_execute_ms=5.8
+[2026-10-30 09:54:00,389] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=35.8 db_connect_ms=6.3 db_execute_ms=5.4
+[2026-10-30 09:54:00,399] INFO in observability: api timing path=/api/requirements status=200 request_ms=9.0 db_connect_ms=4.8 db_execute_ms=3.2
+[2026-10-30 09:54:01,514] INFO in observability: api timing path=/api/requirements status=201 request_ms=36.6 db_connect_ms=7.2 db_execute_ms=6.9
+[2026-10-30 09:54:01,551] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=36.0 db_connect_ms=6.6 db_execute_ms=6.5
+[2026-10-30 09:54:01,612] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=59.5 db_connect_ms=13.1 db_execute_ms=14.6
+[2026-10-30 09:54:01,632] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=17.8 db_connect_ms=8.8 db_execute_ms=7.0
+[2026-10-30 09:54:01,678] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=44.5 db_connect_ms=9.8 db_execute_ms=11.1
+[2026-10-30 09:54:01,697] INFO in observability: api timing path=/api/executions/1/bugs status=200 request_ms=18.1 db_connect_ms=10.2 db_execute_ms=6.1
+[2026-10-30 09:54:01,741] INFO in observability: api timing path=/api/executions/1/bugs status=201 request_ms=42.2 db_connect_ms=7.2 db_execute_ms=10.0
+[2026-10-30 09:54:01,761] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=18.1 db_connect_ms=9.3 db_execute_ms=6.9
+[2026-10-30 09:54:01,810] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=46.5 db_connect_ms=10.8 db_execute_ms=10.9
+[2026-10-30 09:54:01,866] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=54.8 db_connect_ms=11.5 db_execute_ms=11.8
+[2026-10-30 09:54:01,951] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=83.4 db_connect_ms=29.1 db_execute_ms=21.7
+[2026-10-30 09:54:02,012] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=58.2 db_connect_ms=14.4 db_execute_ms=12.6
+[2026-10-30 09:54:02,050] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=36.8 db_connect_ms=7.1 db_execute_ms=7.7
+[2026-10-30 09:54:02,148] INFO in observability: api timing path=/api/requirements/1/report.pdf status=200 request_ms=72.8 db_connect_ms=5.9 db_execute_ms=3.9
+[2026-10-30 09:54:02,284] INFO in observability: api timing path=/api/reports/project.pdf status=200 request_ms=74.5 db_connect_ms=3.4 db_execute_ms=3.2
+[2026-10-30 09:54:02,335] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=9.1 db_connect_ms=4.0 db_execute_ms=2.9
+[2026-10-30 09:54:03,995] INFO in observability: api timing path=/api/requirements status=201 request_ms=35.0 db_connect_ms=5.9 db_execute_ms=5.8
+[2026-10-30 09:54:04,027] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=30.7 db_connect_ms=6.1 db_execute_ms=5.3
+[2026-10-30 09:54:04,065] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=36.9 db_connect_ms=6.2 db_execute_ms=6.0
+[2026-10-30 09:54:04,126] INFO in observability: api timing path=/api/requirements/1/report.pdf status=200 request_ms=60.1 db_connect_ms=5.0 db_execute_ms=4.5
+[2026-10-30 09:54:05,300] INFO in observability: api timing path=/api/requirements status=201 request_ms=46.5 db_connect_ms=9.1 db_execute_ms=8.0
+[2026-10-30 09:54:05,330] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=29.7 db_connect_ms=5.8 db_execute_ms=5.3
+[2026-10-30 09:54:05,366] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=34.0 db_connect_ms=6.3 db_execute_ms=5.9
+[2026-10-30 09:54:05,376] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=9.4 db_connect_ms=4.8 db_execute_ms=3.2
+[2026-10-30 09:54:05,408] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=31.1 db_connect_ms=5.0 db_execute_ms=6.1
+[2026-10-30 09:54:05,419] INFO in observability: api timing path=/api/executions/1/bugs status=200 request_ms=9.6 db_connect_ms=5.3 db_execute_ms=3.3
+[2026-10-30 09:54:05,449] INFO in observability: api timing path=/api/executions/1/bugs status=201 request_ms=28.9 db_connect_ms=3.9 db_execute_ms=5.5
+[2026-10-30 09:54:05,462] INFO in observability: api timing path=/api/dashboard status=200 request_ms=12.5 db_connect_ms=4.9 db_execute_ms=6.0
+[2026-10-30 09:54:05,472] INFO in observability: api timing path=/api/dashboard status=200 request_ms=8.5 db_connect_ms=3.3 db_execute_ms=4.1
+[2026-10-30 09:54:05,473] INFO in observability: api timing path=/api/dashboard status=401 request_ms=0.2 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:54:05,499] INFO in observability: api timing path=/api/dashboard status=403 request_ms=4.7 db_connect_ms=2.9 db_execute_ms=1.1
+[2026-10-30 09:54:06,670] INFO in observability: api timing path=/api/requirements status=201 request_ms=50.8 db_connect_ms=12.0 db_execute_ms=11.5
+[2026-10-30 09:54:06,718] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=46.5 db_connect_ms=12.6 db_execute_ms=11.1
+[2026-10-30 09:54:06,773] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=53.4 db_connect_ms=12.5 db_execute_ms=12.0
+[2026-10-30 09:54:06,794] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=18.1 db_connect_ms=9.0 db_execute_ms=7.1
+[2026-10-30 09:54:06,839] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=43.4 db_connect_ms=9.9 db_execute_ms=11.5
+[2026-10-30 09:54:06,857] INFO in observability: api timing path=/api/executions/1/bugs status=200 request_ms=16.0 db_connect_ms=8.5 db_execute_ms=5.6
+[2026-10-30 09:54:06,903] INFO in observability: api timing path=/api/executions/1/bugs status=201 request_ms=44.3 db_connect_ms=7.4 db_execute_ms=10.6
+[2026-10-30 09:54:06,923] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=18.8 db_connect_ms=9.5 db_execute_ms=7.0
+[2026-10-30 09:54:06,959] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=34.0 db_connect_ms=7.6 db_execute_ms=6.7
+[2026-10-30 09:54:06,992] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=32.4 db_connect_ms=6.8 db_execute_ms=5.4
+[2026-10-30 09:54:07,026] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=32.8 db_connect_ms=6.1 db_execute_ms=5.1
+[2026-10-30 09:54:07,063] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=35.9 db_connect_ms=6.6 db_execute_ms=5.2
+[2026-10-30 09:54:07,075] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=11.3 db_connect_ms=4.4 db_execute_ms=5.1
+[2026-10-30 09:54:07,109] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=33.5 db_connect_ms=4.6 db_execute_ms=5.8
+[2026-10-30 09:54:07,121] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=10.6 db_connect_ms=4.3 db_execute_ms=4.8
+[2026-10-30 09:54:07,133] INFO in observability: api timing path=/api/dashboard status=200 request_ms=10.3 db_connect_ms=4.2 db_execute_ms=4.6
+[2026-10-30 09:54:07,144] INFO in observability: api timing path=/api/requirements/1/review status=409 request_ms=10.4 db_connect_ms=5.0 db_execute_ms=4.1
+[2026-10-30 09:54:09,738] INFO in observability: api timing path=/api/requirements status=201 request_ms=38.0 db_connect_ms=7.5 db_execute_ms=7.6
+[2026-10-30 09:54:09,775] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=35.5 db_connect_ms=7.4 db_execute_ms=6.2
+[2026-10-30 09:54:09,826] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=49.4 db_connect_ms=8.8 db_execute_ms=7.9
+[2026-10-30 09:54:09,837] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=9.4 db_connect_ms=4.6 db_execute_ms=3.5
+[2026-10-30 09:54:09,869] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=31.3 db_connect_ms=4.8 db_execute_ms=5.9
+[2026-10-30 09:54:09,879] INFO in observability: api timing path=/api/executions/1/bugs status=200 request_ms=9.0 db_connect_ms=5.1 db_execute_ms=3.0
+[2026-10-30 09:54:09,908] INFO in observability: api timing path=/api/executions/1/bugs status=201 request_ms=28.1 db_connect_ms=3.2 db_execute_ms=5.4
+[2026-10-30 09:54:09,918] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=9.5 db_connect_ms=4.7 db_execute_ms=3.6
+[2026-10-30 09:54:09,958] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=39.0 db_connect_ms=6.4 db_execute_ms=7.4
+[2026-10-30 09:54:10,018] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=57.5 db_connect_ms=13.0 db_execute_ms=12.5
+[2026-10-30 09:54:10,041] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=20.6 db_connect_ms=9.7 db_execute_ms=7.7
+[2026-10-30 09:54:10,079] INFO in observability: api timing path=/api/requirements/1/test-cases/2/executions status=201 request_ms=35.6 db_connect_ms=7.7 db_execute_ms=7.6
+[2026-10-30 09:54:10,119] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=39.0 db_connect_ms=7.8 db_execute_ms=5.5
+[2026-10-30 09:54:10,133] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=13.3 db_connect_ms=6.9 db_execute_ms=4.9
+[2026-10-30 09:54:10,170] INFO in observability: api timing path=/api/requirements/1/test-cases/3/executions status=201 request_ms=35.4 db_connect_ms=5.6 db_execute_ms=6.3
+[2026-10-30 09:54:10,212] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=41.0 db_connect_ms=8.9 db_execute_ms=7.2
+[2026-10-30 09:54:10,247] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=34.1 db_connect_ms=5.4 db_execute_ms=5.4
+[2026-10-30 09:54:10,302] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=53.1 db_connect_ms=13.4 db_execute_ms=11.1
+[2026-10-30 09:54:10,362] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=57.7 db_connect_ms=12.6 db_execute_ms=11.7
+[2026-10-30 09:54:10,502] INFO in observability: api timing path=/api/bugs/1/status status=200 request_ms=44.4 db_connect_ms=10.9 db_execute_ms=8.4
+[2026-10-30 09:54:10,588] INFO in observability: api timing path=/api/bugs/1/status status=200 request_ms=84.5 db_connect_ms=8.9 db_execute_ms=30.8
+[2026-10-30 09:54:10,611] INFO in observability: api timing path=/api/dashboard status=200 request_ms=20.8 db_connect_ms=8.7 db_execute_ms=9.6
+[2026-10-30 09:54:10,626] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=13.9 db_connect_ms=4.3 db_execute_ms=7.2
+[2026-10-30 09:54:10,637] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=9.9 db_connect_ms=3.0 db_execute_ms=5.1
+[2026-10-30 09:54:11,585] INFO in observability: api timing path=/api/requirements status=201 request_ms=40.5 db_connect_ms=8.5 db_execute_ms=8.2
+[2026-10-30 09:54:11,624] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=37.6 db_connect_ms=7.8 db_execute_ms=7.1
+[2026-10-30 09:54:11,666] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=40.4 db_connect_ms=9.5 db_execute_ms=7.9
+[2026-10-30 09:54:11,683] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=16.0 db_connect_ms=7.1 db_execute_ms=6.9
+[2026-10-30 09:54:11,700] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=15.2 db_connect_ms=4.9 db_execute_ms=7.9
+[2026-10-30 09:54:11,737] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=33.8 db_connect_ms=11.8 db_execute_ms=18.5
+[2026-10-30 09:54:11,744] INFO in observability: api timing path=/api/requirements/1/traceability status=401 request_ms=0.7 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:54:11,759] INFO in observability: api timing path=/api/requirements/1/traceability status=403 request_ms=13.0 db_connect_ms=5.6 db_execute_ms=5.4
+[2026-10-30 09:54:11,803] INFO in observability: api timing path=/api/requirements/1/traceability status=403 request_ms=10.8 db_connect_ms=6.9 db_execute_ms=2.5
+[2026-10-30 09:54:11,814] INFO in observability: api timing path=/api/dashboard status=403 request_ms=6.8 db_connect_ms=3.2 db_execute_ms=2.1
+[2026-10-30 09:54:11,821] INFO in observability: api timing path=/api/exports/requirements.csv status=403 request_ms=5.6 db_connect_ms=2.3 db_execute_ms=2.1
+[2026-10-30 09:54:11,829] INFO in observability: api timing path=/api/reports/project.pdf status=403 request_ms=6.9 db_connect_ms=3.3 db_execute_ms=2.2
+[2026-10-30 09:54:11,836] INFO in observability: api timing path=/api/requirements/1/report.pdf status=403 request_ms=6.2 db_connect_ms=2.8 db_execute_ms=2.0
+[2026-10-30 09:54:11,937] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=13.8 db_connect_ms=8.0 db_execute_ms=4.0
+[2026-10-30 09:54:11,946] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=7.2 db_connect_ms=4.0 db_execute_ms=1.6
+[2026-10-30 09:54:11,960] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=12.6 db_connect_ms=5.7 db_execute_ms=5.3
+[2026-10-30 09:54:11,999] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=15.4 db_connect_ms=7.3 db_execute_ms=5.9
+[2026-10-30 09:54:12,067] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=43.0 db_connect_ms=8.7 db_execute_ms=8.9
+[2026-10-30 09:54:12,083] INFO in observability: api timing path=/api/requirements status=200 request_ms=15.2 db_connect_ms=8.5 db_execute_ms=4.8
+[2026-10-30 09:54:13,806] INFO in observability: api timing path=/api/requirements status=201 request_ms=40.2 db_connect_ms=10.1 db_execute_ms=8.0
+[2026-10-30 09:54:13,841] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=33.8 db_connect_ms=6.7 db_execute_ms=6.3
+[2026-10-30 09:54:13,879] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=37.3 db_connect_ms=5.8 db_execute_ms=6.3
+[2026-10-30 09:54:13,889] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=8.7 db_connect_ms=4.5 db_execute_ms=3.0
+[2026-10-30 09:54:13,920] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=29.8 db_connect_ms=4.4 db_execute_ms=5.3
+[2026-10-30 09:54:13,930] INFO in observability: api timing path=/api/executions/1/bugs status=200 request_ms=8.7 db_connect_ms=4.6 db_execute_ms=2.9
+[2026-10-30 09:54:13,957] INFO in observability: api timing path=/api/executions/1/bugs status=201 request_ms=26.9 db_connect_ms=3.0 db_execute_ms=4.5
+[2026-10-30 09:54:13,967] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=8.9 db_connect_ms=4.4 db_execute_ms=3.2
+[2026-10-30 09:54:14,006] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=37.7 db_connect_ms=6.2 db_execute_ms=8.0
+[2026-10-30 09:54:14,048] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=40.6 db_connect_ms=8.1 db_execute_ms=8.8
+[2026-10-30 09:54:14,096] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=46.7 db_connect_ms=10.4 db_execute_ms=9.7
+[2026-10-30 09:54:14,137] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=39.8 db_connect_ms=7.9 db_execute_ms=7.1
+[2026-10-30 09:54:14,194] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=55.4 db_connect_ms=15.1 db_execute_ms=12.0
+[2026-10-30 09:54:14,475] INFO in observability: api timing path=/api/requirements/1/report.pdf status=200 request_ms=246.0 db_connect_ms=7.3 db_execute_ms=9.4
+[2026-10-30 09:54:14,759] INFO in observability: api timing path=/api/reports/project.pdf status=200 request_ms=152.6 db_connect_ms=8.7 db_execute_ms=10.5
+[2026-10-30 09:54:14,892] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=20.1 db_connect_ms=5.4 db_execute_ms=6.4
+[2026-10-30 09:54:15,980] INFO in observability: api timing path=/api/requirements status=201 request_ms=43.3 db_connect_ms=9.2 db_execute_ms=8.1
+[2026-10-30 09:54:16,060] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=78.0 db_connect_ms=11.0 db_execute_ms=22.9
+[2026-10-30 09:54:16,137] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=75.5 db_connect_ms=10.8 db_execute_ms=10.7
+[2026-10-30 09:54:16,153] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=14.3 db_connect_ms=6.3 db_execute_ms=5.9
+[2026-10-30 09:54:16,200] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=46.2 db_connect_ms=7.8 db_execute_ms=16.2
+[2026-10-30 09:54:16,219] INFO in observability: api timing path=/api/executions/1/bugs status=200 request_ms=17.7 db_connect_ms=9.5 db_execute_ms=5.7
+[2026-10-30 09:54:16,278] INFO in observability: api timing path=/api/executions/1/bugs status=201 request_ms=55.8 db_connect_ms=7.2 db_execute_ms=14.0
+[2026-10-30 09:54:16,303] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=23.3 db_connect_ms=10.1 db_execute_ms=9.9
+[2026-10-30 09:54:16,382] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=76.7 db_connect_ms=13.5 db_execute_ms=16.6
+[2026-10-30 09:54:16,436] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=53.4 db_connect_ms=10.5 db_execute_ms=9.1
+[2026-10-30 09:54:16,488] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=50.3 db_connect_ms=11.9 db_execute_ms=8.8
+[2026-10-30 09:54:16,559] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=69.7 db_connect_ms=19.8 db_execute_ms=10.1
+[2026-10-30 09:54:16,574] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=14.1 db_connect_ms=6.7 db_execute_ms=5.5
+[2026-10-30 09:54:16,615] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=39.8 db_connect_ms=6.8 db_execute_ms=8.5
+[2026-10-30 09:54:16,634] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=17.3 db_connect_ms=6.3 db_execute_ms=8.3
+[2026-10-30 09:54:16,650] INFO in observability: api timing path=/api/dashboard status=200 request_ms=14.7 db_connect_ms=4.6 db_execute_ms=8.0
+[2026-10-30 09:54:16,672] INFO in observability: api timing path=/api/requirements/1/review status=409 request_ms=20.9 db_connect_ms=13.1 db_execute_ms=5.6
+[2026-10-30 09:54:17,704] INFO in observability: api timing path=/api/requirements status=201 request_ms=47.8 db_connect_ms=10.9 db_execute_ms=11.1
+[2026-10-30 09:54:17,751] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=45.2 db_connect_ms=11.5 db_execute_ms=11.1
+[2026-10-30 09:54:17,800] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=47.5 db_connect_ms=10.3 db_execute_ms=9.5
+[2026-10-30 09:54:17,816] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=13.9 db_connect_ms=7.0 db_execute_ms=5.4
+[2026-10-30 09:54:17,861] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=43.7 db_connect_ms=9.7 db_execute_ms=11.2
+[2026-10-30 09:54:17,876] INFO in observability: api timing path=/api/executions/1/bugs status=200 request_ms=13.7 db_connect_ms=7.0 db_execute_ms=5.0
+[2026-10-30 09:54:17,913] INFO in observability: api timing path=/api/executions/1/bugs status=201 request_ms=35.2 db_connect_ms=5.2 db_execute_ms=7.5
+[2026-10-30 09:54:17,928] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=14.5 db_connect_ms=7.7 db_execute_ms=5.3
+[2026-10-30 09:54:17,972] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=41.9 db_connect_ms=9.2 db_execute_ms=9.6
+[2026-10-30 09:54:18,024] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=50.7 db_connect_ms=10.7 db_execute_ms=11.4
+[2026-10-30 09:54:18,043] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=16.2 db_connect_ms=7.7 db_execute_ms=6.3
+[2026-10-30 09:54:18,095] INFO in observability: api timing path=/api/requirements/1/test-cases/2/executions status=201 request_ms=50.6 db_connect_ms=9.8 db_execute_ms=17.2
+[2026-10-30 09:54:18,152] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=55.0 db_connect_ms=13.1 db_execute_ms=12.0
+[2026-10-30 09:54:18,171] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=16.9 db_connect_ms=9.1 db_execute_ms=5.9
+[2026-10-30 09:54:18,213] INFO in observability: api timing path=/api/requirements/1/test-cases/3/executions status=201 request_ms=40.8 db_connect_ms=9.3 db_execute_ms=9.4
+[2026-10-30 09:54:18,263] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=48.1 db_connect_ms=9.7 db_execute_ms=9.3
+[2026-10-30 09:54:18,310] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=46.2 db_connect_ms=10.8 db_execute_ms=8.5
+[2026-10-30 09:54:18,355] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=42.7 db_connect_ms=9.4 db_execute_ms=9.2
+[2026-10-30 09:54:18,403] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=46.8 db_connect_ms=9.8 db_execute_ms=8.9
+[2026-10-30 09:54:18,523] INFO in observability: api timing path=/api/bugs/1/status status=200 request_ms=33.8 db_connect_ms=7.8 db_execute_ms=6.6
+[2026-10-30 09:54:18,574] INFO in observability: api timing path=/api/bugs/1/status status=200 request_ms=49.0 db_connect_ms=7.5 db_execute_ms=7.8
+[2026-10-30 09:54:18,595] INFO in observability: api timing path=/api/dashboard status=200 request_ms=19.7 db_connect_ms=7.6 db_execute_ms=9.4
+[2026-10-30 09:54:18,615] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=19.2 db_connect_ms=6.0 db_execute_ms=9.6
+[2026-10-30 09:54:18,642] INFO in observability: api timing path=/api/admin/dashboard status=200 request_ms=25.1 db_connect_ms=7.2 db_execute_ms=13.4
+[2026-10-30 09:54:19,639] INFO in observability: api timing path=/api/requirements status=201 request_ms=37.8 db_connect_ms=8.0 db_execute_ms=7.8
+[2026-10-30 09:54:19,678] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=38.5 db_connect_ms=9.6 db_execute_ms=8.9
+[2026-10-30 09:54:19,727] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=46.9 db_connect_ms=11.1 db_execute_ms=10.1
+[2026-10-30 09:54:19,746] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=17.8 db_connect_ms=6.6 db_execute_ms=9.0
+[2026-10-30 09:54:19,761] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=13.6 db_connect_ms=5.0 db_execute_ms=6.6
+[2026-10-30 09:54:19,774] INFO in observability: api timing path=/api/requirements/1/traceability status=200 request_ms=12.4 db_connect_ms=4.2 db_execute_ms=6.5
+[2026-10-30 09:54:19,776] INFO in observability: api timing path=/api/requirements/1/traceability status=401 request_ms=0.2 db_connect_ms=0.0 db_execute_ms=0.0
+[2026-10-30 09:54:19,783] INFO in observability: api timing path=/api/requirements/1/traceability status=403 request_ms=6.1 db_connect_ms=2.7 db_execute_ms=2.3
+[2026-10-30 09:54:19,816] INFO in observability: api timing path=/api/requirements/1/traceability status=403 request_ms=6.9 db_connect_ms=4.1 db_execute_ms=1.8
+[2026-10-30 09:54:19,823] INFO in observability: api timing path=/api/dashboard status=403 request_ms=6.4 db_connect_ms=2.6 db_execute_ms=2.5
+[2026-10-30 09:54:19,831] INFO in observability: api timing path=/api/exports/requirements.csv status=403 request_ms=6.4 db_connect_ms=2.7 db_execute_ms=2.4
+[2026-10-30 09:54:19,839] INFO in observability: api timing path=/api/reports/project.pdf status=403 request_ms=6.8 db_connect_ms=2.9 db_execute_ms=2.8
+[2026-10-30 09:54:19,845] INFO in observability: api timing path=/api/requirements/1/report.pdf status=403 request_ms=5.1 db_connect_ms=2.5 db_execute_ms=1.6
+[2026-10-30 09:54:19,908] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=14.2 db_connect_ms=8.3 db_execute_ms=4.3
+[2026-10-30 09:54:19,915] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=5.7 db_connect_ms=2.7 db_execute_ms=1.8
+[2026-10-30 09:54:19,928] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=11.8 db_connect_ms=5.8 db_execute_ms=4.4
+[2026-10-30 09:54:19,970] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=16.3 db_connect_ms=7.2 db_execute_ms=6.8
+[2026-10-30 09:54:20,038] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=43.3 db_connect_ms=8.6 db_execute_ms=9.1
+[2026-10-30 09:54:20,052] INFO in observability: api timing path=/api/requirements status=200 request_ms=12.6 db_connect_ms=6.9 db_execute_ms=4.1
+[2026-10-30 09:54:21,519] INFO in observability: api timing path=/api/requirements status=201 request_ms=116.9 db_connect_ms=11.3 db_execute_ms=69.8
+[2026-10-30 09:54:21,590] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=70.8 db_connect_ms=8.5 db_execute_ms=8.2
+[2026-10-30 09:54:21,673] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=80.8 db_connect_ms=10.2 db_execute_ms=10.7
+[2026-10-30 09:54:21,688] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=14.3 db_connect_ms=7.3 db_execute_ms=5.4
+[2026-10-30 09:54:21,730] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=40.6 db_connect_ms=8.3 db_execute_ms=9.7
+[2026-10-30 09:54:21,747] INFO in observability: api timing path=/api/executions/1/bugs status=200 request_ms=14.9 db_connect_ms=7.4 db_execute_ms=5.6
+[2026-10-30 09:54:21,802] INFO in observability: api timing path=/api/executions/1/bugs status=201 request_ms=53.5 db_connect_ms=5.3 db_execute_ms=8.4
+[2026-10-30 09:54:21,815] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=12.2 db_connect_ms=6.0 db_execute_ms=4.8
+[2026-10-30 09:54:21,868] INFO in observability: api timing path=/api/requirements/1/test-cases/1/executions status=201 request_ms=51.9 db_connect_ms=7.1 db_execute_ms=9.1
+[2026-10-30 09:54:21,937] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=67.9 db_connect_ms=10.7 db_execute_ms=32.3
+[2026-10-30 09:54:22,017] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=78.7 db_connect_ms=11.3 db_execute_ms=9.9
+[2026-10-30 09:54:22,077] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=57.9 db_connect_ms=7.7 db_execute_ms=6.8
+[2026-10-30 09:54:22,142] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=64.6 db_connect_ms=8.7 db_execute_ms=7.9
+[2026-10-30 09:54:22,303] INFO in observability: api timing path=/api/requirements/1/report.pdf status=200 request_ms=97.1 db_connect_ms=5.7 db_execute_ms=3.9
+[2026-10-30 09:54:22,479] INFO in observability: api timing path=/api/reports/project.pdf status=200 request_ms=119.0 db_connect_ms=6.0 db_execute_ms=5.5
+[2026-10-30 09:54:22,579] INFO in observability: api timing path=/api/exports/requirements.csv status=200 request_ms=11.9 db_connect_ms=5.1 db_execute_ms=4.0
+[2026-10-30 09:54:25,289] INFO in observability: api timing path=/api/requirements status=201 request_ms=99.4 db_connect_ms=20.7 db_execute_ms=20.8
+[2026-10-30 09:54:25,340] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=49.4 db_connect_ms=8.8 db_execute_ms=8.2
+[2026-10-30 09:54:25,350] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=8.8 db_connect_ms=4.3 db_execute_ms=3.4
+[2026-10-30 09:54:25,389] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=38.4 db_connect_ms=3.2 db_execute_ms=4.5
+[2026-10-30 09:54:25,476] INFO in observability: api timing path=/api/requirements/1/ai-review/367d7943-ecc2-49a2-a9e7-73bfebeb34e9/messages status=200 request_ms=81.3 db_connect_ms=10.8 db_execute_ms=31.6
+[2026-10-30 09:54:25,546] INFO in observability: api timing path=/api/requirements/1/ai-review/367d7943-ecc2-49a2-a9e7-73bfebeb34e9/messages status=409 request_ms=23.5 db_connect_ms=11.3 db_execute_ms=9.3
+[2026-10-30 09:54:25,565] INFO in observability: api timing path=/api/requirements/1/ai-review/367d7943-ecc2-49a2-a9e7-73bfebeb34e9/proposals/35789c03-3b0e-4852-9c93-417ebed3c634 status=409 request_ms=16.7 db_connect_ms=8.0 db_execute_ms=6.4
+[2026-10-30 09:54:25,684] INFO in observability: api timing path=/api/requirements/1/ai-review/367d7943-ecc2-49a2-a9e7-73bfebeb34e9/messages status=200 request_ms=84.1 db_connect_ms=8.2 db_execute_ms=25.6
+[2026-10-30 09:54:27,274] INFO in observability: api timing path=/api/requirements status=201 request_ms=37.9 db_connect_ms=6.0 db_execute_ms=5.3
+[2026-10-30 09:54:27,306] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=31.8 db_connect_ms=5.5 db_execute_ms=5.0
+[2026-10-30 09:54:27,319] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=11.3 db_connect_ms=5.7 db_execute_ms=4.3
+[2026-10-30 09:54:27,347] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=26.8 db_connect_ms=4.1 db_execute_ms=6.1
+[2026-10-30 09:54:27,401] INFO in observability: api timing path=/api/requirements/1/ai-review/49ab85d4-9118-4d3c-9aa1-909517a86289/messages status=200 request_ms=52.9 db_connect_ms=8.7 db_execute_ms=9.2
+[2026-10-30 09:54:27,417] INFO in observability: api timing path=/api/requirements/1/ai-review/49ab85d4-9118-4d3c-9aa1-909517a86289/proposals/24c998c6-9da0-438e-aa23-777c471e78e7 status=409 request_ms=14.8 db_connect_ms=8.3 db_execute_ms=4.8
+[2026-10-30 09:54:27,447] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=28.8 db_connect_ms=4.5 db_execute_ms=7.0
+[2026-10-30 09:54:27,501] INFO in observability: api timing path=/api/requirements/1/ai-review/8d4edb61-d973-4db5-b65b-8915ea24aa94/messages status=200 request_ms=52.9 db_connect_ms=8.9 db_execute_ms=7.7
+[2026-10-30 09:54:27,510] INFO in observability: api timing path=/api/requirements/1/ai-review/8d4edb61-d973-4db5-b65b-8915ea24aa94/proposals/12f377ea-8076-4be5-a193-2ea0acc7afde status=409 request_ms=8.1 db_connect_ms=3.9 db_execute_ms=3.2
+[2026-10-30 09:54:27,518] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=6.8 db_connect_ms=3.1 db_execute_ms=2.8
+[2026-10-30 09:54:31,065] INFO in observability: api timing path=/api/requirements status=201 request_ms=59.0 db_connect_ms=11.8 db_execute_ms=11.1
+[2026-10-30 09:54:31,124] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=57.5 db_connect_ms=9.4 db_execute_ms=8.6
+[2026-10-30 09:54:31,143] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=17.5 db_connect_ms=9.3 db_execute_ms=6.3
+[2026-10-30 09:54:31,177] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=33.5 db_connect_ms=4.4 db_execute_ms=4.9
+[2026-10-30 09:54:31,293] INFO in observability: api timing path=/api/requirements/1/ai-review/e5254a6b-cb8a-478e-a596-24499cdcf3df/messages status=502 request_ms=114.4 db_connect_ms=9.4 db_execute_ms=8.2
+[2026-10-30 09:54:31,309] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=14.6 db_connect_ms=7.3 db_execute_ms=5.3
+[2026-10-30 09:54:32,054] INFO in observability: api timing path=/api/requirements/1/ai-review/e5254a6b-cb8a-478e-a596-24499cdcf3df/messages status=200 request_ms=743.1 db_connect_ms=7.5 db_execute_ms=8.8
+[2026-10-30 09:54:32,080] INFO in observability: api timing path=/api/requirements/1/ai-review/e5254a6b-cb8a-478e-a596-24499cdcf3df/messages status=200 request_ms=22.1 db_connect_ms=12.5 db_execute_ms=7.0
+[2026-10-30 09:54:32,179] INFO in observability: api timing path=/api/requirements/1/ai-review/e5254a6b-cb8a-478e-a596-24499cdcf3df/messages status=502 request_ms=97.7 db_connect_ms=8.9 db_execute_ms=25.9
+[2026-10-30 09:54:32,190] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=9.8 db_connect_ms=5.2 db_execute_ms=3.4
+[2026-10-30 09:54:34,279] INFO in observability: api timing path=/api/requirements status=201 request_ms=42.2 db_connect_ms=7.3 db_execute_ms=7.5
+[2026-10-30 09:54:34,321] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=40.9 db_connect_ms=8.0 db_execute_ms=7.1
+[2026-10-30 09:54:34,331] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=9.4 db_connect_ms=4.4 db_execute_ms=3.8
+[2026-10-30 09:54:34,360] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=27.3 db_connect_ms=3.2 db_execute_ms=4.2
+[2026-10-30 09:54:34,436] INFO in observability: api timing path=/api/requirements/1/ai-review/6c0e23cd-488f-463c-ad96-295023b1ddd0/messages status=502 request_ms=75.2 db_connect_ms=8.7 db_execute_ms=8.5
+[2026-10-30 09:54:34,445] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=8.2 db_connect_ms=4.1 db_execute_ms=3.0
+[2026-10-30 09:54:34,513] INFO in observability: api timing path=/api/requirements/1/ai-review/6c0e23cd-488f-463c-ad96-295023b1ddd0/messages status=200 request_ms=66.7 db_connect_ms=5.8 db_execute_ms=7.7
+[2026-10-30 09:54:34,576] INFO in observability: api timing path=/api/requirements/1/ai-review/6c0e23cd-488f-463c-ad96-295023b1ddd0/proposals/f07c81b8-ebd5-4b82-876e-3a12766cd3ff status=409 request_ms=23.1 db_connect_ms=10.8 db_execute_ms=9.4
+[2026-10-30 09:54:36,981] INFO in observability: api timing path=/api/requirements status=201 request_ms=94.7 db_connect_ms=13.9 db_execute_ms=13.3
+[2026-10-30 09:54:37,105] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=122.9 db_connect_ms=14.0 db_execute_ms=12.6
+[2026-10-30 09:54:37,128] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=20.1 db_connect_ms=9.8 db_execute_ms=7.7
+[2026-10-30 09:54:37,217] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=87.4 db_connect_ms=10.7 db_execute_ms=11.2
+[2026-10-30 09:54:37,239] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=20.8 db_connect_ms=10.6 db_execute_ms=8.1
+[2026-10-30 09:54:37,319] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=77.4 db_connect_ms=8.0 db_execute_ms=47.3
+[2026-10-30 09:54:37,589] INFO in observability: api timing path=/api/requirements/1/ai-review/9c10b555-329b-4556-8917-f72e90fb9f01/messages status=200 request_ms=267.1 db_connect_ms=18.5 db_execute_ms=23.6
+[2026-10-30 09:54:37,702] INFO in observability: api timing path=/api/requirements/1/ai-review/9c10b555-329b-4556-8917-f72e90fb9f01/proposals/6747dcc3-1229-487d-845a-a1f9270da7ff status=200 request_ms=108.7 db_connect_ms=18.9 db_execute_ms=22.2
+[2026-10-30 09:54:37,725] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=21.2 db_connect_ms=11.5 db_execute_ms=7.4
+[2026-10-30 09:54:37,748] INFO in observability: api timing path=/api/requirements/1/test-cases/2/versions status=200 request_ms=21.0 db_connect_ms=9.1 db_execute_ms=9.3
+[2026-10-30 09:54:37,862] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=112.5 db_connect_ms=7.7 db_execute_ms=9.2
+[2026-10-30 09:54:42,411] INFO in observability: api timing path=/api/requirements status=201 request_ms=55.4 db_connect_ms=16.9 db_execute_ms=13.3
+[2026-10-30 09:54:42,469] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=56.8 db_connect_ms=12.7 db_execute_ms=13.4
+[2026-10-30 09:54:42,487] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=16.2 db_connect_ms=8.1 db_execute_ms=6.4
+[2026-10-30 09:54:42,529] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=40.9 db_connect_ms=5.5 db_execute_ms=6.4
+[2026-10-30 09:54:42,657] INFO in observability: api timing path=/api/requirements/1/ai-review/f478e9f9-cfa6-4d78-8526-1a4a90d6f0ac/messages status=200 request_ms=125.8 db_connect_ms=13.5 db_execute_ms=16.6
+[2026-10-30 09:54:42,678] INFO in observability: api timing path=/api/requirements/1/ai-review/f478e9f9-cfa6-4d78-8526-1a4a90d6f0ac/proposals/c484652e-2dae-47e2-902b-02e3036e10cd status=403 request_ms=18.4 db_connect_ms=9.0 db_execute_ms=6.9
+[2026-10-30 09:54:42,693] INFO in observability: api timing path=/api/requirements/1/ai-review/f478e9f9-cfa6-4d78-8526-1a4a90d6f0ac/proposals/c484652e-2dae-47e2-902b-02e3036e10cd status=404 request_ms=14.3 db_connect_ms=6.8 db_execute_ms=5.8
+[2026-10-30 09:54:42,710] INFO in observability: api timing path=/api/requirements/1/ai-review status=409 request_ms=16.0 db_connect_ms=7.8 db_execute_ms=6.3
+[2026-10-30 09:54:42,719] INFO in observability: api timing path=/api/requirements/1/ai-review status=403 request_ms=7.3 db_connect_ms=3.4 db_execute_ms=2.5
+[2026-10-30 09:54:42,727] INFO in observability: api timing path=/api/requirements/1/ai-review status=403 request_ms=6.5 db_connect_ms=3.2 db_execute_ms=2.0
+[2026-10-30 09:54:42,768] INFO in observability: api timing path=/api/requirements/1/ai-review status=403 request_ms=17.2 db_connect_ms=8.2 db_execute_ms=6.9
+[2026-10-30 09:54:42,810] INFO in observability: api timing path=/api/requirements/1/ai-review status=403 request_ms=6.7 db_connect_ms=4.3 db_execute_ms=1.4
+[2026-10-30 09:54:44,895] INFO in observability: api timing path=/api/requirements status=201 request_ms=62.6 db_connect_ms=13.3 db_execute_ms=12.7
+[2026-10-30 09:54:44,959] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=61.3 db_connect_ms=14.3 db_execute_ms=14.8
+[2026-10-30 09:54:44,983] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=22.4 db_connect_ms=10.3 db_execute_ms=9.6
+[2026-10-30 09:54:45,032] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=46.8 db_connect_ms=10.9 db_execute_ms=13.6
+[2026-10-30 09:54:45,117] INFO in observability: api timing path=/api/requirements/1/ai-review/d0834e57-90cc-434c-a7b1-31b5c385313d/messages status=200 request_ms=82.3 db_connect_ms=16.9 db_execute_ms=18.4
+[2026-10-30 09:54:45,139] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=21.2 db_connect_ms=11.3 db_execute_ms=6.9
+[2026-10-30 09:54:45,200] INFO in observability: api timing path=/api/requirements/1/ai-review/d0834e57-90cc-434c-a7b1-31b5c385313d/proposals/2e1b7e8e-c572-4113-b67e-83d83213bab0 status=200 request_ms=57.6 db_connect_ms=6.9 db_execute_ms=15.7
+[2026-10-30 09:54:45,224] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=22.0 db_connect_ms=10.9 db_execute_ms=8.1
+[2026-10-30 09:54:45,248] INFO in observability: api timing path=/api/requirements/1/ai-review/d0834e57-90cc-434c-a7b1-31b5c385313d/proposals/2e1b7e8e-c572-4113-b67e-83d83213bab0 status=200 request_ms=21.8 db_connect_ms=7.5 db_execute_ms=10.5
+[2026-10-30 09:54:45,268] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=18.3 db_connect_ms=7.3 db_execute_ms=8.8
+[2026-10-30 09:54:45,291] INFO in observability: api timing path=/api/requirements/1/test-cases/1/versions status=200 request_ms=21.3 db_connect_ms=9.1 db_execute_ms=9.3
+[2026-10-30 09:54:45,316] INFO in observability: api timing path=/api/requirements/1/test-cases/1/review status=409 request_ms=23.2 db_connect_ms=12.3 db_execute_ms=8.4
+[2026-10-30 09:54:45,336] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=18.2 db_connect_ms=8.4 db_execute_ms=7.6
+[2026-10-30 09:54:45,394] INFO in observability: api timing path=/api/requirements/1/test-cases/1/review status=200 request_ms=55.8 db_connect_ms=12.0 db_execute_ms=12.8
+[2026-10-30 09:54:45,416] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=20.0 db_connect_ms=10.0 db_execute_ms=7.6
+[2026-10-30 09:54:45,471] INFO in observability: api timing path=/api/requirements/1/test-cases/1/review status=200 request_ms=53.5 db_connect_ms=10.5 db_execute_ms=11.9
+[2026-10-30 09:54:45,497] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=22.7 db_connect_ms=10.9 db_execute_ms=8.8
+[2026-10-30 09:54:45,580] INFO in observability: api timing path=/api/requirements/1/ai-review/d0834e57-90cc-434c-a7b1-31b5c385313d/messages status=200 request_ms=80.8 db_connect_ms=14.5 db_execute_ms=23.6
+[2026-10-30 09:54:45,640] INFO in observability: api timing path=/api/requirements/1/ai-review/d0834e57-90cc-434c-a7b1-31b5c385313d/proposals/04aa6c1f-65ad-4874-9841-7fac344404ea status=200 request_ms=57.7 db_connect_ms=10.1 db_execute_ms=14.2
+[2026-10-30 09:54:45,661] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=19.3 db_connect_ms=9.9 db_execute_ms=7.0
+[2026-10-30 09:54:47,092] INFO in observability: api timing path=/api/requirements status=201 request_ms=82.3 db_connect_ms=28.0 db_execute_ms=26.9
+[2026-10-30 09:54:47,132] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=39.6 db_connect_ms=7.7 db_execute_ms=7.8
+[2026-10-30 09:54:47,143] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=10.3 db_connect_ms=5.2 db_execute_ms=4.1
+[2026-10-30 09:54:47,172] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=27.3 db_connect_ms=3.6 db_execute_ms=5.1
+[2026-10-30 09:54:47,226] INFO in observability: api timing path=/api/requirements/1/ai-review/64a3d123-5037-46e0-850b-8200ff636f25/messages status=200 request_ms=52.1 db_connect_ms=8.4 db_execute_ms=9.7
+[2026-10-30 09:54:47,281] INFO in observability: api timing path=/api/requirements/1/ai-review/64a3d123-5037-46e0-850b-8200ff636f25/messages status=200 request_ms=53.8 db_connect_ms=8.0 db_execute_ms=9.7
+[2026-10-30 09:54:47,292] INFO in observability: api timing path=/api/requirements/1/ai-review/64a3d123-5037-46e0-850b-8200ff636f25/proposals/ee4806ff-a45c-48c0-bf64-82a501211fcf status=409 request_ms=9.5 db_connect_ms=4.6 db_execute_ms=3.7
+[2026-10-30 09:54:47,317] INFO in observability: api timing path=/api/requirements/1/ai-review/64a3d123-5037-46e0-850b-8200ff636f25/proposals/17afb113-ff4c-459e-afeb-e6c090490760 status=200 request_ms=24.5 db_connect_ms=3.4 db_execute_ms=5.4
+[2026-10-30 09:54:47,327] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=9.1 db_connect_ms=4.7 db_execute_ms=3.4
+[2026-10-30 09:54:47,338] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=10.3 db_connect_ms=3.6 db_execute_ms=3.9
+[2026-10-30 09:54:48,423] INFO in observability: api timing path=/api/requirements status=201 request_ms=38.1 db_connect_ms=7.1 db_execute_ms=7.1
+[2026-10-30 09:54:48,463] INFO in observability: api timing path=/api/requirements/1/test-cases status=201 request_ms=38.3 db_connect_ms=6.3 db_execute_ms=6.3
+[2026-10-30 09:54:48,483] INFO in observability: api timing path=/api/requirements/1/test-cases status=200 request_ms=18.6 db_connect_ms=10.5 db_execute_ms=6.3
+[2026-10-30 09:54:48,515] INFO in observability: api timing path=/api/requirements/1/ai-review status=200 request_ms=30.1 db_connect_ms=4.1 db_execute_ms=7.0
+[2026-10-30 09:54:48,568] INFO in observability: api timing path=/api/requirements/1/ai-review/2b321b58-66af-4f72-9744-68aa7f0fcc58/messages status=200 request_ms=51.3 db_connect_ms=8.2 db_execute_ms=8.7
+[2026-10-30 09:54:48,625] INFO in observability: api timing path=/api/requirements/1/test-cases/1 status=200 request_ms=55.2 db_connect_ms=12.5 db_execute_ms=11.7
+[2026-10-30 09:54:48,646] INFO in observability: api timing path=/api/requirements/1/ai-review/2b321b58-66af-4f72-9744-68aa7f0fcc58/proposals/2070a7b9-dde2-498a-9215-2244edabd1dd status=409 request_ms=19.4 db_connect_ms=9.5 db_execute_ms=7.4
+[2026-10-30 09:54:48,719] INFO in observability: api timing path=/api/requirements/1/ai-review/2b321b58-66af-4f72-9744-68aa7f0fcc58/messages status=200 request_ms=71.4 db_connect_ms=10.9 db_execute_ms=20.4
+[2026-10-30 09:54:48,753] INFO in observability: api timing path=/api/requirements/1/ai-review/2b321b58-66af-4f72-9744-68aa7f0fcc58/proposals/45960f68-47a7-44f8-9b07-6a795d34de89 status=409 request_ms=9.8 db_connect_ms=4.5 db_execute_ms=3.9
+C:\Users\ua589\ReqQuality AI\backend\.venv\Lib\site-packages\google\genai\types.py:42: DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
+  VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+Gemini diagnostic model=account-model category=network_error http_api_code=none exception_type=TimeoutError llm_status=network_error
+Gemini diagnostic model=account-model category=quota_exceeded http_api_code=429 exception_type=SimpleAPIError llm_status=quota_exceeded
+Gemini diagnostic model=account-model category=service_unavailable http_api_code=503 exception_type=SimpleAPIError llm_status=service_unavailable
+Gemini diagnostic model=account-model category=schema_validation http_api_code=none exception_type=ValueError llm_status=malformed_json
+Gemini diagnostic model=account-model category=malformed_json http_api_code=none exception_type=JSONDecodeError llm_status=malformed_json
+[2026-10-30 09:54:53,720] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=61.1 db_connect_ms=11.5 db_execute_ms=10.8
+[2026-10-30 09:54:53,765] INFO in observability: api timing path=/api/requirements status=201 request_ms=43.9 db_connect_ms=8.1 db_execute_ms=8.0
+[2026-10-30 09:54:53,893] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=125.5 db_connect_ms=29.8 db_execute_ms=22.8
+[2026-10-30 09:54:53,920] INFO in observability: api timing path=/api/requirements/1/analysis status=409 request_ms=25.6 db_connect_ms=13.5 db_execute_ms=8.1
+[2026-10-30 09:54:53,974] INFO in observability: api timing path=/api/requirements/1/analysis status=200 request_ms=52.0 db_connect_ms=9.2 db_execute_ms=12.8
+[2026-10-30 09:54:53,991] INFO in observability: api timing path=/api/requirements/1/analysis status=403 request_ms=14.7 db_connect_ms=7.6 db_execute_ms=5.2
+[2026-10-30 09:54:54,008] INFO in observability: api timing path=/api/requirements/1/history/3 status=200 request_ms=15.1 db_connect_ms=7.9 db_execute_ms=5.1
+[2026-10-30 09:54:55,128] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=60.4 db_connect_ms=12.1 db_execute_ms=9.4
+[2026-10-30 09:54:55,171] INFO in observability: api timing path=/api/requirements status=201 request_ms=41.3 db_connect_ms=8.6 db_execute_ms=8.6
+[2026-10-30 09:54:55,206] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=34.2 db_connect_ms=7.2 db_execute_ms=5.7
+[2026-10-30 09:54:55,243] INFO in observability: api timing path=/api/requirements/1/review status=403 request_ms=11.0 db_connect_ms=6.4 db_execute_ms=3.1
+[2026-10-30 09:54:56,335] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=89.1 db_connect_ms=25.8 db_execute_ms=20.7
+[2026-10-30 09:54:56,406] INFO in observability: api timing path=/api/requirements status=201 request_ms=68.7 db_connect_ms=16.9 db_execute_ms=16.5
+[2026-10-30 09:54:56,437] INFO in observability: api timing path=/api/requirements/1/review status=409 request_ms=28.3 db_connect_ms=17.0 db_execute_ms=8.5
+[2026-10-30 09:54:56,492] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=53.1 db_connect_ms=12.2 db_execute_ms=12.4
+[2026-10-30 09:54:56,552] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=57.3 db_connect_ms=14.2 db_execute_ms=12.2
+[2026-10-30 09:54:56,611] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=56.1 db_connect_ms=13.3 db_execute_ms=14.8
+[2026-10-30 09:54:56,668] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=55.5 db_connect_ms=13.6 db_execute_ms=12.7
+[2026-10-30 09:54:56,728] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=57.6 db_connect_ms=13.7 db_execute_ms=14.0
+[2026-10-30 09:54:56,794] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=63.2 db_connect_ms=16.9 db_execute_ms=15.5
+[2026-10-30 09:54:56,858] INFO in observability: api timing path=/api/requirements/1/scenarios/1 status=200 request_ms=61.7 db_connect_ms=15.6 db_execute_ms=15.7
+[2026-10-30 09:54:56,902] INFO in observability: api timing path=/api/requirements/1/review status=200 request_ms=42.3 db_connect_ms=9.5 db_execute_ms=9.1
+[2026-10-30 09:54:56,937] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=34.4 db_connect_ms=6.4 db_execute_ms=6.3
+[2026-10-30 09:54:56,950] INFO in observability: api timing path=/api/requirements/1 status=409 request_ms=12.0 db_connect_ms=7.0 db_execute_ms=3.6
+[2026-10-30 09:54:59,188] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=52.8 db_connect_ms=9.6 db_execute_ms=8.0
+[2026-10-30 09:54:59,206] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=17.0 db_connect_ms=9.1 db_execute_ms=5.6
+[2026-10-30 09:54:59,306] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=56.6 db_connect_ms=11.4 db_execute_ms=9.5
+[2026-10-30 09:55:00,387] INFO in observability: api timing path=/api/analyze-requirement status=503 request_ms=82.1 db_connect_ms=23.3 db_execute_ms=17.9
+[2026-10-30 09:55:00,474] INFO in observability: api timing path=/api/analyze-requirement status=503 request_ms=83.6 db_connect_ms=25.6 db_execute_ms=18.9
+[2026-10-30 09:55:00,551] INFO in observability: api timing path=/api/analyze-requirement status=503 request_ms=75.0 db_connect_ms=18.6 db_execute_ms=15.0
+[2026-10-30 09:55:00,628] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=68.5 db_connect_ms=15.0 db_execute_ms=14.7
+[2026-10-30 09:55:00,691] INFO in observability: api timing path=/api/requirements status=201 request_ms=60.5 db_connect_ms=14.3 db_execute_ms=13.7
+[2026-10-30 09:55:01,681] INFO in observability: api timing path=/api/requirements status=400 request_ms=12.8 db_connect_ms=7.1 db_execute_ms=4.2
+[2026-10-30 09:55:01,721] INFO in observability: api timing path=/api/requirements status=201 request_ms=39.3 db_connect_ms=7.9 db_execute_ms=9.4
+[2026-10-30 09:55:06,891] INFO in observability: api timing path=/api/requirements status=200 request_ms=32.0 db_connect_ms=17.6 db_execute_ms=11.3
+[2026-10-30 09:55:06,901] INFO in observability: api timing path=/api/requirements status=400 request_ms=7.7 db_connect_ms=3.6 db_execute_ms=2.7
+[2026-10-30 09:55:06,922] INFO in observability: api timing path=/api/requirements/5 status=200 request_ms=19.6 db_connect_ms=7.3 db_execute_ms=9.8
+[2026-10-30 09:55:07,027] INFO in observability: api timing path=/api/requirements/5/report.pdf status=200 request_ms=103.5 db_connect_ms=6.8 db_execute_ms=6.4
+[2026-10-30 09:55:09,960] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=75.5 db_connect_ms=11.7 db_execute_ms=9.2
+[2026-10-30 09:55:10,036] INFO in observability: api timing path=/api/requirements status=201 request_ms=75.3 db_connect_ms=13.6 db_execute_ms=15.1
+[2026-10-30 09:55:10,049] INFO in observability: api timing path=/api/requirements status=403 request_ms=10.8 db_connect_ms=6.3 db_execute_ms=2.8
+[2026-10-30 09:55:10,104] INFO in observability: api timing path=/api/admin/users/2/project-access status=200 request_ms=53.4 db_connect_ms=6.6 db_execute_ms=8.2
+[2026-10-30 09:55:10,116] INFO in observability: api timing path=/api/requirements status=403 request_ms=10.1 db_connect_ms=6.3 db_execute_ms=2.6
+[2026-10-30 09:55:10,125] INFO in observability: api timing path=/api/requirements/1 status=403 request_ms=7.5 db_connect_ms=3.4 db_execute_ms=2.8
+[2026-10-30 09:55:10,133] INFO in observability: api timing path=/api/requirements/1/report.pdf status=403 request_ms=6.8 db_connect_ms=3.2 db_execute_ms=2.4
+[2026-10-30 09:55:10,141] INFO in observability: api timing path=/api/dashboard status=403 request_ms=6.9 db_connect_ms=3.2 db_execute_ms=2.5
+[2026-10-30 09:55:10,150] INFO in observability: api timing path=/api/reports/project.pdf status=403 request_ms=7.6 db_connect_ms=3.5 db_execute_ms=2.7
+[2026-10-30 09:55:10,161] INFO in observability: api timing path=/api/exports/requirements.csv status=403 request_ms=9.1 db_connect_ms=5.1 db_execute_ms=2.5
+[2026-10-30 09:55:10,169] INFO in observability: api timing path=/api/analyze-requirement status=403 request_ms=6.1 db_connect_ms=2.7 db_execute_ms=2.2
+[2026-10-30 09:55:10,177] INFO in observability: api timing path=/api/requirements/1 status=403 request_ms=6.8 db_connect_ms=3.2 db_execute_ms=2.1
+[2026-10-30 09:55:10,186] INFO in observability: api timing path=/api/auth/me status=200 request_ms=8.3 db_connect_ms=3.7 db_execute_ms=3.3
+[2026-10-30 09:55:10,196] INFO in observability: api timing path=/api/admin/users/2/project-access status=403 request_ms=7.7 db_connect_ms=3.9 db_execute_ms=2.4
+[2026-10-30 09:55:10,303] INFO in observability: api timing path=/api/admin/users/2/project-access status=200 request_ms=105.9 db_connect_ms=6.8 db_execute_ms=8.6
+[2026-10-30 09:55:10,329] INFO in observability: api timing path=/api/requirements/1 status=200 request_ms=23.9 db_connect_ms=9.3 db_execute_ms=10.8
+[2026-10-30 09:55:11,859] INFO in observability: api timing path=/api/requirements status=201 request_ms=38.0 db_connect_ms=8.8 db_execute_ms=7.0
+[2026-10-30 09:55:11,875] INFO in observability: api timing path=/api/requirements status=201 request_ms=15.4 db_connect_ms=7.6 db_execute_ms=5.5
+[2026-10-30 09:55:11,896] INFO in observability: api timing path=/api/requirements status=409 request_ms=15.2 db_connect_ms=7.1 db_execute_ms=6.4
+[2026-10-30 09:55:11,905] INFO in observability: api timing path=/api/requirements status=400 request_ms=7.7 db_connect_ms=3.7 db_execute_ms=2.8
+[2026-10-30 09:55:12,963] INFO in observability: api timing path=/api/requirements status=201 request_ms=42.4 db_connect_ms=10.3 db_execute_ms=11.3
+[2026-10-30 09:55:13,028] INFO in observability: api timing path=/api/requirements status=201 request_ms=38.8 db_connect_ms=7.1 db_execute_ms=7.0
+[2026-10-30 09:55:14,067] INFO in observability: api timing path=/api/analyze-requirement status=200 request_ms=81.3 db_connect_ms=21.7 db_execute_ms=16.5
+[2026-10-30 09:55:14,753] INFO in observability: api timing path=/api/requirements status=201 request_ms=682.7 db_connect_ms=19.5 db_execute_ms=244.3
+[2026-10-30 09:55:14,779] INFO in observability: api timing path=/api/requirements/1 status=400 request_ms=23.8 db_connect_ms=13.3 db_execute_ms=8.0
+[2026-10-30 09:55:14,791] INFO in observability: api timing path=/api/requirements/1 status=400 request_ms=11.1 db_connect_ms=6.0 db_execute_ms=3.7
+[2026-10-30 09:55:14,823] INFO in observability: api timing path=/api/requirements/1/submit status=200 request_ms=30.7 db_connect_ms=4.8 db_execute_ms=5.0
+[2026-10-30 09:55:14,834] INFO in observability: api timing path=/api/requirements/1/review status=400 request_ms=10.9 db_connect_ms=6.0 db_execute_ms=3.6
+[2026-10-30 09:55:14,848] INFO in observability: api timing path=/api/requirements/1/review status=400 request_ms=12.5 db_connect_ms=5.9 db_execute_ms=4.7
+[2026-10-30 09:55:14,862] INFO in observability: api timing path=/api/requirements/1/review status=400 request_ms=12.2 db_connect_ms=6.5 db_execute_ms=4.1
+----------------------------------------------------------------------
+Ran 81 tests in 129.641s
+
+OK

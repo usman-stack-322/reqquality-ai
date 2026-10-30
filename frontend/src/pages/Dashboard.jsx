@@ -3,23 +3,26 @@ import { apiFetch as fetch } from '../api.js';
 import React, { useEffect, useRef, useState } from 'react';
 import PdfExportButton from '../components/PdfExportButton';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import { nextStep } from '../workflow-guidance.js';
 
-function RequirementRow({ requirement, attention = false }) {
+function RequirementRow({ requirement, isEngineer, attention = false }) {
   return (
     <article className={`dashboard-requirement-row${attention ? ' attention-row' : ''}`}>
       <div className="dashboard-requirement-copy">
         <h3>{requirement.title}</h3>
         <span>{requirement.requirement_type}</span>
+        <p className="dashboard-next-step">Next: {nextStep(requirement,isEngineer)}</p>
       </div>
       <div className="dashboard-requirement-state">
         <span className={`risk-level risk-${(requirement.risk_level || 'unscored').toLowerCase()}`}>
           Risk: {requirement.risk_level || 'Not analyzed'}
         </span>
         <span className={`review-status review-${requirement.review_status.toLowerCase().replaceAll(' ', '-')}`}>
-          {requirement.sqa_review_status || requirement.review_status}
+          Requirement: {requirement.review_status}
         </span>
+        <span>SQA decision: {requirement.sqa_review_status || 'Pending'}</span>
         <span className={`priority-label priority-${(requirement.suggested_priority || requirement.user_priority || requirement.priority).toLowerCase()}`}>
-          {requirement.suggested_priority || 'No suggestion'}
+          User priority: {requirement.user_priority || requirement.priority}{requirement.suggested_priority ? ` · AI suggestion: ${requirement.suggested_priority}` : ' · AI priority not saved'}
         </span>
       </div>
       <a className="button details-button" href={`#requirement/${requirement.id}`}>View Details</a>
@@ -97,7 +100,7 @@ export default function Dashboard({ user }) {
       <div className="dashboard-heading">
         <div>
           <p className="eyebrow">QUALITY OVERVIEW</p>
-          <h1 id="dashboard-title">{isEngineer ? 'SQE dashboard' : 'Analyst dashboard'}</h1>
+          <h1 id="dashboard-title">{isEngineer ? 'SQA review dashboard' : 'Analyst dashboard'}</h1>
           <p className="dashboard-intro">{isEngineer ? 'Open a requirement to review its criteria, test cases, executions and defects.' : 'Add a requirement or open a draft to refine it and submit it for review.'}</p>
         </div>
         <div className="dashboard-actions">
@@ -106,21 +109,22 @@ export default function Dashboard({ user }) {
           <PdfExportButton url="/api/exports/requirements.csv" filename="requirements.csv" format="CSV">Export CSV</PdfExportButton>
         </div>
       </div>
-      {error && <p className="error" role="alert">{error}</p>}<button disabled={isLoading} onClick={()=>{dashboardSnapshot.current=null;setRetry(v=>v+1);}}>Refresh dashboard / Retry</button>
+      {error && <p className="error" role="alert">{error}</p>}<button className="secondary-button dashboard-refresh" disabled={isLoading} onClick={()=>{dashboardSnapshot.current=null;setRetry(v=>v+1);}}>Refresh dashboard / Retry</button>
       {isLoading ? (
         <LoadingSkeleton />
       ) : !dashboard ? (
         <p className="requirements-empty">Dashboard statistics are unavailable.</p>
       ) : (
         <>
+          <section className="dashboard-workflow" aria-label="Your workflow"><h2>{isEngineer ? 'Review workflow' : 'Authoring workflow'}</h2><p>{isEngineer ? '1. Open a submitted requirement → 2. Review criteria and scenarios → 3. Use AI Review Assistant if changes are needed → 4. Accept proposals as Pending Review → 5. Review cases and approve separately → 6. Export saved evidence.' : '1. Add a requirement → 2. Analyze with AI → 3. Review and save the suggestions → 4. Submit for SQA review → 5. Address feedback → 6. Export the saved report.'}</p><p>Requirement approval, test case approval, and manual execution results are separate. Linked cases show traceability, not proof of complete behavioral coverage or a passing test.</p></section>
           <QualityMetrics data={dashboard} />
           <section className="dashboard-section" aria-labelledby="all-requirements-title">
             <div className="dashboard-section-heading">
               <div><p className="eyebrow">REGISTER</p><h2 id="all-requirements-title">All Requirements</h2></div>
-              <span>{total} items ? page {page}</span>
+              <span>{total} items · page {page}</span>
             </div>
             <div className="dashboard-filters">
-              {Object.entries({status:['Pending','In Review','Approved','Needs Revision'],risk:['Low','Medium','High','Critical'],priority:['Low','Medium','High'],type:['Functional','Non-Functional','Business']}).map(([key,choices]) => <label key={key}>Filter {key}<select value={queueFilters[key]} onChange={e => {setQueueFilters({...queueFilters,[key]:e.target.value});setPage(1);}}><option value="">All</option>{choices.map(v => <option key={v}>{v}</option>)}</select></label>)}
+              {Object.entries({status:['Draft','Ready for Review','Pending','In Review','Approved','Needs Revision'],risk:['Low','Medium','High','Critical'],priority:['Low','Medium','High'],type:['Functional','Non-Functional','Business']}).map(([key,choices]) => <label key={key}>{({status:'Requirement status',risk:'AI risk level',priority:'User priority',type:'Requirement type'})[key]}<select value={queueFilters[key]} onChange={e => {setQueueFilters({...queueFilters,[key]:e.target.value});setPage(1);}}><option value="">All</option>{choices.map(v => <option key={v}>{v}</option>)}</select></label>)}
               <button disabled={page===1 || isLoading} onClick={() => setPage(page-1)}>Previous page</button>
               <button disabled={page*50>=total || isLoading} onClick={() => setPage(page+1)}>Next page</button>
               <label>Search this page<input type="search" placeholder="Search by title" value={search} onChange={event => setSearch(event.target.value)} /></label>
@@ -129,7 +133,7 @@ export default function Dashboard({ user }) {
             {visibleRequirements.length ? (
               <div className="dashboard-requirement-list">
                 {visibleRequirements.map((requirement) => (
-                  <RequirementRow requirement={requirement} key={requirement.id} />
+                  <RequirementRow requirement={requirement} isEngineer={isEngineer} key={requirement.id} />
                 ))}
               </div>
             ) : <p className="dashboard-empty">{requirements.length ? 'No requirements match these filters.' : 'No saved requirements yet.'}</p>}

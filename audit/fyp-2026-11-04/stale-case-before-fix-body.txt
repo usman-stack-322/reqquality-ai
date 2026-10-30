@@ -1,0 +1,144 @@
+ReqQuality AI
+QUALITY WORKSPACE
+RQ
+Requirements & quality
+Shared project workspace
+
+WORKSPACE
+
+Dashboard
+E
+Engineer
+SQA Engineer
+Workspace / Requirement workspace
+Theme
+Light
+Dark
+System
+← All requirements
+Export PDF
+ 
+
+REQUIREMENT 1
+
+Authoring: Draft. Inspect criteria and test cases, record Manual execution where permitted, then save your review decision below.
+
+Sign in
+
+Registered users can sign in with valid credentials.
+
+Original
+Pending
+Functional
+Risk: Medium
+Suggested priority: Medium
+Saved AI findings: suggestions requiring review
+Acceptance Criteria
+1
+AC-001
+
+Valid credentials open the registered account.
+
+Original
+Needs Confirmation
+Risk / Priority
+Unscored
+Locked-account behavior is unspecified.
+Confirm stakeholder priority; authentication affects access.
+
+Requirement-quality risk: Medium. Suggested priority: Medium. These indicate review attention, not proven software defects.
+
+Version history and traceability
+Detailed test cases and Manual execution
+Discuss requirement coverage
+Request AI Revision for selected (0)
+
+Project current · Requirement content version 2. AI-generated cases start as editable drafts. Positive, negative and boundary behavior must be supported by the requirement; unspecified outcomes need clarification.
+
+Case changed or is archived. Reload before review.
+
+Retry test cases
+Create test case
+TC-1: Valid sign in
+
+SC-a283a4194af8437e818adce30f10a1e6-001 · Positive · Unspecified · Priority Medium · Draft
+
+Case version 1 · Requirement content version 2 · Latest manual result for this case version: Not Run
+
+Select TC-1 for shared feedback
+Request AI Revision
+
+Draft/review needed; generated expected behavior is unconfirmed.
+
+Criterion links: AC-001
+
+Preconditions: Registered account exists.
+
+Test data: Not specified
+
+Enter valid credentials.
+
+Expected results: Account opens.
+
+Edit TC-1
+Test case review
+Case review decision
+In Review
+Case reviewer notes
+Save case review
+Open Manual execution and history for TC-1
+TC-2: Edited sign-in test case
+
+TC-6410bac03c5e487fb9306af13c488062 · Positive · Functional · Priority High · Pending Review
+
+Case version 3 · Requirement content version 2 · Latest manual result for this case version: Not Run
+
+Select TC-2 for shared feedback
+Request AI Revision
+
+Draft/review needed; generated expected behavior is unconfirmed.
+
+Criterion links: AC-001
+
+Preconditions: Registered account exists.
+
+Test data: Edited fixture test data.
+
+Enter valid fixture credentials.
+Request sign in.
+
+Expected results: The registered account opens after successful sign-in.
+
+Edit TC-2
+Test case review
+Case review decision
+In Review
+Case reviewer notes
+Save case review
+Open Manual execution and history for TC-2
+Previous cases Page 1; 2 cases including archived Next cases
+SQA Review
+Pending
+
+Reviewed content version
+Not version-verified
+
+Review Status
+Pending
+
+Reviewer Notes
+No reviewer notes.
+
+Assigned reviewer
+Unassigned
+
+Reviewed by
+Not recorded
+
+Reviewed at
+Not reviewed yet
+
+SQA Engineers record review decisions.
+
+ReqQuality AI
+Requirements, with a clear review path
