@@ -1,5 +1,7 @@
 import { apiFetch as fetch } from '../api.js';
 import React, { useRef, useState } from 'react';
+import { Download, Loader2 } from 'lucide-react';
+import { buttonSecondaryClass } from './ui';
 
 export default function PdfExportButton({ url, filename, children = 'Export PDF', format = 'PDF' }) {
   const locked = useRef(false);
@@ -40,11 +42,28 @@ export default function PdfExportButton({ url, filename, children = 'Export PDF'
     }
   }
 
-  return <div className="pdf-export-control">
-    <button className="button export-button" type="button" disabled={busy} aria-busy={busy} onClick={download}>
-      {busy ? `Downloading ${format}…` : children}
-    </button>
-    <span className="pdf-export-status" role="status">{busy ? 'Preparing saved data. Please wait…' : '\u00a0'}</span>
-    {error && <p className="error pdf-export-error" role="alert">{error}</p>}
-  </div>;
+  return (
+    <div className="pdf-export-control inline-flex flex-col items-start gap-1">
+      <button
+        className={`${buttonSecondaryClass} export-button`}
+        type="button"
+        disabled={busy}
+        aria-busy={busy}
+        onClick={download}
+      >
+        {busy ? <Loader2 className="size-3.5 animate-spin" aria-hidden="true" /> : <Download className="size-3.5" aria-hidden="true" />}
+        {busy ? `Downloading ${format}…` : children}
+      </button>
+      {busy && (
+        <span className="pdf-export-status text-[11px] text-muted" role="status">
+          Preparing saved data…
+        </span>
+      )}
+      {error && (
+        <p className="error pdf-export-error text-xs text-danger" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  );
 }
