@@ -1,0 +1,627 @@
+{
+  "generated_at_utc": "2026-11-23T15:06:01+00:00",
+  "mode": "fixture",
+  "dataset_path": "fyp_benchmark_cases.json",
+  "dataset_size": 12,
+  "export_samples": 3,
+  "generation_config": {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "analysis_version": 4,
+    "temperature": 0.2,
+    "max_output_tokens": 8192
+  },
+  "cases": [
+    {
+      "id": "REQ-EVAL-01",
+      "category": "ambiguous",
+      "title": "Checkout Responsiveness & Usability",
+      "requirement_type": "Non-Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 2.45,
+      "criteria_count": 2,
+      "scenarios_count": 1,
+      "introduced_values_count": 4,
+      "distinct_introduced_values": [
+        "2 seconds"
+      ],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-02",
+      "category": "ambiguous",
+      "title": "Timely Workspace Notification Delivery",
+      "requirement_type": "Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 1.47,
+      "criteria_count": 1,
+      "scenarios_count": 1,
+      "introduced_values_count": 7,
+      "distinct_introduced_values": [
+        "500 ms",
+        "GDPR"
+      ],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-03",
+      "category": "ambiguous",
+      "title": "Graceful Inactive Session Handling",
+      "requirement_type": "Non-Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 1.71,
+      "criteria_count": 1,
+      "scenarios_count": 1,
+      "introduced_values_count": 7,
+      "distinct_introduced_values": [
+        "30 minutes",
+        "TLS 1.3"
+      ],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-04",
+      "category": "incomplete",
+      "title": "Document Search Under Load",
+      "requirement_type": "Non-Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 1.67,
+      "criteria_count": 2,
+      "scenarios_count": 2,
+      "introduced_values_count": 4,
+      "distinct_introduced_values": [
+        "1000 users",
+        "200 ms"
+      ],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-05",
+      "category": "incomplete",
+      "title": "Audit Log Export Filtering",
+      "requirement_type": "Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 1.28,
+      "criteria_count": 1,
+      "scenarios_count": 1,
+      "introduced_values_count": 0,
+      "distinct_introduced_values": [],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-06",
+      "category": "incomplete",
+      "title": "Failed Sign-In Account Protection",
+      "requirement_type": "Non-Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 1.28,
+      "criteria_count": 1,
+      "scenarios_count": 1,
+      "introduced_values_count": 1,
+      "distinct_introduced_values": [
+        "HTTP 429"
+      ],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-07",
+      "category": "conflicting",
+      "title": "Approved Transfer Email Notifications",
+      "requirement_type": "Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 1.1,
+      "criteria_count": 1,
+      "scenarios_count": 1,
+      "introduced_values_count": 0,
+      "distinct_introduced_values": [],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-08",
+      "category": "conflicting",
+      "title": "Report Deletion vs. Immutable Audit Trail",
+      "requirement_type": "Business",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 1.22,
+      "criteria_count": 1,
+      "scenarios_count": 1,
+      "introduced_values_count": 0,
+      "distinct_introduced_values": [],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-09",
+      "category": "boundary_heavy",
+      "title": "Password Length & Invitation Expiry Bounds",
+      "requirement_type": "Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 2.64,
+      "criteria_count": 2,
+      "scenarios_count": 2,
+      "introduced_values_count": 0,
+      "distinct_introduced_values": [],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-10",
+      "category": "boundary_heavy",
+      "title": "Shipment Status API Load & Latency SLA",
+      "requirement_type": "Non-Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 2.29,
+      "criteria_count": 2,
+      "scenarios_count": 1,
+      "introduced_values_count": 0,
+      "distinct_introduced_values": [],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-11",
+      "category": "well_formed",
+      "title": "Archive Library Catalogue Record",
+      "requirement_type": "Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 1.17,
+      "criteria_count": 2,
+      "scenarios_count": 2,
+      "introduced_values_count": 0,
+      "distinct_introduced_values": [],
+      "all_items_marked_unconfirmed": true
+    },
+    {
+      "id": "REQ-EVAL-12",
+      "category": "well_formed",
+      "title": "Role-Based Requirement Export Authorization",
+      "requirement_type": "Non-Functional",
+      "status": "completed",
+      "code": "completed",
+      "schema_valid": true,
+      "elapsed_ms": 1.55,
+      "criteria_count": 2,
+      "scenarios_count": 2,
+      "introduced_values_count": 0,
+      "distinct_introduced_values": [],
+      "all_items_marked_unconfirmed": true
+    }
+  ],
+  "schema_validity": {
+    "valid_cases": 12,
+    "total_cases": 12,
+    "pass_rate_percent": 100.0,
+    "by_category": {
+      "ambiguous": {
+        "total": 3,
+        "schema_valid": 3
+      },
+      "incomplete": {
+        "total": 3,
+        "schema_valid": 3
+      },
+      "conflicting": {
+        "total": 2,
+        "schema_valid": 2
+      },
+      "boundary_heavy": {
+        "total": 2,
+        "schema_valid": 2
+      },
+      "well_formed": {
+        "total": 2,
+        "schema_valid": 2
+      }
+    },
+    "negative_guard_probes": {
+      "total_probes": 5,
+      "rejected_count": 5,
+      "all_rejected": true,
+      "details": [
+        {
+          "probe": "non_dict_payload",
+          "rejected": true
+        },
+        {
+          "probe": "invalid_risk_level_enum",
+          "rejected": true
+        },
+        {
+          "probe": "empty_test_scenarios",
+          "rejected": true
+        },
+        {
+          "probe": "missing_info_without_clarification_questions",
+          "rejected": true
+        },
+        {
+          "probe": "dangling_criterion_code_ac999",
+          "rejected": true
+        }
+      ]
+    }
+  },
+  "value_safety": {
+    "total_introduced_value_catches": 23,
+    "cases_with_introduced_values": 5,
+    "distinct_introduced_values": [
+      "2 seconds",
+      "500 ms",
+      "GDPR",
+      "30 minutes",
+      "TLS 1.3",
+      "1000 users",
+      "200 ms",
+      "HTTP 429"
+    ],
+    "false_positives_on_well_formed_and_boundary": 0,
+    "all_completed_outputs_require_confirmation": true
+  },
+  "ai_latency_ms": {
+    "count": 12,
+    "min_ms": 1.1,
+    "mean_ms": 1.65,
+    "median_ms": 1.51,
+    "p95_ms": 2.64,
+    "max_ms": 2.64
+  },
+  "rbac_verification": {
+    "total_checks": 13,
+    "passed_checks": 13,
+    "all_passed": true,
+    "checks": [
+      {
+        "check": "guest_blocked_requirements_list",
+        "actor": "Unauthenticated Guest",
+        "expected_status": 401,
+        "actual_status": 401,
+        "passed": true
+      },
+      {
+        "check": "guest_blocked_project_pdf_export",
+        "actor": "Unauthenticated Guest",
+        "expected_status": 401,
+        "actual_status": 401,
+        "passed": true
+      },
+      {
+        "check": "analyst_cannot_self_approve_requirement_review",
+        "actor": "Analyst (Requirement Author)",
+        "expected_status": 403,
+        "actual_status": 403,
+        "passed": true
+      },
+      {
+        "check": "analyst_cannot_self_approve_via_review_status",
+        "actor": "Analyst (Requirement Author)",
+        "expected_status": 403,
+        "actual_status": 403,
+        "passed": true
+      },
+      {
+        "check": "analyst_cannot_create_sqa_test_case",
+        "actor": "Analyst",
+        "expected_status": 403,
+        "actual_status": 403,
+        "passed": true
+      },
+      {
+        "check": "analyst_cannot_self_approve_test_case",
+        "actor": "Analyst",
+        "expected_status": 403,
+        "actual_status": 403,
+        "passed": true
+      },
+      {
+        "check": "analyst_cannot_accept_ai_review_revision_proposal",
+        "actor": "Analyst",
+        "expected_status": 403,
+        "actual_status": 403,
+        "passed": true
+      },
+      {
+        "check": "sqa_engineer_cannot_create_requirements",
+        "actor": "SQA Engineer",
+        "expected_status": 403,
+        "actual_status": 403,
+        "passed": true
+      },
+      {
+        "check": "sqa_engineer_cannot_invoke_analyst_ai_endpoint",
+        "actor": "SQA Engineer",
+        "expected_status": 403,
+        "actual_status": 403,
+        "passed": true
+      },
+      {
+        "check": "admin_cannot_approve_sqa_decisions",
+        "actor": "Admin",
+        "expected_status": 403,
+        "actual_status": 403,
+        "passed": true
+      },
+      {
+        "check": "missing_csrf_token_rejected_on_write",
+        "actor": "Analyst (No CSRF)",
+        "expected_status": 403,
+        "actual_status": 403,
+        "passed": true
+      },
+      {
+        "check": "independent_sqa_engineer_can_approve_requirement",
+        "actor": "SQA Engineer (Non-Author)",
+        "expected_status": 200,
+        "actual_status": 200,
+        "passed": true
+      },
+      {
+        "check": "role_promoted_author_still_blocked_from_self_approval",
+        "actor": "Author Promoted to SQA Engineer",
+        "expected_status": 403,
+        "actual_status": 403,
+        "passed": true
+      }
+    ]
+  },
+  "export_timings": {
+    "requirement_pdf": {
+      "bytes": 46471,
+      "total_elapsed_ms": {
+        "count": 3,
+        "min_ms": 185.68,
+        "mean_ms": 410.94,
+        "median_ms": 201.3,
+        "p95_ms": 845.85,
+        "max_ms": 845.85
+      },
+      "stages_ms": {
+        "report_data": {
+          "count": 3,
+          "min_ms": 11.2,
+          "mean_ms": 11.2,
+          "median_ms": 11.2,
+          "p95_ms": 11.2,
+          "max_ms": 11.2
+        },
+        "report_render": {
+          "count": 3,
+          "min_ms": 162.9,
+          "mean_ms": 387.8,
+          "median_ms": 178.3,
+          "p95_ms": 822.2,
+          "max_ms": 822.2
+        },
+        "report_response": {
+          "count": 3,
+          "min_ms": 0.5,
+          "mean_ms": 0.57,
+          "median_ms": 0.6,
+          "p95_ms": 0.6,
+          "max_ms": 0.6
+        },
+        "server_request": {
+          "count": 3,
+          "min_ms": 184.2,
+          "mean_ms": 409.4,
+          "median_ms": 199.9,
+          "p95_ms": 844.1,
+          "max_ms": 844.1
+        }
+      },
+      "samples": [
+        {
+          "sample": 1,
+          "elapsed_ms": 845.85,
+          "bytes": 46471,
+          "report_data_ms": 11.2,
+          "report_render_ms": 822.2,
+          "report_response_ms": 0.5,
+          "db_connect_ms": 8.5,
+          "db_execute_ms": 8.0,
+          "server_request_ms": 844.1
+        },
+        {
+          "sample": 2,
+          "elapsed_ms": 201.3,
+          "bytes": 46471,
+          "report_data_ms": 11.2,
+          "report_render_ms": 178.3,
+          "report_response_ms": 0.6,
+          "db_connect_ms": 7.3,
+          "db_execute_ms": 9.2,
+          "server_request_ms": 199.9
+        },
+        {
+          "sample": 3,
+          "elapsed_ms": 185.68,
+          "bytes": 46471,
+          "report_data_ms": 11.2,
+          "report_render_ms": 162.9,
+          "report_response_ms": 0.6,
+          "db_connect_ms": 8.2,
+          "db_execute_ms": 8.4,
+          "server_request_ms": 184.2
+        }
+      ]
+    },
+    "project_pdf": {
+      "bytes": 87730,
+      "total_elapsed_ms": {
+        "count": 3,
+        "min_ms": 357.71,
+        "mean_ms": 492.25,
+        "median_ms": 548.55,
+        "p95_ms": 570.49,
+        "max_ms": 570.49
+      },
+      "stages_ms": {
+        "report_data": {
+          "count": 3,
+          "min_ms": 21.0,
+          "mean_ms": 22.63,
+          "median_ms": 22.0,
+          "p95_ms": 24.9,
+          "max_ms": 24.9
+        },
+        "report_render": {
+          "count": 3,
+          "min_ms": 326.9,
+          "mean_ms": 459.33,
+          "median_ms": 513.6,
+          "p95_ms": 537.5,
+          "max_ms": 537.5
+        },
+        "report_response": {
+          "count": 3,
+          "min_ms": 0.2,
+          "mean_ms": 0.3,
+          "median_ms": 0.3,
+          "p95_ms": 0.4,
+          "max_ms": 0.4
+        },
+        "server_request": {
+          "count": 3,
+          "min_ms": 356.7,
+          "mean_ms": 491.1,
+          "median_ms": 547.4,
+          "p95_ms": 569.2,
+          "max_ms": 569.2
+        }
+      },
+      "samples": [
+        {
+          "sample": 1,
+          "elapsed_ms": 548.55,
+          "bytes": 87730,
+          "report_data_ms": 24.9,
+          "report_render_ms": 513.6,
+          "report_response_ms": 0.3,
+          "db_connect_ms": 8.1,
+          "db_execute_ms": 8.2,
+          "server_request_ms": 547.4
+        },
+        {
+          "sample": 2,
+          "elapsed_ms": 570.49,
+          "bytes": 87730,
+          "report_data_ms": 21.0,
+          "report_render_ms": 537.5,
+          "report_response_ms": 0.4,
+          "db_connect_ms": 8.9,
+          "db_execute_ms": 8.4,
+          "server_request_ms": 569.2
+        },
+        {
+          "sample": 3,
+          "elapsed_ms": 357.71,
+          "bytes": 87730,
+          "report_data_ms": 22.0,
+          "report_render_ms": 326.9,
+          "report_response_ms": 0.2,
+          "db_connect_ms": 6.9,
+          "db_execute_ms": 8.0,
+          "server_request_ms": 356.7
+        }
+      ]
+    },
+    "requirements_csv": {
+      "bytes": 137479,
+      "total_elapsed_ms": {
+        "count": 3,
+        "min_ms": 53.47,
+        "mean_ms": 59.55,
+        "median_ms": 61.19,
+        "p95_ms": 64.0,
+        "max_ms": 64.0
+      },
+      "stages_ms": {
+        "report_data": {
+          "count": 3,
+          "min_ms": 22.5,
+          "mean_ms": 24.6,
+          "median_ms": 22.9,
+          "p95_ms": 28.4,
+          "max_ms": 28.4
+        },
+        "report_render": {
+          "count": 3,
+          "min_ms": 17.8,
+          "mean_ms": 23.47,
+          "median_ms": 21.5,
+          "p95_ms": 31.1,
+          "max_ms": 31.1
+        },
+        "report_response": {
+          "count": 3,
+          "min_ms": 0.6,
+          "mean_ms": 0.63,
+          "median_ms": 0.6,
+          "p95_ms": 0.7,
+          "max_ms": 0.7
+        },
+        "server_request": {
+          "count": 3,
+          "min_ms": 51.5,
+          "mean_ms": 57.97,
+          "median_ms": 60.0,
+          "p95_ms": 62.4,
+          "max_ms": 62.4
+        }
+      },
+      "samples": [
+        {
+          "sample": 1,
+          "elapsed_ms": 61.19,
+          "bytes": 137479,
+          "report_data_ms": 22.9,
+          "report_render_ms": 31.1,
+          "report_response_ms": 0.6,
+          "db_connect_ms": 8.3,
+          "db_execute_ms": 6.9,
+          "server_request_ms": 60.0
+        },
+        {
+          "sample": 2,
+          "elapsed_ms": 53.47,
+          "bytes": 137479,
+          "report_data_ms": 22.5,
+          "report_render_ms": 17.8,
+          "report_response_ms": 0.6,
+          "db_connect_ms": 9.1,
+          "db_execute_ms": 8.8,
+          "server_request_ms": 51.5
+        },
+        {
+          "sample": 3,
+          "elapsed_ms": 64.0,
+          "bytes": 137479,
+          "report_data_ms": 28.4,
+          "report_render_ms": 21.5,
+          "report_response_ms": 0.7,
+          "db_connect_ms": 10.7,
+          "db_execute_ms": 11.8,
+          "server_request_ms": 62.4
+        }
+      ]
+    }
+  }
+}

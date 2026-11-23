@@ -1,0 +1,189 @@
+[
+  {
+    "id": "REQ-EVAL-01",
+    "category": "ambiguous",
+    "title": "Checkout Responsiveness & Usability",
+    "description": "The retail checkout workflow must be fast, intuitive, and easy for shoppers across devices without delays.",
+    "requirement_type": "Non-Functional",
+    "priority": "High",
+    "project_context": "Online storefront serving authenticated shoppers. No target latency, device matrix, or usability benchmark has been agreed.",
+    "review_expectations": [
+      "Identify 'fast', 'intuitive', 'easy', and 'across devices' as subjective or unmeasured.",
+      "Ask direct clarification questions for concrete latency percentiles, device viewport targets, and usability metrics.",
+      "Do not treat unconfirmed AI latency targets as stakeholder-approved SLAs."
+    ],
+    "expected_preserved_values": []
+  },
+  {
+    "id": "REQ-EVAL-02",
+    "category": "ambiguous",
+    "title": "Timely Workspace Notification Delivery",
+    "description": "Stakeholders should receive timely notifications whenever important workspace events happen.",
+    "requirement_type": "Functional",
+    "priority": "Medium",
+    "project_context": "Collaborative requirements and quality review platform. Notification channels and retention rules are undecided.",
+    "review_expectations": [
+      "Flag 'timely' and 'important workspace events' as ambiguous.",
+      "Clarify exact triggering events, delivery channels, and privacy/compliance constraints.",
+      "Preserve ambiguity until stakeholders choose concrete event triggers."
+    ],
+    "expected_preserved_values": []
+  },
+  {
+    "id": "REQ-EVAL-03",
+    "category": "ambiguous",
+    "title": "Graceful Inactive Session Handling",
+    "description": "Idle user sessions should remain open for a reasonable period before signing out safely.",
+    "requirement_type": "Non-Functional",
+    "priority": "High",
+    "project_context": "Web workspace using cookie-token authentication. Timeout durations and security policy remain undecided.",
+    "review_expectations": [
+      "Flag 'reasonable period' and 'safely' as ambiguous.",
+      "Ask for exact inactivity timeout duration and transport security requirements.",
+      "Flag any unconfirmed timeout or protocol numbers introduced by AI."
+    ],
+    "expected_preserved_values": []
+  },
+  {
+    "id": "REQ-EVAL-04",
+    "category": "incomplete",
+    "title": "Document Search Under Load",
+    "description": "Users can search stored project requirements by keyword, and the search endpoint must handle concurrent usage gracefully.",
+    "requirement_type": "Non-Functional",
+    "priority": "High",
+    "project_context": "Requirements repository search feature. Concurrent user count, response-time percentile, and pagination caps are unspecified.",
+    "review_expectations": [
+      "Identify missing load target, missing response-time threshold, and unspecified behavior when queries match zero results or exceed timeouts.",
+      "Produce clarification questions without silently confirming invented capacity limits."
+    ],
+    "expected_preserved_values": []
+  },
+  {
+    "id": "REQ-EVAL-05",
+    "category": "incomplete",
+    "title": "Audit Log Export Filtering",
+    "description": "Administrators can export filtered workspace activity logs for external compliance review.",
+    "requirement_type": "Functional",
+    "priority": "Medium",
+    "project_context": "Organization Admin console with audit_events tracking. Export file formats, date-range filters, and row limits are not specified.",
+    "review_expectations": [
+      "Identify missing export file formats, timezone convention, filter criteria, and empty-result behavior.",
+      "Keep unresolved format and row-limit decisions marked for stakeholder confirmation."
+    ],
+    "expected_preserved_values": []
+  },
+  {
+    "id": "REQ-EVAL-06",
+    "category": "incomplete",
+    "title": "Failed Sign-In Account Protection",
+    "description": "The authentication service must protect user accounts against repeated failed sign-in attempts.",
+    "requirement_type": "Non-Functional",
+    "priority": "High",
+    "project_context": "Public login endpoint. Retry threshold, window duration, cooldown period, and admin unlock policy are not yet specified.",
+    "review_expectations": [
+      "Ask for exact retry limits, observation window, cooldown behavior, and HTTP response codes.",
+      "Do not invent unstated lockout counts or window durations as confirmed requirements."
+    ],
+    "expected_preserved_values": []
+  },
+  {
+    "id": "REQ-EVAL-07",
+    "category": "conflicting",
+    "title": "Approved Transfer Email Notifications",
+    "description": "Send a confirmation email for every approved fund transfer. Never send emails for approved transfers.",
+    "requirement_type": "Functional",
+    "priority": "High",
+    "project_context": "Both statements come from stakeholders of equal authority and no precedence policy has been recorded.",
+    "review_expectations": [
+      "Record the direct contradiction in conflict_issues without picking one rule over the other.",
+      "Retain [TO BE CONFIRMED: ...] in improved_requirement and keep dependent scenarios BLOCKED pending clarification."
+    ],
+    "expected_preserved_values": []
+  },
+  {
+    "id": "REQ-EVAL-08",
+    "category": "conflicting",
+    "title": "Report Deletion vs. Immutable Audit Trail",
+    "description": "Managers can permanently delete historical review reports at any time. Every review report must remain permanently immutable and non-deletable for auditing.",
+    "requirement_type": "Business",
+    "priority": "High",
+    "project_context": "Operations and compliance teams submitted conflicting lifecycle requirements with no formal override decision.",
+    "review_expectations": [
+      "Highlight the mutability/deletion conflict in conflict_issues.",
+      "Avoid choosing either deletion or permanent retention; block dependent test scenarios until resolved."
+    ],
+    "expected_preserved_values": []
+  },
+  {
+    "id": "REQ-EVAL-09",
+    "category": "boundary_heavy",
+    "title": "Password Length & Invitation Expiry Bounds",
+    "description": "User passwords must contain minimum 12 and maximum 128 characters. User invitations expire in 24 hours, apply a 15 minutes temporary lock after at most 5 failed email verification attempts, and password reset tokens remain valid for 1 hour.",
+    "requirement_type": "Functional",
+    "priority": "High",
+    "project_context": "Invitation onboarding and password recovery flows.",
+    "review_expectations": [
+      "Preserve minimum 12, maximum 128, 24 hours, 15 minutes, at most 5, and 1 hour accurately.",
+      "Generate positive, negative, and boundary test scenarios targeting those exact thresholds."
+    ],
+    "expected_preserved_values": [
+      "minimum 12",
+      "maximum 128",
+      "24 hours",
+      "15 minutes",
+      "at most 5",
+      "1 hour"
+    ]
+  },
+  {
+    "id": "REQ-EVAL-10",
+    "category": "boundary_heavy",
+    "title": "Shipment Status API Load & Latency SLA",
+    "description": "Under 200 users simultaneously authenticated, 95% of shipment-status API requests must complete within 2 seconds during a 30 minutes load test with response payloads of at most 500 kb.",
+    "requirement_type": "Non-Functional",
+    "priority": "High",
+    "project_context": "Production telemetry endpoint queried by authenticated logistics clients.",
+    "review_expectations": [
+      "Preserve 200 users, 95%, 2 seconds, 30 minutes, and 500 kb without inflating or inventing extra SLAs.",
+      "Avoid triggering false value_safety warnings on supplied measurements."
+    ],
+    "expected_preserved_values": [
+      "200 users",
+      "95%",
+      "2 seconds",
+      "30 minutes",
+      "500 kb"
+    ]
+  },
+  {
+    "id": "REQ-EVAL-11",
+    "category": "well_formed",
+    "title": "Archive Library Catalogue Record",
+    "description": "A librarian can archive an active book catalog record. Archived book records remain visible to authenticated librarians and are excluded from public reader search results.",
+    "requirement_type": "Functional",
+    "priority": "Medium",
+    "project_context": "Library catalog service distinguishing librarian staff from unauthenticated public readers.",
+    "review_expectations": [
+      "Preserve librarian actor, retained librarian visibility, and public search exclusion cleanly.",
+      "Produce direct Positive and Negative scenarios without inventing deletion timers or approval chains."
+    ],
+    "expected_preserved_values": []
+  },
+  {
+    "id": "REQ-EVAL-12",
+    "category": "well_formed",
+    "title": "Role-Based Requirement Export Authorization",
+    "description": "Only authenticated SQA Engineers with active project access can download requirement PDF and CSV exports. Authenticated Analysts receive HTTP 403 Forbidden and unauthenticated guests receive HTTP 401 Unauthorized.",
+    "requirement_type": "Non-Functional",
+    "priority": "High",
+    "project_context": "ReqQuality AI export endpoints enforcing role-based authorization boundaries.",
+    "review_expectations": [
+      "Preserve allowed role (SQA Engineer with active project access) and denied roles/status codes (Analyst 403, guest 401).",
+      "Do not invent extra MFA or encryption requirements."
+    ],
+    "expected_preserved_values": [
+      "HTTP 403",
+      "HTTP 401"
+    ]
+  }
+]
