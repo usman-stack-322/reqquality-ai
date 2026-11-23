@@ -202,17 +202,26 @@ def logout_tokens():
     return {'message': 'Logged out successfully.'}
 
 
+def _cookie_attributes():
+    secure = not current_app.config.get('LOCAL_HTTP_DEVELOPMENT', False)
+    samesite = current_app.config.get('SESSION_COOKIE_SAMESITE', 'Lax')
+    if not secure and samesite == 'None':
+        samesite = 'Lax'
+    return {'secure': secure, 'httponly': True, 'samesite': samesite}
+
+
 def apply_auth_cookies(response):
     if request.path.startswith('/api/auth/'):
         response.headers['Cache-Control'] = 'no-store'
+    attrs = _cookie_attributes()
     values = getattr(g, 'auth_cookies', None)
     if values and 200 <= response.status_code < 300:
         for name, key, path in [(ACCESS_COOKIE, 'access', '/api/'), (REFRESH_COOKIE, 'refresh', '/api/auth/')]:
             expiry = values[key + '_expires']
             response.set_cookie(cookie_name(name), values[key], max_age=max(0, expiry - int(time.time())),
                                 expires=datetime.fromtimestamp(expiry, timezone.utc),
-                                path=path, secure=not current_app.config.get('LOCAL_HTTP_DEVELOPMENT', False), httponly=True, samesite='Lax')
+                                path=path, **attrs)
     if getattr(g, 'clear_auth_cookies', False) and response.status_code < 500:
-        response.delete_cookie(cookie_name(ACCESS_COOKIE), path='/api/', secure=not current_app.config.get('LOCAL_HTTP_DEVELOPMENT', False), httponly=True, samesite='Lax')
-        response.delete_cookie(cookie_name(REFRESH_COOKIE), path='/api/auth/', secure=not current_app.config.get('LOCAL_HTTP_DEVELOPMENT', False), httponly=True, samesite='Lax')
+        response.delete_cookie(cookie_name(ACCESS_COOKIE), path='/api/', **attrs)
+        response.delete_cookie(cookie_name(REFRESH_COOKIE), path='/api/auth/', **attrs)
     return response

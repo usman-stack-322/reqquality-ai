@@ -142,6 +142,90 @@ class DatabasePoolTests(unittest.TestCase):
         pool.close.assert_not_called()
         self.assertIn(pool, database._POSTGRES_POOLS.values())
 
+    def test_neon_urls_enforce_sslmode_require_and_preserve_strict_modes(self):
+        missing, enforced = database.normalize_postgres_url(
+            'postgres://user:pass@ep-cool-pooler.us-east-2.aws.neon.tech/neondb'
+        )
+        self.assertTrue(enforced)
+        self.assertTrue(missing.startswith('postgresql://'))
+        self.assertIn('sslmode=require', missing)
+
+        downgraded, enforced_downgrade = database.normalize_postgres_url(
+            'postgresql://user:pass@ep-cool.us-east-2.aws.neon.tech/neondb?sslmode=prefer&channel_binding=require'
+        )
+        self.assertTrue(enforced_downgrade)
+        self.assertIn('sslmode=require', downgraded)
+        self.assertIn('channel_binding=require', downgraded)
+
+        strict, enforced_strict = database.normalize_postgres_url(
+            'postgresql://user:pass@ep-cool.us-east-2.aws.neon.tech/neondb?sslmode=verify-full'
+        )
+        self.assertFalse(enforced_strict)
+        self.assertIn('sslmode=verify-full', strict)
+
+        verify_ca, enforced_ca = database.normalize_postgres_url(
+            'postgresql://user:pass@ep-cool.us-east-2.aws.neon.tech/neondb?sslmode=verify-ca'
+        )
+        self.assertFalse(enforced_ca)
+        self.assertIn('sslmode=verify-ca', verify_ca)
+
+        libpq, enforced_libpq = database.normalize_postgres_url(
+            'host=ep-cool.us-east-2.aws.neon.tech dbname=neondb user=u password=p'
+        )
+        self.assertTrue(enforced_libpq)
+        self.assertIn('sslmode=require', libpq)
+
+        non_neon, enforced_non_neon = database.normalize_postgres_url('postgresql://test-only/db')
+        self.assertFalse(enforced_non_neon)
+        self.assertEqual(non_neon, 'postgresql://test-only/db')
+
+    def test_pool_configures_tcp_keepalives_and_connect_timeout(self):
+        with patch.dict('os.environ', {
+            'DB_CONNECT_TIMEOUT': '10',
+            'DB_KEEPALIVES_IDLE': '25',
+            'DB_KEEPALIVES_INTERVAL': '8',
+            'DB_KEEPALIVES_COUNT': '4',
+        }), patch.object(database, 'ConnectionPool', return_value=MagicMock(closed=False)) as factory:
+            database._get_postgres_pool('postgresql://user:pass@ep-keep-pooler.us-east-2.aws.neon.tech/neondb')
+        options = factory.call_args.kwargs
+        self.assertIn('sslmode=require', options['conninfo'])
+        self.assertEqual(options['kwargs']['connect_timeout'], 10)
+        self.assertEqual(options['kwargs']['keepalives'], 1)
+        self.assertEqual(options['kwargs']['keepalives_idle'], 25)
+        self.assertEqual(options['kwargs']['keepalives_interval'], 8)
+        self.assertEqual(options['kwargs']['keepalives_count'], 4)
+        self.assertNotIn('options', options['kwargs'])
+
+    def test_broken_socket_checks_immediately_and_closed_pool_recovers_once(self):
+        raw = MagicMock(closed=False, broken=True)
+        raw._reqquality_returned_at = 100
+        with patch.object(database, 'monotonic', return_value=101), patch.object(database.ConnectionPool, 'check_connection') as check:
+            database._check_idle_connection(raw)
+            check.assert_called_once_with(raw)
+
+        stale_pool = MagicMock(closed=False)
+        stale_pool.getconn.side_effect = database.PoolClosed('pool closed concurrently')
+        fresh_pool = MagicMock(closed=False)
+        with patch.object(database, 'ConnectionPool', side_effect=[stale_pool, fresh_pool]):
+            connection = database.connect_database('postgresql://retry-pool-test', 'unused.db')
+        self.assertIs(connection._connection, fresh_pool.getconn.return_value)
+        connection.close()
+
+    def test_safe_database_diagnostics_never_leaks_credentials_or_dsn(self):
+        secret_dsn = 'postgresql://super-secret-user:super-secret-password@ep-unique-host-pooler.us-east-2.aws.neon.tech:5432/secret_dbname'
+        info = database.safe_database_diagnostics(secret_dsn)
+        self.assertEqual(info['backend'], 'postgres')
+        self.assertTrue(info['parsed'])
+        self.assertTrue(info['neon'])
+        self.assertTrue(info['pooled_endpoint'])
+        self.assertEqual(info['port'], 5432)
+        self.assertEqual(info['sslmode'], 'require')
+        self.assertTrue(info['ssl_enforced'])
+        serialized = str(info)
+        for sensitive in ('super-secret-user', 'super-secret-password', 'ep-unique-host', 'secret_dbname', 'postgresql://'):
+            self.assertNotIn(sensitive, serialized)
+        self.assertEqual(database.safe_database_diagnostics(''), {'backend': 'sqlite'})
+
 
 if __name__ == '__main__':
     unittest.main()

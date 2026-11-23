@@ -8,11 +8,97 @@ from threading import Lock
 import sqlite3
 from pathlib import Path
 from time import perf_counter, monotonic
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from middlewares.observability import record_timing
 
 import psycopg
+from psycopg.conninfo import conninfo_to_dict, make_conninfo
 from psycopg_pool import ConnectionPool, PoolTimeout, TooManyRequests, PoolClosed
 from services.database_diagnostics import DiagnosticConnection, LOGGER
+
+_NEON_HOST_SUFFIX = '.neon.tech'
+_STRICT_SSL_MODES = frozenset({'require', 'verify-ca', 'verify-full'})
+
+
+def is_neon_host(hostname):
+    host = (hostname or '').strip().lower().rstrip('.')
+    return host == 'neon.tech' or host.endswith(_NEON_HOST_SUFFIX)
+
+
+def normalize_postgres_url(database_url):
+    """Normalize PostgreSQL URL schemes and enforce sslmode=require for Neon hosts."""
+    normalized_url = (database_url or '').strip()
+    if normalized_url.startswith('postgres://'):
+        normalized_url = 'postgresql://' + normalized_url[len('postgres://'):]
+    elif normalized_url.startswith('postgresql+psycopg://'):
+        normalized_url = 'postgresql://' + normalized_url[len('postgresql+psycopg://'):]
+    if not normalized_url:
+        return normalized_url, False
+
+    parsed = urlsplit(normalized_url)
+    if parsed.scheme == 'postgresql':
+        if not is_neon_host(parsed.hostname):
+            return normalized_url, False
+        params = parse_qsl(parsed.query, keep_blank_values=True)
+        existing = [value.strip().lower() for key, value in params if key == 'sslmode']
+        if any(value in _STRICT_SSL_MODES for value in existing):
+            return normalized_url, False
+        filtered = [(key, value) for key, value in params if key != 'sslmode']
+        filtered.append(('sslmode', 'require'))
+        rebuilt = urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urlencode(filtered), parsed.fragment))
+        return rebuilt, True
+
+    if not parsed.scheme:
+        try:
+            params = conninfo_to_dict(normalized_url)
+        except Exception:
+            return normalized_url, False
+        if is_neon_host(params.get('host')) and (params.get('sslmode') or '').strip().lower() not in _STRICT_SSL_MODES:
+            return make_conninfo(normalized_url, sslmode='require'), True
+
+    return normalized_url, False
+
+
+def safe_database_diagnostics(database_url):
+    """Return non-sensitive database configuration metadata without credentials or DSNs."""
+    if not database_url or not str(database_url).strip():
+        return {'backend': 'sqlite'}
+    normalized_url, ssl_enforced = normalize_postgres_url(database_url)
+    host = ''
+    port = 5432
+    sslmode = 'prefer'
+    parsed = False
+    try:
+        info = conninfo_to_dict(normalized_url)
+        host = (info.get('host') or '').strip()
+        port = int(info.get('port') or 5432)
+        sslmode = (info.get('sslmode') or 'prefer').strip().lower()
+        parsed = bool(host)
+    except Exception:
+        try:
+            parts = urlsplit(normalized_url)
+            host = (parts.hostname or '').strip()
+            port = parts.port or 5432
+            query = dict(parse_qsl(parts.query, keep_blank_values=True))
+            sslmode = (query.get('sslmode') or 'prefer').strip().lower()
+            parsed = bool(host)
+        except Exception:
+            parsed = False
+    return {
+        'backend': 'postgres',
+        'parsed': parsed,
+        'neon': is_neon_host(host),
+        'pooled_endpoint': '-pooler.' in host.lower(),
+        'port': port,
+        'sslmode': sslmode,
+        'ssl_enforced': ssl_enforced,
+        'pool_max_size': int(os.getenv('DB_POOL_MAX_SIZE', '5')),
+        'pool_timeout': float(os.getenv('DB_POOL_TIMEOUT', '10')),
+        'connect_timeout': int(os.getenv('DB_CONNECT_TIMEOUT', '3')),
+        'keepalives_idle': int(os.getenv('DB_KEEPALIVES_IDLE', '30')),
+        'keepalives_interval': int(os.getenv('DB_KEEPALIVES_INTERVAL', '10')),
+        'keepalives_count': int(os.getenv('DB_KEEPALIVES_COUNT', '5')),
+    }
 
 # Connectivity failures are service outages, not failed credential checks.
 DATABASE_UNAVAILABLE_ERRORS = (psycopg.OperationalError, PoolTimeout, TooManyRequests, PoolClosed,
@@ -123,23 +209,32 @@ _POOL_LOCK = Lock()
 
 def _check_idle_connection(connection):
     # Warm checkouts avoid a network round trip. Validate sockets after inactivity
-    # so serverless freezes/provider idle disconnects don't fail the next login.
+    # or when the driver marks them broken so idle Neon disconnects recover cleanly.
     returned = getattr(connection, '_reqquality_returned_at', None)
-    if connection.closed or (returned is not None and monotonic() - returned >= 30):
+    idle_threshold = float(os.getenv('DB_POOL_IDLE_CHECK_SECONDS', '30'))
+    if connection.closed or getattr(connection, 'broken', False) is True or (returned is not None and monotonic() - returned >= idle_threshold):
         ConnectionPool.check_connection(connection)
 
 
 def _get_postgres_pool(database_url):
-    key = (os.getpid(), database_url)
+    normalized_url, _ = normalize_postgres_url(database_url)
+    key = (os.getpid(), normalized_url)
     with _POOL_LOCK:
         pool = _POSTGRES_POOLS.get(key)
         if pool is None or pool.closed:
             pool = ConnectionPool(
-                conninfo=database_url,
+                conninfo=normalized_url,
                 connection_class=DiagnosticConnection,
                 # Do not inject startup timeout options: Neon/PgBouncer rejects
                 # them. Query budgets must be configured as database role defaults.
-                kwargs={'row_factory': _postgres_row_factory, 'connect_timeout': 3},
+                kwargs={
+                    'row_factory': _postgres_row_factory,
+                    'connect_timeout': int(os.getenv('DB_CONNECT_TIMEOUT', '3')),
+                    'keepalives': 1,
+                    'keepalives_idle': int(os.getenv('DB_KEEPALIVES_IDLE', '30')),
+                    'keepalives_interval': int(os.getenv('DB_KEEPALIVES_INTERVAL', '10')),
+                    'keepalives_count': int(os.getenv('DB_KEEPALIVES_COUNT', '5')),
+                },
                 check=_check_idle_connection,
                 # No eager connection or five-minute background retry chain. A new
                 # request can try again after a failed attempt; no SQLite fallback.
@@ -147,8 +242,8 @@ def _get_postgres_pool(database_url):
                 max_size=int(os.getenv('DB_POOL_MAX_SIZE', '5')),
                 max_waiting=20,
                 timeout=float(os.getenv('DB_POOL_TIMEOUT', '10')),
-                max_idle=60,
-                max_lifetime=1800,
+                max_idle=float(os.getenv('DB_POOL_MAX_IDLE', '60')),
+                max_lifetime=float(os.getenv('DB_POOL_MAX_LIFETIME', '1800')),
                 reconnect_timeout=0,
                 open=True,
             )
@@ -177,14 +272,18 @@ atexit.register(close_database_pools)
 
 def connect_database(database_url, sqlite_path):
     if database_url:
-        normalized_url = database_url.strip()
-        if normalized_url.startswith("postgres://"):
-            normalized_url = "postgresql://" + normalized_url[len("postgres://"):]
-        if normalized_url.startswith("postgresql+psycopg://"):
-            normalized_url = "postgresql://" + normalized_url[len("postgresql+psycopg://"):]
+        normalized_url, _ = normalize_postgres_url(database_url)
         pool = _get_postgres_pool(normalized_url)
         try:
-            connection = pool.getconn()
+            try:
+                connection = pool.getconn()
+            except PoolClosed:
+                with _POOL_LOCK:
+                    key = (os.getpid(), normalized_url)
+                    if _POSTGRES_POOLS.get(key) is pool:
+                        _POSTGRES_POOLS.pop(key)
+                pool = _get_postgres_pool(normalized_url)
+                connection = pool.getconn()
         except PoolTimeout:
             stats = pool.get_stats()
             LOGGER.error('database stage=pool_checkout pid=%s stats=%s', os.getpid(),

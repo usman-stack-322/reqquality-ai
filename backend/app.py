@@ -54,7 +54,7 @@ from werkzeug.security import check_password_hash
 
 
 
-from database import DATABASE_ERRORS, DATABASE_UNAVAILABLE_ERRORS, connect_database, initialize_postgresql_schema
+from database import DATABASE_ERRORS, DATABASE_UNAVAILABLE_ERRORS, connect_database, initialize_postgresql_schema, safe_database_diagnostics
 
 
 from admin_dashboard import initialize_management_schema, record_activity, register_management_routes
@@ -95,14 +95,45 @@ def api_http_error(error):
 def request_too_large(error):
     return jsonify(error='Request body must be at most 1 MB.'), 413
 
-frontend_origins = [origin.strip() for origin in os.getenv('FRONTEND_ORIGINS', 'https://localhost:5173,https://127.0.0.1:5173,https://www.reqqualityai.site,https://reqqualityai.site').split(',') if origin.strip()]
+def _resolve_cookie_samesite(local_http):
+    raw = (os.getenv('COOKIE_SAMESITE') or 'Lax').strip().capitalize()
+    if raw not in ('Lax', 'Strict', 'None'):
+        raise RuntimeError('COOKIE_SAMESITE must be one of Lax, Strict, or None.')
+    return 'Lax' if local_http and raw == 'None' else raw
+
+
+_raw_frontend_origins = os.getenv(
+    'FRONTEND_ORIGINS',
+    'https://localhost:5173,https://127.0.0.1:5173,https://www.reqqualityai.site,https://reqqualityai.site',
+)
+frontend_origins = list(dict.fromkeys(
+    origin.strip().rstrip('/')
+    for origin in _raw_frontend_origins.split(',')
+    if origin.strip().rstrip('/')
+))
 
 if LOCAL_HTTP_DEVELOPMENT:
-    frontend_origins += ['http://localhost:5173', 'http://127.0.0.1:5173']
+    for local_origin in ('http://localhost:5173', 'http://127.0.0.1:5173'):
+        if local_origin not in frontend_origins:
+            frontend_origins.append(local_origin)
 
-CORS(app, origins=frontend_origins, supports_credentials=True)
+CORS(
+    app,
+    resources={r'/api/*': {'origins': frontend_origins}},
+    supports_credentials=True,
+    allow_headers=['Content-Type', 'X-CSRF-Token', 'Idempotency-Key'],
+    expose_headers=['Content-Disposition', 'Retry-After', 'Server-Timing'],
+    methods=['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+)
 
-app.config.update(SECRET_KEY=os.getenv('REQQUALITY_SECRET_KEY') or secrets.token_hex(32), SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax', SESSION_COOKIE_SECURE=os.getenv('SESSION_COOKIE_SECURE', 'false').lower() == 'true', PERMANENT_SESSION_LIFETIME=timedelta(hours=8))
+cookie_samesite = _resolve_cookie_samesite(LOCAL_HTTP_DEVELOPMENT)
+app.config.update(
+    SECRET_KEY=os.getenv('REQQUALITY_SECRET_KEY') or secrets.token_hex(32),
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE=cookie_samesite,
+    SESSION_COOKIE_SECURE=not LOCAL_HTTP_DEVELOPMENT,
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
+)
 
 # Production cookies require HTTPS; direct loopback development uses HTTP.
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY') or app.config['SECRET_KEY']
@@ -120,17 +151,31 @@ def require_secure_authentication():
     if request.path in ('/api/auth/login', '/api/auth/refresh') and not request.is_secure and not local_http:
         return jsonify(error='Use HTTPS for Secure authentication cookies.'), 426
     if request.path.startswith('/api/') and request.method not in ('GET', 'HEAD', 'OPTIONS'):
-        origin = request.headers.get('Origin')
+        origin = (request.headers.get('Origin') or '').strip().rstrip('/')
         if origin and origin not in frontend_origins and origin != request.host_url.rstrip('/'):
             return jsonify(error='Request origin is not allowed.'), 403
 
-if not LOCAL_HTTP_DEVELOPMENT and int(os.getenv('TRUST_PROXY_HOPS', '0')):
+TRUST_PROXY_HOPS = int((os.getenv('TRUST_PROXY_HOPS') or '0').strip())
+if TRUST_PROXY_HOPS < 0:
+    raise RuntimeError('TRUST_PROXY_HOPS cannot be negative.')
+if not LOCAL_HTTP_DEVELOPMENT and TRUST_PROXY_HOPS > 0:
     from werkzeug.middleware.proxy_fix import ProxyFix
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=int(os.getenv('TRUST_PROXY_HOPS')), x_for=int(os.getenv('TRUST_PROXY_HOPS')))
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=TRUST_PROXY_HOPS, x_for=TRUST_PROXY_HOPS)
 
 LOGGER = app.logger
 
 LOGGER.setLevel(logging.INFO)
+LOGGER.info(
+    'startup pid=%s mode=%s database_config_source=%s trust_proxy_hops=%s '
+    'cookie_samesite=%s frontend_origins_count=%s database=%s',
+    os.getpid(),
+    'local_http' if LOCAL_HTTP_DEVELOPMENT else 'production_wsgi',
+    DATABASE_CONFIG_SOURCE,
+    TRUST_PROXY_HOPS,
+    cookie_samesite,
+    len(frontend_origins),
+    safe_database_diagnostics(DATABASE_URL),
+)
 
 DATABASE = Path(os.getenv('SQLITE_DATABASE_PATH') or Path(__file__).parent / 'instance' / 'reqquality.db')
 if not DATABASE.is_absolute():

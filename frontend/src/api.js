@@ -13,6 +13,19 @@ let csrfToken = '';
 let refreshPromise = null;
 let authGeneration = 0;
 
+function resolveApiBase() {
+  const configured =
+    (typeof globalThis.__REQQUALITY_API_BASE_URL__ === 'string'
+      ? globalThis.__REQQUALITY_API_BASE_URL__
+      : import.meta.env?.VITE_API_BASE_URL) || '';
+  return configured.trim().replace(/\/+$/, '');
+}
+
+function apiTarget(path) {
+  const base = resolveApiBase();
+  return base ? `${base}${path}` : path;
+}
+
 async function rememberCsrf(response, pathname, generation = authGeneration) {
   if (!pathname.startsWith('/api/auth/') || !response.ok) return;
   try {
@@ -27,10 +40,10 @@ async function refreshAuthentication() {
   if (!refreshPromise) {
     const generation = authGeneration;
     refreshPromise = (async () => {
-      const bootstrap = await nativeFetch('/api/auth/csrf', { credentials: 'include' });
+      const bootstrap = await nativeFetch(apiTarget('/api/auth/csrf'), { credentials: 'include' });
       if (!bootstrap.ok) return false;
       const data = await bootstrap.json();
-      const response = await nativeFetch('/api/auth/refresh', {
+      const response = await nativeFetch(apiTarget('/api/auth/refresh'), {
         method: 'POST', credentials: 'include',
         headers: { 'X-CSRF-Token': data.csrf_token },
       });
@@ -42,9 +55,12 @@ async function refreshAuthentication() {
 }
 
 export async function apiFetch(input, options = {}) {
-  const url = new URL(typeof input === 'string' ? input : input.url, globalThis.location.origin);
+  const base = resolveApiBase();
+  const target = typeof input === 'string' && input.startsWith('/api/') && base ? `${base}${input}` : input;
+  const url = new URL(typeof target === 'string' ? target : target.url, globalThis.location.origin);
+  const expectedOrigin = base ? new URL(base, globalThis.location.origin).origin : globalThis.location.origin;
   const pathname = url.pathname;
-  if (url.origin !== globalThis.location.origin || !pathname.startsWith('/api/')) return nativeFetch(input, options);
+  if (url.origin !== expectedOrigin || !pathname.startsWith('/api/')) return nativeFetch(input, options);
   if (['/api/auth/login', '/api/auth/logout', '/api/auth/reset-password', '/api/auth/change-password'].includes(pathname)) {
     // Complete any rotation before login replaces cookies. A stale /me response
     // must not start a new refresh or overwrite the successful login's CSRF.
@@ -58,7 +74,7 @@ export async function apiFetch(input, options = {}) {
     if (csrfToken && !['GET', 'HEAD', 'OPTIONS'].includes(method) && !pathname.startsWith('/api/invitations/')) {
       headers.set('X-CSRF-Token', csrfToken);
     }
-    const response = await nativeFetch(input, { ...options, credentials: 'include', headers });
+    const response = await nativeFetch(target, { ...options, credentials: 'include', headers });
     await rememberCsrf(response, pathname, generation);
     return response;
   };
@@ -68,7 +84,7 @@ export async function apiFetch(input, options = {}) {
     let csrfFailed = false;
     try { csrfFailed = (await response.clone().json()).code === 'csrf_failed'; } catch { /* Leave other errors unchanged. */ }
     if (csrfFailed) {
-      const bootstrap = await nativeFetch('/api/auth/csrf', { credentials: 'include' });
+      const bootstrap = await nativeFetch(apiTarget('/api/auth/csrf'), { credentials: 'include' });
       await rememberCsrf(bootstrap, '/api/auth/csrf', generation);
       if (bootstrap.ok && generation === authGeneration) response = await send();
     }

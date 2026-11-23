@@ -170,3 +170,36 @@ test('database unavailable never starts refresh or automatically replays login',
   }
   assert.deepEqual(calls, ['/api/auth/me', '/api/auth/login', '/api/dashboard']);
 });
+
+test('configured API base URL routes relative API calls, CSRF, and refresh cleanly without leaking CSRF externally', async () => {
+  const seen = [];
+  globalThis.__REQQUALITY_API_BASE_URL__ = 'https://reqquality-ai-api.onrender.com/';
+  try {
+    const fetch = await fresh(async (url, options) => {
+      seen.push({ url, csrf: options.headers instanceof Headers ? options.headers.get('X-CSRF-Token') : options.headers?.['X-CSRF-Token'] });
+      if (url === 'https://reqquality-ai-api.onrender.com/api/auth/login') return json({ csrf_token: 'render-csrf' });
+      if (url === 'https://reqquality-ai-api.onrender.com/api/auth/csrf') return json({ csrf_token: 'render-bootstrap-csrf' });
+      if (url === 'https://reqquality-ai-api.onrender.com/api/auth/refresh') return json({ csrf_token: 'render-rotated-csrf' });
+      if (url === 'https://reqquality-ai-api.onrender.com/api/requirements' && seen.filter((item) => item.url === url).length === 1) {
+        return json({ code: 'access_token_expired' }, 401);
+      }
+      return json({ ok: true });
+    });
+
+    await fetch('/api/auth/login', { method: 'POST' });
+    const req = await fetch('/api/requirements', { method: 'POST' });
+    assert.equal(req.status, 200);
+    await fetch('https://unrelated.example/api/requirements', { method: 'POST' });
+
+    assert.equal(seen[0].url, 'https://reqquality-ai-api.onrender.com/api/auth/login');
+    assert.equal(seen[1].csrf, 'render-csrf');
+    assert.equal(seen[2].url, 'https://reqquality-ai-api.onrender.com/api/auth/csrf');
+    assert.equal(seen[3].url, 'https://reqquality-ai-api.onrender.com/api/auth/refresh');
+    assert.equal(seen[3].csrf, 'render-bootstrap-csrf');
+    assert.equal(seen[4].csrf, 'render-rotated-csrf');
+    assert.equal(seen[5].url, 'https://unrelated.example/api/requirements');
+    assert.equal(seen[5].csrf, undefined);
+  } finally {
+    delete globalThis.__REQQUALITY_API_BASE_URL__;
+  }
+});
