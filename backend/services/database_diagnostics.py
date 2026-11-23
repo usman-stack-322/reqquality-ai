@@ -24,7 +24,9 @@ def exception_details(error):
                 'connection_timeout' if isinstance(error, psycopg.errors.ConnectionTimeout) else
                 'network_connect_timeout' if isinstance(error, TimeoutError) else
                 'pool_checkout_timeout' if isinstance(error, PoolTimeout) else
-                'pool_wait_queue_full' if isinstance(error, TooManyRequests) else 'unclassified')
+                'pool_wait_queue_full' if isinstance(error, TooManyRequests) else
+                'connection_closed' if any(v in message for v in ('server closed the connection', 'connection has been closed unexpectedly', 'consuming input failed', 'broken pipe', 'connection reset', 'eof detected')) else
+                'tls_error' if any(v in message for v in ('ssl', 'tls', 'certificate')) else 'unclassified')
     return dict(exception_type=type(error).__name__, sqlstate=state, category=category,
                 frames=[f'{Path(frame.filename).name}:{frame.lineno}:{frame.name}'
                         for frame in traceback.extract_tb(error.__traceback__)])
