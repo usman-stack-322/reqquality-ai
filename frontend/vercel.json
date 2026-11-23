@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://reqquality-ai-api.onrender.com/api/:path*"
+      "destination": "https://reqquality-api.vercel.app/api/:path*"
     },
     {
       "source": "/:path*",
